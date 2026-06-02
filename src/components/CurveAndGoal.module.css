@@ -1,0 +1,326 @@
+.section {
+  padding: 0 24px 24px;
+}
+
+.card {
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 24px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-300-stroke);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.toolbarLeft {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.highlight {
+  font-weight: 500;
+  color: var(--blue-700);
+}
+
+.meta {
+  color: var(--gray-800);
+}
+
+.meta strong {
+  color: var(--gray-1000);
+  font-weight: 500;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--gray-300);
+}
+
+.settingsLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+}
+
+.toggle {
+  display: inline-flex;
+  padding: 2px;
+  gap: 2px;
+  background: var(--gray-200);
+  border-radius: var(--radius-sm);
+}
+
+.toggle button,
+.toggle span {
+  padding: 5px 12px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  border-radius: var(--radius-sm);
+  color: var(--gray-1000);
+}
+
+.toggleActive {
+  background: var(--gray-400);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(320px, 422px) 1fr;
+  background: var(--gray-000);
+}
+
+.goals {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 24px;
+  border-right: 1px solid var(--gray-300-stroke);
+}
+
+.goalsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.goalsHeader h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.resetLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+}
+
+.modeRow,
+.sliderRow {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.sliderBlock {
+  position: relative;
+  width: 220px;
+}
+
+.sliderTrack {
+  position: relative;
+  height: 4px;
+  background: var(--gray-300);
+  border-radius: 3px;
+}
+
+.sliderFill {
+  position: absolute;
+  left: 0;
+  top: -1px;
+  height: 6px;
+  border-radius: 3px;
+}
+
+.sliderKnob {
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translate(50%, -50%);
+  width: 24px;
+  height: 24px;
+  border-radius: 12px;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  box-shadow: var(--shadow-base);
+}
+
+.sliderKnob::after {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  border-radius: 50%;
+  background: var(--green-600);
+}
+
+.sliderValue {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  text-align: center;
+}
+
+.sliderMarker {
+  position: absolute;
+  left: 68%;
+  top: 0;
+  font-size: 8px;
+  color: var(--gray-1000);
+}
+
+.rowLabel {
+  width: 130px;
+  font-size: 14px;
+  color: var(--gray-800);
+}
+
+.chart {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  min-width: 0;
+}
+
+.chart h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+  font-size: 12px;
+  color: var(--gray-1000);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legendLine {
+  width: 20px;
+  height: 2px;
+}
+
+.legendDash {
+  width: 20px;
+  height: 2px;
+}
+
+.chartArea {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 280px;
+}
+
+.plot {
+  display: grid;
+  grid-template-columns: 42px 1fr 42px;
+  gap: 0;
+  align-items: stretch;
+  min-height: 208px;
+}
+
+.yTicksLeft,
+.yTicksRight {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--gray-800);
+  padding-bottom: 8px;
+}
+
+.yTicksRight {
+  text-align: right;
+  border-left: 1px solid var(--gray-300);
+  padding-left: 4px;
+}
+
+.yTicksLeft {
+  border-right: 1px solid var(--gray-300);
+  padding-right: 4px;
+  text-align: right;
+}
+
+.graphWrap {
+  position: relative;
+  border-bottom: 1px solid var(--gray-300);
+  min-height: 208px;
+}
+
+.graphLine,
+.graphLineRoas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+}
+
+.graphLineRoas {
+  z-index: 1;
+}
+
+.refLine,
+.targetLine {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: auto;
+  z-index: 2;
+}
+
+.refLine {
+  left: 50%;
+}
+
+.targetLine {
+  left: 55%;
+}
+
+.xAxis {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 40px 0 42px;
+  font-size: 12px;
+  color: var(--gray-800);
+}
+
+.yLabelLeft,
+.yLabelRight {
+  position: absolute;
+  font-size: 12px;
+  color: var(--gray-800);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.yLabelLeft {
+  left: 0;
+  top: 80px;
+}
+
+.yLabelRight {
+  right: 0;
+  top: 80px;
+}
+
+.xLabel {
+  align-self: center;
+  font-size: 12px;
+  color: var(--gray-800);
+}

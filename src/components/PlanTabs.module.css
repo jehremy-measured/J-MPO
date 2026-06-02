@@ -1,0 +1,77 @@
+.wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.tabs {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 24px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.tabGroup {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-shrink: 0;
+}
+
+.tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--gray-800);
+  white-space: nowrap;
+}
+
+.tabActive {
+  color: var(--gray-1000);
+}
+
+.underline {
+  display: block;
+  height: 2px;
+  border-radius: 4px;
+  background: var(--gradient-tab);
+}
+
+.tabDivider {
+  width: 1px;
+  height: 24px;
+  background: var(--gray-300);
+}
+
+.scrollBtn {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.actionsDivider {
+  width: 1px;
+  align-self: stretch;
+  background: var(--gray-300);
+}
+
+.iconAction {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  color: var(--gray-1000);
+}

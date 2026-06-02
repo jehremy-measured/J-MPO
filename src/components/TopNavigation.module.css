@@ -1,0 +1,122 @@
+.bar {
+  background: var(--gray-000);
+  border-bottom: 1px solid var(--gray-300-stroke);
+  height: 48px;
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  max-width: 1920px;
+  min-width: 880px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 100%;
+  gap: 16px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex: 1;
+  min-width: 0;
+}
+
+.logo {
+  width: 24px;
+  height: 24px;
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--gray-300);
+}
+
+.workspace {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--gray-1000);
+}
+
+.menu {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.menuItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  text-decoration: none;
+  height: 100%;
+}
+
+.menuItemActive {
+  border-bottom: 4px solid;
+  border-image: var(--gradient-nav-active) 1;
+}
+
+.newBadge {
+  background: var(--orange-600);
+  color: var(--gray-000);
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  padding: 0 6px;
+  border-radius: 8px;
+}
+
+.utilities {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1;
+  gap: 0;
+}
+
+.iconBtn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  font-size: 18px;
+  color: var(--gray-800);
+}
+
+.dot {
+  position: absolute;
+  top: 9px;
+  right: 14px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--orange-600);
+}
+
+.avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin: 0 16px;
+  border-radius: 16px;
+  background: var(--blue-200);
+  color: var(--blue-700);
+  font-size: 14px;
+  font-weight: 600;
+}
