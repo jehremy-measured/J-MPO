@@ -377,35 +377,6 @@
 }
 
 /* Review screen — source / file panel */
-.srcPanel {
-  border: 1px solid var(--gray-300);
-  border-radius: 12px;
-  overflow: hidden;
-  margin-bottom: 16px;
-}
-
-.periodBar {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  background: var(--gray-000);
-  flex-wrap: wrap;
-}
-
-.periodBar .pbIco {
-  width: 28px;
-  height: 28px;
-  color: var(--gray-800);
-  flex-shrink: 0;
-}
-
-.periodBar label {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gray-900);
-}
-
 .periodNote {
   display: flex;
   gap: 9px;
@@ -420,46 +391,6 @@
 
 .periodNote svg {
   flex-shrink: 0;
-}
-
-.fileRow {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  border: 1px solid var(--gray-300);
-  border-radius: 12px;
-  margin-bottom: 16px;
-  background: var(--gray-000);
-}
-
-.fileRow .ti {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  background: #eafaf7;
-  color: var(--green-700);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
-.fileRow .tt {
-  flex: 1;
-  min-width: 0;
-}
-
-.fileRow .tt strong {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--gray-1000);
-  display: block;
-}
-
-.fileRow .tt span {
-  font-size: 12.5px;
-  color: var(--gray-800);
 }
 
 .iconBtn {
@@ -513,16 +444,113 @@
   background: var(--gray-100);
 }
 
-/* Toolbar */
-.toolbar {
+/* Review toolbar: source (date dropdown or file), search, channel filter — one line */
+.reviewToolbar {
   display: flex;
-  flex-direction: column;
-  gap: 11px;
+  align-items: center;
+  gap: 10px;
   margin-bottom: 14px;
+  flex-wrap: nowrap;
+}
+
+.dateDropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.dateDropdownBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-900);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.dateDropdownBtn:hover {
+  border-color: var(--gray-500);
+  background: var(--gray-100);
+}
+
+.dateDropdownBtn svg:first-child {
+  color: var(--gray-600);
+  flex-shrink: 0;
+}
+
+.dateDropdownPanel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 20;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  overflow: hidden;
+}
+
+.fileInline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.fileInline .btn {
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.fileInlineIcon {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: #eafaf7;
+  color: var(--green-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fileInlineName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+
+.channelSelect {
+  font-family: inherit;
+  font-size: 14px;
+  padding: 10px 10px;
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-1000);
+  width: 118px;
+  flex-shrink: 0;
+}
+
+.channelSelect:focus {
+  outline: 2px solid var(--blue-200);
+  border-color: var(--blue-700);
 }
 
 .search {
   position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .search svg {
@@ -546,32 +574,6 @@
 .search input:focus {
   outline: 2px solid var(--blue-200);
   border-color: var(--blue-700);
-}
-
-.chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 7px;
-}
-
-.chipBtn {
-  font-size: 12.5px;
-  font-weight: 500;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--gray-300);
-  background: var(--gray-000);
-  color: var(--gray-800);
-}
-
-.chipBtn:hover {
-  border-color: var(--gray-500);
-}
-
-.chipBtnOn {
-  background: var(--blue-100);
-  border-color: var(--blue-700);
-  color: var(--blue-700);
 }
 
 /* Table */

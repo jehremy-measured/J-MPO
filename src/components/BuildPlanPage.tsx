@@ -22,6 +22,7 @@ import {
   BackArrowIcon,
   CheckIcon,
   CheckRingIcon,
+  ChevronDownIcon,
   DownloadIcon,
   FileIcon,
   HistoryIcon,
@@ -308,6 +309,8 @@ function ReviewScreen({
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
+  const [dateOpen, setDateOpen] = useState(false);
+  const srcWindow = activeWindow(state);
 
   return (
     <Card
@@ -323,70 +326,79 @@ function ReviewScreen({
         </>
       }
     >
-      {state.method === "fetch" ? (
-        <div className={styles.srcPanel}>
-          <div className={styles.periodBar}>
-            <span className={styles.pbIco}>
-              <HistoryIcon size={20} />
-            </span>
-            <label>Source period</label>
-          </div>
-          <CalendarRangePicker
-            start={activeWindow(state).start}
-            end={activeWindow(state).end}
-            onChange={(start) => flow.setSourceStart(start)}
-            panels={1}
-            mode="fixed-length"
-            fixedLengthDays={n}
-          />
-          <div className={styles.periodNote}>
-            <InfoIcon size={16} />
-            <span>
-              Actual spend from {formatShortDate(activeWindow(state).start)} –{" "}
-              {formatShortDate(activeWindow(state).end)} — the same {n} days as your plan. Tactics with no
-              spend in the last year are excluded by default.
-            </span>
-          </div>
-        </div>
-      ) : (
-        <div className={styles.fileRow}>
-          <div className={styles.ti}>
-            <CheckIcon size={16} />
-          </div>
-          <div className={styles.tt}>
-            <strong>{state.source}</strong>
-            <span>Tactics with no budget in the file are excluded by default</span>
-          </div>
-          <button type="button" className={styles.btn} onClick={flow.reupload}>
-            <UploadIcon size={16} /> Reupload
-          </button>
-          <div className={styles.moreWrap}>
+      <div className={styles.reviewToolbar}>
+        {state.method === "fetch" ? (
+          <div className={styles.dateDropdown}>
             <button
               type="button"
-              className={styles.iconBtn}
-              aria-label="More options"
-              onClick={() => setMoreOpen(!moreOpen)}
+              className={styles.dateDropdownBtn}
+              onClick={() => setDateOpen((v) => !v)}
             >
-              <MoreIcon size={18} />
+              <HistoryIcon size={16} />
+              <span>
+                {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+              </span>
+              <ChevronDownIcon size={14} />
             </button>
-            {moreOpen && (
-              <div className={styles.moreMenu}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    downloadBudgetTemplate();
-                    setMoreOpen(false);
+            {dateOpen && (
+              <div className={styles.dateDropdownPanel}>
+                <CalendarRangePicker
+                  start={srcWindow.start}
+                  end={srcWindow.end}
+                  onChange={(start) => {
+                    flow.setSourceStart(start);
+                    setDateOpen(false);
                   }}
-                >
-                  <DownloadIcon size={16} /> Download template
-                </button>
+                  panels={1}
+                  mode="fixed-length"
+                  fixedLengthDays={n}
+                />
+                <div className={styles.periodNote}>
+                  <InfoIcon size={16} />
+                  <span>
+                    Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
+                  </span>
+                </div>
               </div>
             )}
           </div>
-        </div>
-      )}
+        ) : (
+          <div className={styles.fileInline}>
+            <span className={styles.fileInlineIcon}>
+              <CheckIcon size={14} />
+            </span>
+            <strong className={styles.fileInlineName} title={state.source}>
+              {state.source}
+            </strong>
+            <button type="button" className={styles.btn} onClick={flow.reupload}>
+              <UploadIcon size={16} /> Reupload
+            </button>
+            <div className={styles.moreWrap}>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                aria-label="More options"
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                <MoreIcon size={18} />
+              </button>
+              {moreOpen && (
+                <div className={styles.moreMenu}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadBudgetTemplate();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    <DownloadIcon size={16} /> Download template
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
-      <div className={styles.toolbar}>
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
@@ -395,18 +407,18 @@ function ReviewScreen({
             onChange={(e) => flow.setQuery(e.target.value)}
           />
         </div>
-        <div className={styles.chips}>
+
+        <select
+          className={styles.channelSelect}
+          value={state.channel}
+          onChange={(e) => flow.setChannel(e.target.value)}
+        >
           {["All", ...channelsPresent()].map((c) => (
-            <button
-              key={c}
-              type="button"
-              className={`${styles.chipBtn} ${state.channel === c ? styles.chipBtnOn : ""}`}
-              onClick={() => flow.setChannel(c)}
-            >
+            <option key={c} value={c}>
               {c}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       <div className={styles.tbl}>
