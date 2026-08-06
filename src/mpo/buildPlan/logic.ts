@@ -68,10 +68,14 @@ export function channelsPresent(): string[] {
 export function visibleTactics(state: BuildPlanState) {
   const q = state.query.trim().toLowerCase();
   return BUILD_TACTICS.filter(
-    (t) =>
-      (state.channel === "All" || t.channel === state.channel) &&
-      t.name.toLowerCase().includes(q)
+    (t) => state.channels.includes(t.channel) && t.name.toLowerCase().includes(q)
   );
+}
+
+export function channelFilterLabel(state: BuildPlanState): string {
+  const total = channelsPresent().length;
+  if (state.channels.length === total) return "All channels";
+  return `${state.channels.length} channel${state.channels.length === 1 ? "" : "s"}`;
 }
 
 /** Tactics that made the cut, in catalog order — used by read-only summaries. */

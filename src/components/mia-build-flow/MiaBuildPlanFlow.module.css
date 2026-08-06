@@ -46,8 +46,10 @@
   gap: 8px;
 }
 
-.turnActionsEnd {
-  justify-content: flex-end;
+.turnActionsGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 /* Compact chat bubbles for completed steps */
@@ -215,6 +217,11 @@
 }
 
 .methodCard:hover {
+  border-color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.methodCardSelected {
   border-color: var(--blue-700);
   background: var(--blue-100);
 }

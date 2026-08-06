@@ -39,6 +39,8 @@ const WELCOME_TITLE = "Hi, I'm Mia";
 const WELCOME_SUBTEXT =
   "Ask about budgets and tactics, or start the guided flow to create a new plan.";
 
+const REMOVE_INTENT = /\bremove\b/i;
+
 function shouldStartCreatePlanFlow(text: string): boolean {
   const lower = text.toLowerCase();
   return (
@@ -68,6 +70,8 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
   const [isTyping, setIsTyping] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
+  const [atSummary, setAtSummary] = useState(false);
+  const [editSignal, setEditSignal] = useState(0);
 
   const appendMessages = useCallback(
     (items: { role: "mia" | "user"; text: string }[]) => {
@@ -85,6 +89,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
 
   const cancelCreateFlow = useCallback(() => {
     setFlowActive(false);
+    setAtSummary(false);
     appendMessages([
       {
         role: "mia",
@@ -104,6 +109,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
       appendMessages(batch);
       setFlowKey((k) => k + 1);
       setFlowActive(true);
+      setAtSummary(false);
       setDraft("");
     },
     [appendMessages]
@@ -112,6 +118,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
   useEffect(() => {
     if (!open) {
       setFlowActive(false);
+      setAtSummary(false);
       setMessages([]);
       setDraft("");
       setIsTyping(false);
@@ -158,6 +165,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
   const handleFlowComplete = (input: CreatePlanInput) => {
     const result = onOpenPlanReview(input);
     setFlowActive(false);
+    setAtSummary(false);
     onClose();
     appendMessages([
       {
@@ -169,12 +177,22 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
 
   const handleFlowEdit = (state: BuildPlanState) => {
     setFlowActive(false);
+    setAtSummary(false);
     onEditInMainFlow(state);
   };
 
   const sendUserText = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
+
+    if (flowActive && atSummary && REMOVE_INTENT.test(trimmed)) {
+      setMessages((prev) => [
+        ...prev,
+        { id: `user-${Date.now()}`, role: "user", text: trimmed },
+      ]);
+      setEditSignal((c) => c + 1);
+      return;
+    }
 
     if (shouldStartCreatePlanFlow(trimmed)) {
       startCreateFlow(trimmed);
@@ -193,7 +211,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
   };
 
   const submitComposer = () => {
-    if (flowActive) return;
+    if (flowActive && !atSummary) return;
     const trimmed = draft.trim();
     if (!trimmed) return;
     setDraft("");
@@ -208,8 +226,12 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
     sendUserText(prompt.label);
   };
 
-  const placeholder = flowActive ? "Finish the setup above" : "Type your message…";
-  const canSend = !flowActive && draft.trim().length > 0;
+  const placeholder = flowActive
+    ? atSummary
+      ? 'Try "remove Google Brand"…'
+      : "Finish the setup above"
+    : "Type your message…";
+  const canSend = (!flowActive || atSummary) && draft.trim().length > 0;
 
   return (
     <aside
@@ -291,7 +313,13 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
         ))}
 
         {flowActive && (
-          <MiaBuildPlanFlow key={flowKey} onComplete={handleFlowComplete} onEdit={handleFlowEdit} />
+          <MiaBuildPlanFlow
+            key={flowKey}
+            onComplete={handleFlowComplete}
+            onEdit={handleFlowEdit}
+            onSummaryVisible={setAtSummary}
+            editSignal={editSignal}
+          />
         )}
 
         {isTyping && (
@@ -324,7 +352,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive}
+            disabled={flowActive && !atSummary}
           />
           <button
             type="submit"

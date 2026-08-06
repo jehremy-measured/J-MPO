@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput } from "../../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS } from "../../mpo/buildPlan/data";
 import {
@@ -30,6 +30,8 @@ import styles from "./MiaBuildPlanFlow.module.css";
 type Props = {
   onComplete: (input: CreatePlanInput) => void;
   onEdit: (state: BuildPlanState) => void;
+  onSummaryVisible?: (visible: boolean) => void;
+  editSignal?: number;
 };
 
 type HistoryEntry = { id: string; question: string; answer: string };
@@ -65,12 +67,14 @@ function BackLink({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
+export function MiaBuildPlanFlow({ onComplete, onEdit, onSummaryVisible, editSignal }: Props) {
   const flow = useBuildPlanFlow();
   const { state } = flow;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [windowConfirmed, setWindowConfirmed] = useState(false);
+  const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(state.method);
+  const lastEditSignal = useRef(editSignal);
 
   const commit = (question: string, answer: string, action: () => void) => {
     setHistory((h) => [...h, { id: `${h.length}-${question}`, question, answer }]);
@@ -89,6 +93,22 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
     const { label, attrLabels } = ctSummary(state);
     return attrLabels.length ? attrLabels.join(" + ") : label;
   };
+
+  useEffect(() => {
+    if (state.screen === "method") setMethodChoice(state.method);
+  }, [state.screen, state.method]);
+
+  const atSummary = state.screen === "review" && (state.method === "upload" || windowConfirmed);
+  useEffect(() => {
+    onSummaryVisible?.(atSummary);
+  }, [atSummary, onSummaryVisible]);
+
+  useEffect(() => {
+    if (editSignal !== undefined && editSignal !== lastEditSignal.current) {
+      lastEditSignal.current = editSignal;
+      onEdit(state);
+    }
+  }, [editSignal, onEdit, state]);
 
   return (
     <>
@@ -166,13 +186,13 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
 
       {state.screen === "method" && (
         <MiaTurn>
-          <p className={styles.q}>Add budget</p>
+          <p className={styles.q}>What is your budget for this period?</p>
           <div className={styles.turnContent}>
             <div className={styles.methods}>
               <button
                 type="button"
-                className={styles.methodCard}
-                onClick={() => commit("Add budget", "Upload budget", () => flow.chooseMethod("upload"))}
+                className={`${styles.methodCard} ${methodChoice === "upload" ? styles.methodCardSelected : ""}`}
+                onClick={() => setMethodChoice("upload")}
               >
                 <div className={styles.methodIcon}>
                   <UploadIcon size={18} />
@@ -184,11 +204,8 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
               </button>
               <button
                 type="button"
-                className={styles.methodCard}
-                onClick={() => {
-                  setWindowConfirmed(false);
-                  commit("Add budget", "Fetch from past period", () => flow.chooseMethod("fetch"));
-                }}
+                className={`${styles.methodCard} ${methodChoice === "fetch" ? styles.methodCardSelected : ""}`}
+                onClick={() => setMethodChoice("fetch")}
               >
                 <div className={styles.methodIcon}>
                   <HistoryIcon size={18} />
@@ -202,7 +219,22 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
           </div>
           <div className={styles.turnActions}>
             <BackLink onClick={goBack} />
-            <span />
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={!methodChoice}
+              onClick={() => {
+                if (!methodChoice) return;
+                if (methodChoice === "fetch") setWindowConfirmed(false);
+                commit(
+                  "What is your budget for this period?",
+                  methodChoice === "upload" ? "Upload budget" : "Fetch from past period",
+                  () => flow.chooseMethod(methodChoice)
+                );
+              }}
+            >
+              Next
+            </button>
           </div>
         </MiaTurn>
       )}
@@ -304,7 +336,7 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       )}
 
       {state.screen === "review" && (state.method === "upload" || windowConfirmed) && (
-        <SummaryTurn state={state} onEdit={() => onEdit(state)} onCreate={flow.completePlan} />
+        <SummaryTurn state={state} onEdit={() => onEdit(state)} onCreate={flow.completePlan} onBack={goBack} />
       )}
 
       {state.screen === "done" && (
@@ -318,10 +350,12 @@ function SummaryTurn({
   state,
   onEdit,
   onCreate,
+  onBack,
 }: {
   state: BuildPlanState;
   onEdit: () => void;
   onCreate: () => void;
+  onBack: () => void;
 }) {
   const rows = includedTactics(state);
 
@@ -348,13 +382,16 @@ function SummaryTurn({
           </div>
         </div>
       </div>
-      <div className={`${styles.turnActions} ${styles.turnActionsEnd}`}>
-        <button type="button" className={styles.btn} onClick={onEdit}>
-          Edit
-        </button>
-        <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={onCreate}>
-          Create plan
-        </button>
+      <div className={styles.turnActions}>
+        <BackLink onClick={onBack} />
+        <div className={styles.turnActionsGroup}>
+          <button type="button" className={styles.btn} onClick={onEdit}>
+            Edit
+          </button>
+          <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={onCreate}>
+            Create plan
+          </button>
+        </div>
       </div>
     </MiaTurn>
   );

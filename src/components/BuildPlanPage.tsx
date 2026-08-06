@@ -4,6 +4,7 @@ import { BUILD_TACTICS, CT_GROUPS } from "../mpo/buildPlan/data";
 import {
   activeWindow,
   buildPlanToCreatePlanInput,
+  channelFilterLabel,
   channelsPresent,
   ctSummary,
   downloadBudgetTemplate,
@@ -310,7 +311,9 @@ function ReviewScreen({
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
   const [dateOpen, setDateOpen] = useState(false);
+  const [channelOpen, setChannelOpen] = useState(false);
   const srcWindow = activeWindow(state);
+  const allChannels = channelsPresent();
 
   return (
     <Card
@@ -408,17 +411,30 @@ function ReviewScreen({
           />
         </div>
 
-        <select
-          className={styles.channelSelect}
-          value={state.channel}
-          onChange={(e) => flow.setChannel(e.target.value)}
-        >
-          {["All", ...channelsPresent()].map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+        <div className={styles.channelDropdown}>
+          <button
+            type="button"
+            className={styles.channelDropdownBtn}
+            onClick={() => setChannelOpen((v) => !v)}
+          >
+            <span>{channelFilterLabel(state)}</span>
+            <ChevronDownIcon size={14} />
+          </button>
+          {channelOpen && (
+            <div className={styles.channelDropdownPanel}>
+              {allChannels.map((c) => (
+                <label key={c} className={styles.channelOption}>
+                  <input
+                    type="checkbox"
+                    checked={state.channels.includes(c)}
+                    onChange={() => flow.toggleChannel(c)}
+                  />
+                  <span>{c}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       <div className={styles.tbl}>

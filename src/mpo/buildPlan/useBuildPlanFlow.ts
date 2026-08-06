@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
-import { budgetFromUpload, budgetFromWindow, defaultIncludes, planDaysFor } from "./logic";
+import { budgetFromUpload, budgetFromWindow, channelsPresent, defaultIncludes, planDaysFor } from "./logic";
 import type { BuildPlanState, BuildScreen } from "./types";
 
 function initialState(): BuildPlanState {
@@ -18,7 +18,7 @@ function initialState(): BuildPlanState {
     overridden: {},
     included: {},
     query: "",
-    channel: "All",
+    channels: channelsPresent(),
   };
 }
 
@@ -64,7 +64,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
         source: "",
         included: {},
         query: "",
-        channel: "All",
+        channels: channelsPresent(),
       };
       if (method === "upload") {
         return { ...reset, screen: "upload" };
@@ -87,7 +87,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
         source: "budget_plan.xlsx",
         included: defaultIncludes("upload", budget),
         query: "",
-        channel: "All",
+        channels: channelsPresent(),
         screen: "review",
       };
     });
@@ -109,8 +109,13 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, query }));
   }, []);
 
-  const setChannel = useCallback((channel: string) => {
-    setState((s) => ({ ...s, channel }));
+  const toggleChannel = useCallback((channel: string) => {
+    setState((s) => ({
+      ...s,
+      channels: s.channels.includes(channel)
+        ? s.channels.filter((c) => c !== channel)
+        : [...s.channels, channel],
+    }));
   }, []);
 
   const toggleInclude = useCallback((id: string) => {
@@ -162,7 +167,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setSourceStart,
       reupload,
       setQuery,
-      setChannel,
+      toggleChannel,
       toggleInclude,
       setBudget,
       back,
@@ -182,7 +187,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setSourceStart,
       reupload,
       setQuery,
-      setChannel,
+      toggleChannel,
       toggleInclude,
       setBudget,
       back,

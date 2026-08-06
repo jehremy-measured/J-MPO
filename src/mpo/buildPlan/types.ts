@@ -45,7 +45,7 @@ export type BuildPlanState = {
   overridden: Record<string, boolean>;
   included: Record<string, boolean>;
   query: string;
-  channel: string;
+  channels: string[];
 };
 
 export type ExcludeReason = "no-budget-in-file" | "no-spend-12mo" | null;
