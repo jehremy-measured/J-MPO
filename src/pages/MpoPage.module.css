@@ -5,6 +5,20 @@
   background: var(--gray-000);
 }
 
+.body {
+  display: flex;
+  align-items: flex-start;
+  flex: 1;
+  min-width: 0;
+}
+
+.contentCol {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
 .main {
   flex: 1;
 }

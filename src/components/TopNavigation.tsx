@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { assets } from "../assets/figma";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./TopNavigation.module.css";
 
 const navItems = [
@@ -9,7 +10,12 @@ const navItems = [
   { label: "Benchmarks", active: false },
 ];
 
-export function TopNavigation() {
+type Props = {
+  miaOpen: boolean;
+  onMiaToggle: () => void;
+};
+
+export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
   return (
     <header className={styles.bar} data-node-id="1:33652">
       <div className={styles.inner}>
@@ -28,13 +34,25 @@ export function TopNavigation() {
               key={item.label}
               href="#"
               className={
-                item.active ? `${styles.menuItem} ${styles.menuItemActive}` : styles.menuItem
+                item.active
+                  ? `${styles.menuItem} ${styles.menuItemActive}`
+                  : styles.menuItem
               }
             >
               {item.label}
               {item.badge && <span className={styles.newBadge}>NEW</span>}
             </a>
           ))}
+          <button
+            type="button"
+            className={miaOpen ? `${styles.miaBtn} ${styles.miaBtnActive}` : styles.miaBtn}
+            onClick={onMiaToggle}
+            aria-expanded={miaOpen}
+            aria-controls="mia-side-panel"
+          >
+            <SparkleIcon size={14} />
+            Mia
+          </button>
         </nav>
 
         <div className={styles.utilities}>

@@ -1,0 +1,117 @@
+.wrap {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.wrapSingle {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 560px) {
+  .wrap {
+    grid-template-columns: 1fr;
+  }
+}
+
+.panel {
+  min-width: 0;
+}
+
+.panelHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  color: var(--blue-700);
+  flex-shrink: 0;
+}
+
+.navBtn:hover {
+  background: var(--blue-100);
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--gray-800);
+  padding: 4px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.cell {
+  position: relative;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  color: var(--gray-1000);
+  background: transparent;
+}
+
+.cell:disabled {
+  color: var(--gray-400);
+  cursor: default;
+}
+
+.cell:not(:disabled):hover .dayNum {
+  background: var(--gray-200);
+}
+
+.cellInBand {
+  background: var(--blue-100);
+}
+
+.cellRoundLeft {
+  border-top-left-radius: 999px;
+  border-bottom-left-radius: 999px;
+}
+
+.cellRoundRight {
+  border-top-right-radius: 999px;
+  border-bottom-right-radius: 999px;
+}
+
+.dayNum {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-variant-numeric: tabular-nums;
+}
+
+.dayNumSelected {
+  background: var(--blue-700);
+  color: var(--gray-000);
+  font-weight: 600;
+}

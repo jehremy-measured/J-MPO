@@ -83,22 +83,3 @@
   text-decoration: none;
 }
 
-.aiBtn {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 5px 12px;
-  border-radius: var(--radius-sm);
-  background: var(--green-700);
-  color: var(--gray-000);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.aiIcon {
-  font-size: 14px;
-}

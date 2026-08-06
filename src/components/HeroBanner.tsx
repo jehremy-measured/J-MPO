@@ -1,7 +1,11 @@
 import { assets } from "../assets/figma";
 import styles from "./HeroBanner.module.css";
 
-export function HeroBanner() {
+type Props = {
+  onCreatePlan?: () => void;
+};
+
+export function HeroBanner({ onCreatePlan }: Props) {
   return (
     <section className={styles.banner} data-node-id="1:33654">
       <img src={assets.heroVectorLeft} alt="" className={styles.waveLeft} aria-hidden />
@@ -14,7 +18,7 @@ export function HeroBanner() {
           improve returns.
         </p>
         <div className={styles.actions}>
-          <button type="button" className={styles.primaryBtn}>
+          <button type="button" className={styles.primaryBtn} onClick={onCreatePlan}>
             Create a plan
           </button>
           <a href="#" className={styles.link}>
@@ -22,13 +26,6 @@ export function HeroBanner() {
           </a>
         </div>
       </div>
-
-      <button type="button" className={styles.aiBtn}>
-        <span className={styles.aiIcon} aria-hidden>
-          ✦
-        </span>
-        AI Assistant
-      </button>
     </section>
   );
 }

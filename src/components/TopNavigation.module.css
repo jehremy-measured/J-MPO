@@ -52,6 +52,7 @@
 }
 
 .menuItem {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -61,11 +62,26 @@
   color: var(--gray-1000);
   text-decoration: none;
   height: 100%;
+  transition: background 0.15s ease;
+}
+
+.menuItem:hover {
+  background: var(--gray-100);
 }
 
 .menuItemActive {
-  border-bottom: 4px solid;
-  border-image: var(--gradient-nav-active) 1;
+  color: var(--orange-600);
+}
+
+.menuItemActive::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 2px;
+  border-radius: 999px;
+  background: var(--orange-600);
 }
 
 .newBadge {
@@ -76,6 +92,32 @@
   line-height: 16px;
   padding: 0 6px;
   border-radius: 8px;
+}
+
+.miaBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 16px;
+  height: 100%;
+  font-size: 14px;
+  font-weight: 600;
+  color: #6a4fe0;
+  background: transparent;
+  border: none;
+  border-bottom: 4px solid transparent;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.miaBtn:hover {
+  color: #5a3fd0;
+  background: #f5f2ff;
+}
+
+.miaBtnActive {
+  border-bottom-color: #7c5cff;
+  color: #5a3fd0;
+  background: #f5f2ff;
 }
 
 .utilities {

@@ -1,32 +1,32 @@
+import type { Plan } from "../mpo/types";
 import styles from "./PlanTabs.module.css";
 
-const plans = [
-  { label: "Default Plan", active: true },
-  { label: "Optimized budget Q1 2025", active: false },
-  { label: "Quick calc", active: false },
-  { label: "Trevor’s plan", active: false },
-  { label: "Quarterly Expense Tracker", active: false },
-  { label: "Q3 2024 scenario", active: false },
-  { label: "My Plan & Pacing", active: false },
-  { label: "Test Plan 2026", active: false },
-];
+type Props = {
+  plans: Plan[];
+  activePlanId: string;
+  onSelectPlan: (id: string) => void;
+};
 
-export function PlanTabs() {
+export function PlanTabs({ plans, activePlanId, onSelectPlan }: Props) {
   return (
     <div className={styles.wrap} data-node-id="1:33656">
       <div className={styles.tabs}>
-        {plans.map((plan, index) => (
-          <div key={plan.label} className={styles.tabGroup}>
-            {index === 1 && <span className={styles.tabDivider} aria-hidden />}
-            <button
-              type="button"
-              className={plan.active ? `${styles.tab} ${styles.tabActive}` : styles.tab}
-            >
-              {plan.label}
-              {plan.active && <span className={styles.underline} />}
-            </button>
-          </div>
-        ))}
+        {plans.map((plan, index) => {
+          const active = plan.id === activePlanId;
+          return (
+            <div key={plan.id} className={styles.tabGroup}>
+              {index === 1 && <span className={styles.tabDivider} aria-hidden />}
+              <button
+                type="button"
+                className={active ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+                onClick={() => onSelectPlan(plan.id)}
+              >
+                {plan.label}
+                {active && <span className={styles.underline} />}
+              </button>
+            </div>
+          );
+        })}
         <button type="button" className={styles.scrollBtn} aria-label="More plans">
           ›
         </button>

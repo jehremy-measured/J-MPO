@@ -1,0 +1,30 @@
+.bar {
+  position: fixed;
+  bottom: 48px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--gray-1000);
+  color: var(--gray-000);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(13, 45, 66, 0.2);
+  font-size: 13px;
+}
+
+.bar p {
+  margin: 0;
+}
+
+.meta {
+  opacity: 0.75;
+  font-size: 12px;
+}
+
+.dismiss {
+  color: var(--green-500);
+  font-weight: 600;
+}
