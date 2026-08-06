@@ -26,9 +26,7 @@ export type BuildMethod = "upload" | "fetch" | null;
 
 export type BuildScreen = "period" | "ct" | "method" | "upload" | "review" | "done";
 
-export type PastWindow = {
-  id: string;
-  mult: number;
+export type SourceWindow = {
   start: Date;
   end: Date;
   label: string;
@@ -42,7 +40,7 @@ export type BuildPlanState = {
   attrs: string[];
   method: BuildMethod;
   source: string;
-  win: string;
+  sourceStart: Date;
   budget: Record<string, number | null>;
   overridden: Record<string, boolean>;
   included: Record<string, boolean>;

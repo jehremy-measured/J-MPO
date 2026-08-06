@@ -1,5 +1,5 @@
 import { addDays, formatShortDate } from "./dateUtils";
-import type { BuildTactic, ConversionTypeGroup, PastWindow } from "./types";
+import type { BuildTactic, ConversionTypeGroup, SourceWindow } from "./types";
 
 export { formatShortDate };
 
@@ -93,20 +93,15 @@ export const XLS_BUDGET: Record<string, number | null> = {
 };
 
 const ANCHOR = new Date(2025, 8, 30);
-const WIN_MULT = [1.0, 0.94, 1.07];
 
-export function pastWindows(planDays: number): PastWindow[] {
-  return WIN_MULT.map((mult, i) => {
-    const end = addDays(ANCHOR, -i * planDays);
-    const start = addDays(end, -(planDays - 1));
-    return {
-      id: `w${i}`,
-      mult,
-      start,
-      end,
-      label: `${formatShortDate(start)} – ${formatShortDate(end)} (${planDays} days)`,
-    };
-  });
+/** Default source-period start: the most recent window of this length ending at the anchor date. */
+export function defaultSourceStart(planDays: number): Date {
+  return addDays(ANCHOR, -(planDays - 1));
+}
+
+export function windowFromStart(start: Date, planDays: number): SourceWindow {
+  const end = addDays(start, planDays - 1);
+  return { start, end, label: `${formatShortDate(start)} – ${formatShortDate(end)} (${planDays} days)` };
 }
 
 export const currencyFormatter = new Intl.NumberFormat("en-US", {

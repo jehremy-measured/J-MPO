@@ -6,34 +6,29 @@ import {
   CT_LOOKUP,
   DAILY_RATE,
   XLS_BUDGET,
-  pastWindows,
+  windowFromStart,
 } from "./data";
 import { daysBetweenInclusive, formatRangeLabel } from "./dateUtils";
-import type { BuildPlanState, BuildTactic, PastWindow } from "./types";
+import type { BuildPlanState, BuildTactic, SourceWindow } from "./types";
 
 export function planDaysFor(state: BuildPlanState): number {
   return daysBetweenInclusive(state.planStart, state.planEnd);
 }
 
-export function currentWindows(state: BuildPlanState): PastWindow[] {
-  return pastWindows(planDaysFor(state));
+export function activeWindow(state: BuildPlanState): SourceWindow {
+  return windowFromStart(state.sourceStart, planDaysFor(state));
 }
 
-export function activeWindow(state: BuildPlanState): PastWindow {
-  const windows = currentWindows(state);
-  return windows.find((w) => w.id === state.win) ?? windows[0];
-}
-
-/** Recompute non-overridden budgets from the selected past window. */
+/** Recompute non-overridden budgets from the selected source period. */
 export function budgetFromWindow(
   state: BuildPlanState
-): { budget: Record<string, number | null>; window: PastWindow } {
+): { budget: Record<string, number | null>; window: SourceWindow } {
   const n = planDaysFor(state);
   const window = activeWindow(state);
   const budget = { ...state.budget };
   BUILD_TACTICS.forEach((t) => {
     if (state.overridden[t.id]) return;
-    budget[t.id] = t.dormant ? 0 : Math.round(DAILY_RATE[t.id] * n * window.mult);
+    budget[t.id] = t.dormant ? 0 : Math.round(DAILY_RATE[t.id] * n);
   });
   return { budget, window };
 }

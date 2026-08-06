@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
-import { DEFAULT_PLAN_END, DEFAULT_PLAN_START } from "./data";
-import { budgetFromUpload, budgetFromWindow, defaultIncludes } from "./logic";
+import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
+import { daysBetweenInclusive } from "./dateUtils";
+import { budgetFromUpload, budgetFromWindow, defaultIncludes, planDaysFor } from "./logic";
 import type { BuildPlanState, BuildScreen } from "./types";
 
 function initialState(): BuildPlanState {
@@ -12,7 +13,7 @@ function initialState(): BuildPlanState {
     attrs: [],
     method: null,
     source: "",
-    win: "w0",
+    sourceStart: defaultSourceStart(daysBetweenInclusive(DEFAULT_PLAN_START, DEFAULT_PLAN_END)),
     budget: {},
     overridden: {},
     included: {},
@@ -59,7 +60,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
         method,
         overridden: {},
         budget: {},
-        win: "w0",
+        sourceStart: defaultSourceStart(planDaysFor(s)),
         source: "",
         included: {},
         query: "",
@@ -92,9 +93,9 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     });
   }, []);
 
-  const changeWindow = useCallback((win: string) => {
+  const setSourceStart = useCallback((sourceStart: Date) => {
     setState((s) => {
-      const next = { ...s, win, overridden: {} };
+      const next = { ...s, sourceStart, overridden: {} };
       const { budget } = budgetFromWindow(next);
       return { ...next, budget };
     });
@@ -158,7 +159,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       chooseMethod,
       markUploadFilled,
       continueFromUpload,
-      changeWindow,
+      setSourceStart,
       reupload,
       setQuery,
       setChannel,
@@ -178,7 +179,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       chooseMethod,
       markUploadFilled,
       continueFromUpload,
-      changeWindow,
+      setSourceStart,
       reupload,
       setQuery,
       setChannel,

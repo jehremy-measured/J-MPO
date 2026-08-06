@@ -12,7 +12,6 @@ import {
   includedTotal,
   periodLabel,
   planDaysFor,
-  currentWindows,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
 import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
@@ -330,20 +329,16 @@ function ReviewScreen({
             <span className={styles.pbIco}>
               <HistoryIcon size={20} />
             </span>
-            <label htmlFor="win-select">Source period</label>
-            <select
-              id="win-select"
-              className={styles.select}
-              value={state.win}
-              onChange={(e) => flow.changeWindow(e.target.value)}
-            >
-              {currentWindows(state).map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.label}
-                </option>
-              ))}
-            </select>
+            <label>Source period</label>
           </div>
+          <CalendarRangePicker
+            start={activeWindow(state).start}
+            end={activeWindow(state).end}
+            onChange={(start) => flow.setSourceStart(start)}
+            panels={1}
+            mode="fixed-length"
+            fixedLengthDays={n}
+          />
           <div className={styles.periodNote}>
             <InfoIcon size={16} />
             <span>

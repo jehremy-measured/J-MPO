@@ -5,7 +5,6 @@ import {
   activeWindow,
   buildPlanToCreatePlanInput,
   ctSummary,
-  currentWindows,
   downloadBudgetTemplate,
   includedTactics,
   includedTotal,
@@ -36,15 +35,7 @@ type Props = {
 type HistoryEntry = { id: string; question: string; answer: string };
 
 function MiaTurn({ children }: { children: ReactNode }) {
-  return (
-    <div className={styles.turn}>
-      <header className={styles.turnHead}>
-        <SparkleIcon size={14} />
-        <span>Mia</span>
-      </header>
-      {children}
-    </div>
-  );
+  return <div className={styles.turn}>{children}</div>;
 }
 
 function QuestionBubble({ text }: { text: string }) {
@@ -111,7 +102,6 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       {state.screen === "period" && (
         <MiaTurn>
           <p className={styles.q}>What period are you planning for?</p>
-          <p className={styles.qDesc}>We'll match its length when pulling past spend.</p>
           <div className={styles.turnContent}>
             <CalendarRangePicker start={state.planStart} end={state.planEnd} onChange={flow.setPeriod} panels={1} />
           </div>
@@ -131,7 +121,6 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       {state.screen === "ct" && (
         <MiaTurn>
           <p className={styles.q}>Select conversion type</p>
-          <p className={styles.qDesc}>Pick one baseline/roll-up type, or combine attributes.</p>
           <div className={styles.turnContent}>
             {CT_GROUPS.map((group) => (
               <div className={styles.group} key={group.group}>
@@ -178,7 +167,6 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       {state.screen === "method" && (
         <MiaTurn>
           <p className={styles.q}>Add budget</p>
-          <p className={styles.qDesc}>From a spreadsheet, or a past period's actuals.</p>
           <div className={styles.turnContent}>
             <div className={styles.methods}>
               <button
@@ -222,7 +210,6 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       {state.screen === "upload" && (
         <MiaTurn>
           <p className={styles.q}>Upload your budget</p>
-          <p className={styles.qDesc}>Start from the template so tactics map cleanly.</p>
           <div className={styles.turnContent}>
             <div className={styles.templateRow}>
               <div className={styles.ti}>
@@ -282,35 +269,21 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
       {state.screen === "review" && state.method === "fetch" && !windowConfirmed && (
         <MiaTurn>
           <p className={styles.q}>Which past period should we pull from?</p>
-          <p className={styles.qDesc}>
-            We'll use actual spend from the same {planDaysFor(state)}-day window length as your plan.
-          </p>
           <div className={styles.turnContent}>
-            <div className={styles.srcPanel}>
-              <div className={styles.periodBar}>
-                <label htmlFor="mia-win-select">
-                  <HistoryIcon size={14} /> Source period
-                </label>
-                <select
-                  id="mia-win-select"
-                  className={styles.select}
-                  value={state.win}
-                  onChange={(e) => flow.changeWindow(e.target.value)}
-                >
-                  {currentWindows(state).map((w) => (
-                    <option key={w.id} value={w.id}>
-                      {w.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className={styles.periodNote}>
-                <InfoIcon size={14} />
-                <span>
-                  Actuals from {formatShortDate(activeWindow(state).start)} – {formatShortDate(activeWindow(state).end)}.
-                  Dormant tactics excluded by default.
-                </span>
-              </div>
+            <CalendarRangePicker
+              start={activeWindow(state).start}
+              end={activeWindow(state).end}
+              onChange={(start) => flow.setSourceStart(start)}
+              panels={1}
+              mode="fixed-length"
+              fixedLengthDays={planDaysFor(state)}
+            />
+            <div className={styles.periodNote}>
+              <InfoIcon size={14} />
+              <span>
+                Actuals from {formatShortDate(activeWindow(state).start)} – {formatShortDate(activeWindow(state).end)}.
+                Dormant tactics excluded by default.
+              </span>
             </div>
           </div>
           <div className={styles.turnActions}>
@@ -355,7 +328,6 @@ function SummaryTurn({
   return (
     <MiaTurn>
       <p className={styles.q}>Here's your plan budget</p>
-      <p className={styles.qDesc}>Review the tactics and budgets below, then create the plan.</p>
       <div className={styles.turnContent}>
         <div className={styles.tbl}>
           {rows.map((t) => (
@@ -376,7 +348,7 @@ function SummaryTurn({
           </div>
         </div>
       </div>
-      <div className={styles.turnActions}>
+      <div className={`${styles.turnActions} ${styles.turnActionsEnd}`}>
         <button type="button" className={styles.btn} onClick={onEdit}>
           Edit
         </button>
@@ -410,7 +382,6 @@ function DoneTurn({
           <CheckRingIcon size={22} />
         </div>
         <p className={styles.q}>Plan created</p>
-        <p className={styles.qDesc}>Your draft plan is ready to project and simulate.</p>
         <div className={styles.summary}>
           <div className={styles.scard}>
             <div className={styles.sl}>Plan period</div>

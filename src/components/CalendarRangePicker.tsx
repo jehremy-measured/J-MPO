@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addMonths, isSameDay, monthGrid, monthName } from "../mpo/buildPlan/dateUtils";
+import { addDays, addMonths, isSameDay, monthGrid, monthName } from "../mpo/buildPlan/dateUtils";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/BuildPlanIcons";
 import styles from "./CalendarRangePicker.module.css";
 
@@ -8,11 +8,15 @@ type Props = {
   end: Date;
   onChange: (start: Date, end: Date) => void;
   panels?: 1 | 2;
+  /** "range" (default) lets the user click two dates. "fixed-length" locks the span to
+   * `fixedLengthDays` — every click just moves the start date and the end date follows. */
+  mode?: "range" | "fixed-length";
+  fixedLengthDays?: number;
 };
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props) {
+export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "range", fixedLengthDays }: Props) {
   const [cursors, setCursors] = useState<Date[]>(() => {
     const first = new Date(start.getFullYear(), start.getMonth(), 1);
     if (panels === 1) return [first];
@@ -23,6 +27,10 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props)
   const [phase, setPhase] = useState<"start" | "end">("end");
 
   const handleDayClick = (date: Date) => {
+    if (mode === "fixed-length") {
+      onChange(date, addDays(date, (fixedLengthDays ?? 1) - 1));
+      return;
+    }
     if (phase === "start" || date < start) {
       onChange(date, date);
       setPhase("end");
