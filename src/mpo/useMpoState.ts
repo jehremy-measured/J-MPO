@@ -98,6 +98,13 @@ export function useMpoState() {
   const [budgetView, setBudgetView] = useState<BudgetView>("tactics");
   const [selectedTacticId, setSelectedTacticId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [newPlanSummary, setNewPlanSummary] = useState<{
+    planId: string;
+    planningWindow: string;
+    conversionType: string;
+    tacticsCount: number;
+    totalBudget: number;
+  } | null>(null);
 
   const notify = useCallback((message: string) => {
     setStatusMessage(message);
@@ -189,7 +196,14 @@ export function useMpoState() {
       setActivePlanId(id);
       setSelectedTacticId(null);
       setHeroDismissed(true);
-      notify(`Created "${label}" with Mia — review and save to finish`);
+      setNewPlanSummary({
+        planId: id,
+        planningWindow: input.planningWindow,
+        conversionType: input.conversionType,
+        tacticsCount: input.tactics.length,
+        totalBudget: input.targetBudget,
+      });
+      notify(`Created "${label}" with Mia`);
 
       return { id, label };
     },
@@ -328,6 +342,7 @@ export function useMpoState() {
     setSelectedTacticId,
     statusMessage,
     setStatusMessage,
+    newPlanSummary,
     totals,
     notify,
     handleTargetBudgetChange,

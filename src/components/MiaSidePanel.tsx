@@ -56,11 +56,11 @@ function shouldStartCreatePlanFlow(text: string): boolean {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onOpenPlanReview: (input: CreatePlanInput) => { label: string };
+  onCreatePlan: (input: CreatePlanInput) => { label: string };
   onEditInMainFlow: (state: BuildPlanState) => void;
 };
 
-export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow }: Props) {
+export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -163,14 +163,14 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
   if (!open) return null;
 
   const handleFlowComplete = (input: CreatePlanInput) => {
-    const result = onOpenPlanReview(input);
+    const result = onCreatePlan(input);
     setFlowActive(false);
     setAtSummary(false);
     onClose();
     appendMessages([
       {
         role: "mia",
-        text: `Your plan "${result.label}" is ready — open the review page to confirm and save.`,
+        text: `Your plan "${result.label}" is ready — take a look on the main page.`,
       },
     ]);
   };

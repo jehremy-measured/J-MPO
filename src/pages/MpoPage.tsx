@@ -4,7 +4,7 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { PlanReviewPage } from "../components/PlanReviewPage";
+import { PlanSummaryCards } from "../components/PlanSummaryCards";
 import { PlanTabs } from "../components/PlanTabs";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { TopNavigation } from "../components/TopNavigation";
@@ -20,29 +20,17 @@ export function MpoPage() {
   const [buildPlanOpen, setBuildPlanOpen] = useState(false);
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
-  const [planReviewOpen, setPlanReviewOpen] = useState(false);
 
   const openBuildPlanPage = (seed?: BuildPlanState) => {
-    setPlanReviewOpen(false);
     setBuildPlanSeed(seed ?? null);
     setBuildPlanKey((k) => k + 1);
     setBuildPlanOpen(true);
   };
 
-  const handleOpenPlanReview = (input: CreatePlanInput) => {
+  const handleCreatePlan = (input: CreatePlanInput) => {
     const result = state.createPlan(input);
     setBuildPlanOpen(false);
-    setPlanReviewOpen(true);
     return result;
-  };
-
-  const handleReviewSave = () => {
-    setPlanReviewOpen(false);
-    state.notify(`Saved "${state.activePlanLabel}"`);
-  };
-
-  const handleReviewBack = () => {
-    setPlanReviewOpen(false);
   };
 
   return (
@@ -54,31 +42,9 @@ export function MpoPage() {
             {buildPlanOpen ? (
               <BuildPlanPage
                 key={buildPlanKey}
-                onComplete={handleOpenPlanReview}
+                onComplete={handleCreatePlan}
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
-              />
-            ) : planReviewOpen ? (
-              <PlanReviewPage
-                planLabel={state.activePlanLabel}
-                planningWindow={state.planningWindow}
-                referencePeriod={state.referencePeriod}
-                conversionType={state.conversionType}
-                channelCount={state.channelCount}
-                referenceBudgetTotal={state.referenceBudgetTotal}
-                baselineSalesForecast={state.baselineSalesForecast}
-                optimizationMode={state.optimizationMode}
-                metricMode={state.metricMode}
-                goalType={state.goalType}
-                totalSalesGoal={state.totalSalesGoal}
-                pacingEnabled={state.pacingEnabled}
-                tactics={state.tactics}
-                onOptimizationModeChange={state.setOptimizationMode}
-                onMetricModeChange={state.setMetricMode}
-                onBaselineChange={state.setBaselineSalesForecast}
-                onBack={handleReviewBack}
-                onSave={handleReviewSave}
-                onEdit={() => openBuildPlanPage()}
               />
             ) : (
               <>
@@ -101,7 +67,16 @@ export function MpoPage() {
                   }}
                 />
                 <div className={styles.content}>
-                  <CurveAndGoal />
+                  {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
+                    <PlanSummaryCards
+                      planningWindow={state.newPlanSummary.planningWindow}
+                      conversionType={state.newPlanSummary.conversionType}
+                      tacticsCount={state.newPlanSummary.tacticsCount}
+                      totalBudget={state.newPlanSummary.totalBudget}
+                    />
+                  ) : (
+                    <CurveAndGoal />
+                  )}
                   <BudgetTable />
                 </div>
               </>
@@ -116,7 +91,7 @@ export function MpoPage() {
         <MiaSidePanel
           open={miaOpen}
           onClose={() => setMiaOpen(false)}
-          onOpenPlanReview={handleOpenPlanReview}
+          onCreatePlan={handleCreatePlan}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
         />
       </div>

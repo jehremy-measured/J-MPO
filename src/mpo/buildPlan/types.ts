@@ -24,7 +24,7 @@ export type BuildTactic = {
 
 export type BuildMethod = "upload" | "fetch" | null;
 
-export type BuildScreen = "period" | "ct" | "method" | "upload" | "review" | "done";
+export type BuildScreen = "period" | "ct" | "method" | "upload" | "review";
 
 export type SourceWindow = {
   start: Date;

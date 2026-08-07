@@ -147,12 +147,6 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     });
   }, []);
 
-  const completePlan = useCallback(() => goTo("done"), [goTo]);
-
-  const restart = useCallback(() => {
-    setState(initialState());
-  }, []);
-
   const actions = useMemo(
     () => ({
       goTo,
@@ -171,8 +165,6 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       toggleInclude,
       setBudget,
       back,
-      completePlan,
-      restart,
     }),
     [
       goTo,
@@ -191,8 +183,6 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       toggleInclude,
       setBudget,
       back,
-      completePlan,
-      restart,
     ]
   );
 

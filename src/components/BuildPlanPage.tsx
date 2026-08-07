@@ -6,7 +6,6 @@ import {
   buildPlanToCreatePlanInput,
   channelFilterLabel,
   channelsPresent,
-  ctSummary,
   downloadBudgetTemplate,
   excludeReason,
   includedCount,
@@ -22,7 +21,6 @@ import { CalendarRangePicker } from "./CalendarRangePicker";
 import {
   BackArrowIcon,
   CheckIcon,
-  CheckRingIcon,
   ChevronDownIcon,
   DownloadIcon,
   FileIcon,
@@ -287,11 +285,8 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
           flow={flow}
           moreOpen={moreOpen}
           setMoreOpen={setMoreOpen}
+          onComplete={() => onComplete(buildPlanToCreatePlanInput(state))}
         />
-      )}
-
-      {state.screen === "done" && (
-        <DoneScreen state={state} onRestart={flow.restart} onComplete={() => onComplete(buildPlanToCreatePlanInput(state))} />
       )}
     </div>
   );
@@ -302,11 +297,13 @@ function ReviewScreen({
   flow,
   moreOpen,
   setMoreOpen,
+  onComplete,
 }: {
   state: ReturnType<typeof useBuildPlanFlow>["state"];
   flow: ReturnType<typeof useBuildPlanFlow>;
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
+  onComplete: () => void;
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
@@ -323,7 +320,7 @@ function ReviewScreen({
       footer={
         <>
           <BackLink onClick={flow.back} />
-          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={flow.completePlan}>
+          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
             Create plan
           </button>
         </>
@@ -490,67 +487,3 @@ function ReviewScreen({
   );
 }
 
-function DoneScreen({
-  state,
-  onRestart,
-  onComplete,
-}: {
-  state: ReturnType<typeof useBuildPlanFlow>["state"];
-  onRestart: () => void;
-  onComplete: () => void;
-}) {
-  const total = includedTotal(state);
-  const active = includedCount(state);
-  const period = periodLabel(state);
-  const { label: ctLabel, attrLabels } = ctSummary(state);
-  const usingAttrs = attrLabels.length > 0;
-
-  return (
-    <div className={styles.card}>
-      <div className={styles.cardBody}>
-        <div className={styles.doneWrap}>
-          <div className={styles.doneRing}>
-            <CheckRingIcon size={30} />
-          </div>
-          <h2>Plan created</h2>
-          <p>Your draft plan is ready to project and simulate.</p>
-          <div className={styles.summary}>
-            <div className={styles.scard}>
-              <div className={styles.sl}>Plan period</div>
-              <div className={`${styles.sv} ${styles.small}`}>{period}</div>
-            </div>
-            <div className={styles.scard}>
-              <div className={styles.sl}>Conversion type</div>
-              <div className={`${styles.sv} ${styles.small}`}>{ctLabel}</div>
-            </div>
-            <div className={styles.scard}>
-              <div className={styles.sl}>Tactics included</div>
-              <div className={styles.sv}>{active}</div>
-            </div>
-            <div className={styles.scard}>
-              <div className={styles.sl}>Total budget</div>
-              <div className={styles.sv}>{currencyFormatter.format(total)}</div>
-            </div>
-          </div>
-          {usingAttrs && (
-            <div className={styles.chipRow}>
-              {attrLabels.map((label) => (
-                <span key={label} className={styles.chip}>
-                  {label}
-                </span>
-              ))}
-            </div>
-          )}
-          <div className={styles.doneActions}>
-            <button type="button" className={styles.btn} onClick={onRestart}>
-              Start over
-            </button>
-            <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
-              Project &amp; simulate →
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}

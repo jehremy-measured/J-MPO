@@ -17,7 +17,6 @@ import type { BuildPlanState } from "../../mpo/buildPlan/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import {
   CheckIcon,
-  CheckRingIcon,
   DownloadIcon,
   FileIcon,
   HistoryIcon,
@@ -336,11 +335,12 @@ export function MiaBuildPlanFlow({ onComplete, onEdit, onSummaryVisible, editSig
       )}
 
       {state.screen === "review" && (state.method === "upload" || windowConfirmed) && (
-        <SummaryTurn state={state} onEdit={() => onEdit(state)} onCreate={flow.completePlan} onBack={goBack} />
-      )}
-
-      {state.screen === "done" && (
-        <DoneTurn state={state} onRestart={flow.restart} onComplete={() => onComplete(buildPlanToCreatePlanInput(state))} />
+        <SummaryTurn
+          state={state}
+          onEdit={() => onEdit(state)}
+          onCreate={() => onComplete(buildPlanToCreatePlanInput(state))}
+          onBack={goBack}
+        />
       )}
     </>
   );
@@ -397,64 +397,3 @@ function SummaryTurn({
   );
 }
 
-function DoneTurn({
-  state,
-  onRestart,
-  onComplete,
-}: {
-  state: BuildPlanState;
-  onRestart: () => void;
-  onComplete: () => void;
-}) {
-  const total = includedTotal(state);
-  const active = includedTactics(state).length;
-  const period = periodLabel(state);
-  const { label: ctLabel, attrLabels } = ctSummary(state);
-  const usingAttrs = attrLabels.length > 0;
-
-  return (
-    <MiaTurn>
-      <div className={styles.doneWrap}>
-        <div className={styles.doneRing}>
-          <CheckRingIcon size={22} />
-        </div>
-        <p className={styles.q}>Plan created</p>
-        <div className={styles.summary}>
-          <div className={styles.scard}>
-            <div className={styles.sl}>Plan period</div>
-            <div className={`${styles.sv} ${styles.small}`}>{period}</div>
-          </div>
-          <div className={styles.scard}>
-            <div className={styles.sl}>Conversion type</div>
-            <div className={`${styles.sv} ${styles.small}`}>{ctLabel}</div>
-          </div>
-          <div className={styles.scard}>
-            <div className={styles.sl}>Tactics</div>
-            <div className={styles.sv}>{active}</div>
-          </div>
-          <div className={styles.scard}>
-            <div className={styles.sl}>Total budget</div>
-            <div className={`${styles.sv} ${styles.small}`}>{currencyFormatter.format(total)}</div>
-          </div>
-        </div>
-        {usingAttrs && (
-          <div className={styles.chipRow}>
-            {attrLabels.map((label) => (
-              <span key={label} className={styles.chip}>
-                {label}
-              </span>
-            ))}
-          </div>
-        )}
-        <div className={styles.doneActions}>
-          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnFull}`} onClick={onComplete}>
-            Project &amp; simulate →
-          </button>
-          <button type="button" className={`${styles.btn} ${styles.btnFull}`} onClick={onRestart}>
-            Start over
-          </button>
-        </div>
-      </div>
-    </MiaTurn>
-  );
-}
