@@ -1,4 +1,5 @@
 import { addDays, formatShortDate } from "./dateUtils";
+import type { PlanTarget } from "../types";
 import type { BuildTactic, ConversionTypeGroup, SourceWindow } from "./types";
 
 export { formatShortDate };
@@ -6,6 +7,12 @@ export { formatShortDate };
 /** Default planning window shown when the build-plan flow first opens. */
 export const DEFAULT_PLAN_START = new Date(2025, 9, 1); // Oct 1, 2025
 export const DEFAULT_PLAN_END = new Date(2025, 11, 31); // Dec 31, 2025
+
+export const TARGET_OPTIONS: { id: PlanTarget; label: string }[] = [
+  { id: "incremental-sales", label: "Incremental Sales" },
+  { id: "incremental-roas", label: "Inc ROAS" },
+  { id: "not-sure", label: "Not sure" },
+];
 
 export const CT_GROUPS: ConversionTypeGroup[] = [
   {

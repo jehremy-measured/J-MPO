@@ -5,6 +5,7 @@ import {
   CHANNEL_COLORS,
   CT_LOOKUP,
   DAILY_RATE,
+  TARGET_OPTIONS,
   XLS_BUDGET,
   defaultSourceStart,
   windowFromStart,
@@ -157,6 +158,10 @@ export function periodLabel(state: BuildPlanState): string {
   return formatRangeLabel(state.planStart, state.planEnd);
 }
 
+export function targetLabel(state: BuildPlanState): string {
+  return TARGET_OPTIONS.find((o) => o.id === state.target)?.label ?? "Not sure";
+}
+
 function initialsIconDataUri(tactic: BuildTactic): string {
   const color = CHANNEL_COLORS[tactic.channel] ?? "#516877";
   const initial = tactic.name.trim().charAt(0).toUpperCase();
@@ -212,6 +217,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
     conversionType: conversionType || "All Orders",
     channelCount: channelsPresent().length,
     tactics,
+    target: state.target ?? "not-sure",
   };
 }
 

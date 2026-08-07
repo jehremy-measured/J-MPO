@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import type { PlanTarget } from "../types";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
 import { applyMethodChoice, applyUploadedBudget, budgetFromWindow, channelsPresent } from "./logic";
@@ -9,6 +10,7 @@ function initialState(): BuildPlanState {
     screen: "period",
     planStart: DEFAULT_PLAN_START,
     planEnd: DEFAULT_PLAN_END,
+    target: null,
     singleCT: null,
     attrs: [],
     method: null,
@@ -33,7 +35,13 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, planStart, planEnd }));
   }, []);
 
-  const continueFromPeriod = useCallback(() => goTo("ct"), [goTo]);
+  const continueFromPeriod = useCallback(() => goTo("target"), [goTo]);
+
+  const setTarget = useCallback((target: PlanTarget) => {
+    setState((s) => ({ ...s, target }));
+  }, []);
+
+  const continueFromTarget = useCallback(() => goTo("ct"), [goTo]);
 
   const toggleSingleCT = useCallback((id: string) => {
     setState((s) => ({
@@ -105,8 +113,10 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   const back = useCallback(() => {
     setState((s) => {
       switch (s.screen) {
-        case "ct":
+        case "target":
           return { ...s, screen: "period" };
+        case "ct":
+          return { ...s, screen: "target" };
         case "method":
           return { ...s, screen: "ct" };
         case "upload":
@@ -124,6 +134,8 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       goTo,
       setPeriod,
       continueFromPeriod,
+      setTarget,
+      continueFromTarget,
       toggleSingleCT,
       toggleAttr,
       continueFromCT,
@@ -142,6 +154,8 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       goTo,
       setPeriod,
       continueFromPeriod,
+      setTarget,
+      continueFromTarget,
       toggleSingleCT,
       toggleAttr,
       continueFromCT,

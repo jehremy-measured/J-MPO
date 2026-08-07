@@ -16,6 +16,7 @@ import type {
   OptimizationMode,
   Plan,
   PlanSnapshot,
+  PlanTarget,
   Tactic,
 } from "./types";
 
@@ -104,6 +105,7 @@ export function useMpoState() {
     conversionType: string;
     tacticsCount: number;
     totalBudget: number;
+    target: PlanTarget;
   } | null>(null);
 
   const notify = useCallback((message: string) => {
@@ -202,6 +204,7 @@ export function useMpoState() {
         conversionType: input.conversionType,
         tacticsCount: input.tactics.length,
         totalBudget: input.targetBudget,
+        target: input.target,
       });
       notify(`Created "${label}" with Mia`);
 

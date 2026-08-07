@@ -1,0 +1,43 @@
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0 24px 16px;
+  padding: 14px 20px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--gray-300-stroke);
+}
+
+.onTrack {
+  background: var(--green-100);
+  border-color: var(--green-500);
+}
+
+.offTrack {
+  background: #fff6f2;
+  border-color: var(--orange-600);
+}
+
+.pct {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-1000);
+  min-width: 56px;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-800);
+}
+
+.detail {
+  font-size: 13px;
+  color: var(--gray-900);
+}

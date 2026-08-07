@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput } from "../mpo/types";
-import { BUILD_TACTICS, CT_GROUPS } from "../mpo/buildPlan/data";
+import { BUILD_TACTICS, CT_GROUPS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
 import {
   activeWindow,
   buildPlanToCreatePlanInput,
@@ -137,6 +137,42 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
           }
         >
           <CalendarRangePicker start={state.planStart} end={state.planEnd} onChange={flow.setPeriod} panels={2} />
+        </Card>
+      )}
+
+      {state.screen === "target" && (
+        <Card
+          eyebrow="Target"
+          title="What is your target for this period?"
+          desc="This helps us show how your simulated plan compares to your goal once it's created."
+          footer={
+            <>
+              <BackLink onClick={flow.back} />
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
+                disabled={!state.target}
+                onClick={flow.continueFromTarget}
+              >
+                Continue
+              </button>
+            </>
+          }
+        >
+          <div className={styles.group}>
+            {TARGET_OPTIONS.map((opt) => (
+              <label key={opt.id} className={styles.optRow}>
+                <input
+                  type="radio"
+                  name="plan-target"
+                  className={styles.optInput}
+                  checked={state.target === opt.id}
+                  onChange={() => flow.setTarget(opt.id)}
+                />
+                <span className={styles.optTitle}>{opt.label}</span>
+              </label>
+            ))}
+          </div>
         </Card>
       )}
 

@@ -7,6 +7,10 @@ export type PlanGoalType =
   | "incremental-roas"
   | "target-budget";
 
+/** What the user said they're aiming for when building a plan — drives the
+ * post-creation "how does this compare to your target" banner. */
+export type PlanTarget = "incremental-sales" | "incremental-roas" | "not-sure";
+
 export type Tactic = {
   id: string;
   name: string;
@@ -56,6 +60,7 @@ export type CreatePlanInput = {
   conversionType: string;
   channelCount: number;
   tactics: Tactic[];
+  target: PlanTarget;
 };
 
 export function goalTypeLabel(type: PlanGoalType): string {

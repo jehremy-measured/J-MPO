@@ -1,3 +1,5 @@
+import type { PlanTarget } from "../types";
+
 export type ConversionTypeGroupId = "baseline" | "rollup" | "attribute";
 
 export type ConversionTypeOption = {
@@ -24,7 +26,7 @@ export type BuildTactic = {
 
 export type BuildMethod = "upload" | "fetch" | null;
 
-export type BuildScreen = "period" | "ct" | "method" | "upload" | "review";
+export type BuildScreen = "period" | "target" | "ct" | "method" | "upload" | "review";
 
 export type SourceWindow = {
   start: Date;
@@ -36,6 +38,7 @@ export type BuildPlanState = {
   screen: BuildScreen;
   planStart: Date;
   planEnd: Date;
+  target: PlanTarget | null;
   singleCT: string | null;
   attrs: string[];
   method: BuildMethod;

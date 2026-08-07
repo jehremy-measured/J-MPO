@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
-import { CT_GROUPS } from "../../mpo/buildPlan/data";
-import { applyMethodChoice, ctSummary, periodLabel, planDaysFor } from "../../mpo/buildPlan/logic";
+import { CT_GROUPS, TARGET_OPTIONS } from "../../mpo/buildPlan/data";
+import { applyMethodChoice, ctSummary, periodLabel, planDaysFor, targetLabel } from "../../mpo/buildPlan/logic";
 import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState } from "../../mpo/buildPlan/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
@@ -83,6 +83,39 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
               onClick={() => commit("What period are you planning for?", periodAnswer(), flow.continueFromPeriod)}
+            >
+              Continue
+            </button>
+          </div>
+        </MiaTurn>
+      )}
+
+      {state.screen === "target" && (
+        <MiaTurn>
+          <p className={styles.q}>What is your target for this period?</p>
+          <div className={styles.turnContent}>
+            {TARGET_OPTIONS.map((opt) => (
+              <label key={opt.id} className={styles.optRow}>
+                <input
+                  type="radio"
+                  name="mia-target"
+                  className={styles.optInput}
+                  checked={state.target === opt.id}
+                  onChange={() => flow.setTarget(opt.id)}
+                />
+                <span className={styles.optTitle}>{opt.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className={styles.turnActions}>
+            <BackLink onClick={goBack} />
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={!state.target}
+              onClick={() =>
+                commit("What is your target for this period?", targetLabel(state), flow.continueFromTarget)
+              }
             >
               Continue
             </button>

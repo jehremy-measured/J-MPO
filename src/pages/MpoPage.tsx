@@ -7,6 +7,7 @@ import { MiaSidePanel } from "../components/MiaSidePanel";
 import { PlanSummaryCards } from "../components/PlanSummaryCards";
 import { PlanTabs } from "../components/PlanTabs";
 import { PrototypeBar } from "../components/PrototypeBar";
+import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import type { CreatePlanInput } from "../mpo/types";
@@ -68,12 +69,21 @@ export function MpoPage() {
                 />
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
-                    <PlanSummaryCards
-                      planningWindow={state.newPlanSummary.planningWindow}
-                      conversionType={state.newPlanSummary.conversionType}
-                      tacticsCount={state.newPlanSummary.tacticsCount}
-                      totalBudget={state.newPlanSummary.totalBudget}
-                    />
+                    <>
+                      <TargetBanner
+                        target={state.newPlanSummary.target}
+                        incrementalSales={state.totals.sales}
+                        roas={state.totals.roas}
+                        salesForecast={state.baselineSalesForecast}
+                        targetBudget={state.targetBudget}
+                      />
+                      <PlanSummaryCards
+                        planningWindow={state.newPlanSummary.planningWindow}
+                        conversionType={state.newPlanSummary.conversionType}
+                        tacticsCount={state.newPlanSummary.tacticsCount}
+                        totalBudget={state.newPlanSummary.totalBudget}
+                      />
+                    </>
                   ) : (
                     <CurveAndGoal />
                   )}
