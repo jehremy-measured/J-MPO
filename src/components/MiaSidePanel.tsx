@@ -1,7 +1,10 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
+import { applyUploadedBudget, downloadBudgetTemplate } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
+import { DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
+import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
@@ -10,6 +13,7 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
+  kind?: "download-card";
 };
 
 type Prompt =
@@ -61,20 +65,30 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const fileAttachRef = useRef<HTMLInputElement>(null);
+  const onEditInMainFlowRef = useRef(onEditInMainFlow);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
+  const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
+  const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  useEffect(() => {
+    onEditInMainFlowRef.current = onEditInMainFlow;
+  }, [onEditInMainFlow]);
 
   const appendMessages = useCallback(
-    (items: { role: "mia" | "user"; text: string }[]) => {
+    (items: { role: "mia" | "user"; text: string; kind?: "download-card" }[]) => {
       setMessages((prev) => [
         ...prev,
         ...items.map((item) => ({
           id: `${item.role}-${Date.now()}-${Math.random()}`,
           role: item.role,
           text: item.text,
+          kind: item.kind,
         })),
       ]);
     },
@@ -102,14 +116,28 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       appendMessages(batch);
       setFlowKey((k) => k + 1);
       setFlowActive(true);
+      setUploadState(null);
+      setLoadingReviewState(null);
       setDraft("");
     },
     [appendMessages]
   );
 
   useEffect(() => {
+    if (!loadingReviewState) return;
+    const timer = window.setTimeout(() => {
+      onEditInMainFlowRef.current(loadingReviewState);
+      setLoadingReviewState(null);
+      appendMessages([{ role: "mia", text: "Your plan is ready — reviewing it on the left." }]);
+    }, 5000);
+    return () => window.clearTimeout(timer);
+  }, [loadingReviewState, appendMessages]);
+
+  useEffect(() => {
     if (!open) {
       setFlowActive(false);
+      setUploadState(null);
+      setLoadingReviewState(null);
       setMessages([]);
       setDraft("");
       setIsTyping(false);
@@ -159,18 +187,33 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     ]);
   };
 
-  const handleFlowHandoff = (nextState: BuildPlanState, method: "upload" | "fetch") => {
+  const handleAwaitUpload = (nextState: BuildPlanState) => {
     setFlowActive(false);
-    onEditInMainFlow(nextState);
+    setUploadState(nextState);
     appendMessages([
       {
         role: "mia",
-        text:
-          method === "upload"
-            ? "Your plan is ready — reviewing it on the left."
-            : "Pick your source period and review your budget in the panel on the left.",
+        kind: "download-card",
+        text: "Attach the completed file here, or drop it anywhere in this panel.",
       },
     ]);
+  };
+
+  const handleFetchReady = (nextState: BuildPlanState) => {
+    setFlowActive(false);
+    onEditInMainFlow(nextState);
+    appendMessages([
+      { role: "mia", text: "Pick your source period and review your budget in the panel on the left." },
+    ]);
+  };
+
+  const handleFileAttached = (file: File) => {
+    if (!uploadState) return;
+    const reviewState = applyUploadedBudget(uploadState);
+    setUploadState(null);
+    setIsDragOver(false);
+    appendMessages([{ role: "user", text: file.name || "budget_plan.xlsx" }]);
+    setLoadingReviewState(reviewState);
   };
 
   const sendUserText = (text: string) => {
@@ -209,14 +252,37 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     sendUserText(prompt.label);
   };
 
-  const placeholder = flowActive ? "Finish the setup above" : "Type your message…";
+  const placeholder = flowActive
+    ? "Finish the setup above"
+    : uploadState
+      ? "Attach your budget file…"
+      : "Type your message…";
   const canSend = !flowActive && draft.trim().length > 0;
+
+  const handleDragOver = (e: DragEvent) => {
+    if (!uploadState) return;
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = () => setIsDragOver(false);
+
+  const handleDrop = (e: DragEvent) => {
+    if (!uploadState) return;
+    e.preventDefault();
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFileAttached(file);
+    else setIsDragOver(false);
+  };
 
   return (
     <aside
       id="mia-side-panel"
-      className={styles.panel}
+      className={`${styles.panel} ${isDragOver ? styles.panelDragOver : ""}`}
       role="complementary"
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
       aria-labelledby={titleId}
     >
       <header className={styles.header}>
@@ -278,7 +344,25 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         )}
 
         {messages.map((msg) =>
-          msg.role === "mia" ? (
+          msg.kind === "download-card" ? (
+            <div key={msg.id} className={styles.downloadCardWrap}>
+              <div className={styles.downloadCard}>
+                <span className={styles.downloadCardIcon} aria-hidden>
+                  <FileIcon size={16} />
+                </span>
+                <span className={styles.downloadCardLabel}>MPO_budget_template.xlsx</span>
+                <button
+                  type="button"
+                  className={styles.downloadCardBtn}
+                  aria-label="Download template"
+                  onClick={downloadBudgetTemplate}
+                >
+                  <DownloadIcon size={16} />
+                </button>
+              </div>
+              <p className={styles.miaText}>{msg.text}</p>
+            </div>
+          ) : msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}
             </p>
@@ -293,8 +377,16 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           <MiaBuildPlanFlow
             key={flowKey}
             onMethodChosen={handleMethodChosen}
-            onHandoff={handleFlowHandoff}
+            onAwaitUpload={handleAwaitUpload}
+            onFetchReady={handleFetchReady}
           />
+        )}
+
+        {loadingReviewState && (
+          <div className={styles.loadingRow}>
+            <span className={styles.spinner} aria-hidden />
+            <p className={styles.miaText}>Loading your plan for review…</p>
+          </div>
         )}
 
         {isTyping && (
@@ -320,6 +412,28 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         }}
       >
         <div className={styles.composerBox}>
+          {uploadState && (
+            <>
+              <button
+                type="button"
+                className={styles.attachBtn}
+                aria-label="Attach file"
+                onClick={() => fileAttachRef.current?.click()}
+              >
+                <PlusIcon size={18} />
+              </button>
+              <input
+                ref={fileAttachRef}
+                type="file"
+                accept=".xlsx,.csv"
+                className={styles.visuallyHidden}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileAttached(file);
+                }}
+              />
+            </>
+          )}
           <input
             ref={inputRef}
             type="text"
@@ -328,6 +442,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
             placeholder={placeholder}
             aria-label="Message Mia"
             disabled={flowActive}
+            className={uploadState ? styles.inputWithAttach : undefined}
           />
           <button
             type="submit"

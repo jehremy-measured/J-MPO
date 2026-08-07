@@ -1,28 +1,16 @@
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { CT_GROUPS } from "../../mpo/buildPlan/data";
-import {
-  applyMethodChoice,
-  applyUploadedBudget,
-  ctSummary,
-  downloadBudgetTemplate,
-  periodLabel,
-  planDaysFor,
-} from "../../mpo/buildPlan/logic";
+import { applyMethodChoice, ctSummary, periodLabel, planDaysFor } from "../../mpo/buildPlan/logic";
 import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState } from "../../mpo/buildPlan/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
-import {
-  CheckIcon,
-  DownloadIcon,
-  FileIcon,
-  HistoryIcon,
-  UploadIcon,
-} from "../icons/BuildPlanIcons";
+import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
   onMethodChosen: (method: "upload" | "fetch") => void;
-  onHandoff: (state: BuildPlanState, method: "upload" | "fetch") => void;
+  onAwaitUpload: (state: BuildPlanState) => void;
+  onFetchReady: (state: BuildPlanState) => void;
 };
 
 type HistoryEntry = { id: string; question: string; answer: string };
@@ -51,26 +39,11 @@ function BackLink({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function MiaBuildPlanFlow({ onMethodChosen, onHandoff }: Props) {
+export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }: Props) {
   const flow = useBuildPlanFlow();
   const { state } = flow;
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
-  const [pendingReviewState, setPendingReviewState] = useState<BuildPlanState | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const onHandoffRef = useRef(onHandoff);
-
-  useEffect(() => {
-    onHandoffRef.current = onHandoff;
-  }, [onHandoff]);
-
-  useEffect(() => {
-    if (!pendingReviewState) return;
-    const timer = window.setTimeout(() => {
-      onHandoffRef.current(pendingReviewState, "upload");
-    }, 5000);
-    return () => window.clearTimeout(timer);
-  }, [pendingReviewState]);
 
   const commit = (question: string, answer: string, action: () => void) => {
     setHistory((h) => [...h, { id: `${h.length}-${question}`, question, answer }]);
@@ -79,7 +52,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onHandoff }: Props) {
 
   const goBack = () => {
     setHistory((h) => h.slice(0, -1));
-    setPendingReviewState(null);
     flow.back();
   };
 
@@ -206,81 +178,17 @@ export function MiaBuildPlanFlow({ onMethodChosen, onHandoff }: Props) {
               onClick={() => {
                 if (!methodChoice) return;
                 onMethodChosen(methodChoice);
+                const nextState = applyMethodChoice(state, methodChoice);
                 if (methodChoice === "upload") {
-                  flow.chooseMethod("upload");
+                  onAwaitUpload(nextState);
                 } else {
-                  onHandoff(applyMethodChoice(state, "fetch"), "fetch");
+                  onFetchReady(nextState);
                 }
               }}
             >
               Next
             </button>
           </div>
-        </MiaTurn>
-      )}
-
-      {state.screen === "upload" && (
-        <MiaTurn>
-          {pendingReviewState ? (
-            <div className={styles.loadingRow}>
-              <span className={styles.spinner} aria-hidden />
-              <p className={styles.q}>Loading your plan for review…</p>
-            </div>
-          ) : (
-            <>
-              <p className={styles.q}>Upload your budget</p>
-              <div className={styles.turnContent}>
-                <div className={styles.downloadCard}>
-                  <span className={styles.downloadCardIcon} aria-hidden>
-                    <FileIcon size={16} />
-                  </span>
-                  <span className={styles.downloadCardLabel}>MPO_budget_template.xlsx</span>
-                  <button
-                    type="button"
-                    className={styles.downloadCardBtn}
-                    aria-label="Download template"
-                    onClick={downloadBudgetTemplate}
-                  >
-                    <DownloadIcon size={16} />
-                  </button>
-                </div>
-                <div
-                  className={`${styles.dropzone} ${state.source === "upload-ready" ? styles.dropzoneFilled : ""}`}
-                  onClick={() => fileInputRef.current?.click()}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept=".xlsx,.csv"
-                    className={styles.visuallyHidden}
-                    onChange={() => flow.markUploadFilled()}
-                  />
-                  <div className={styles.dzIcon}>
-                    {state.source === "upload-ready" ? <CheckIcon size={20} /> : <UploadIcon size={20} />}
-                  </div>
-                  <div className={styles.dzTitle}>
-                    {state.source === "upload-ready" ? "budget_plan.xlsx uploaded" : "Drop your .xlsx here"}
-                  </div>
-                  <div className={styles.dzSub}>
-                    {state.source === "upload-ready" ? "9 of 9 tactics matched" : "or click to browse"}
-                  </div>
-                </div>
-              </div>
-              <div className={styles.turnActions}>
-                <BackLink onClick={goBack} />
-                <button
-                  type="button"
-                  className={`${styles.btn} ${styles.btnPrimary}`}
-                  disabled={state.source !== "upload-ready"}
-                  onClick={() => setPendingReviewState(applyUploadedBudget(state))}
-                >
-                  Continue
-                </button>
-              </div>
-            </>
-          )}
         </MiaTurn>
       )}
     </>

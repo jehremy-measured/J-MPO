@@ -14,6 +14,12 @@
   animation: slideIn 0.18s ease-out;
 }
 
+.panelDragOver {
+  outline: 2px dashed var(--blue-700);
+  outline-offset: -2px;
+  background: var(--blue-100);
+}
+
 @keyframes slideIn {
   from {
     opacity: 0;
@@ -383,4 +389,117 @@
 .sendIconBtn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
+}
+
+.attachBtn {
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin-top: -15px;
+  color: var(--gray-700);
+  border-radius: var(--radius-sm);
+}
+
+.attachBtn:hover {
+  color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.composerBox input.inputWithAttach {
+  padding-left: 44px;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.downloadCardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.downloadCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  background: var(--gray-000);
+}
+
+.downloadCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  flex-shrink: 0;
+}
+
+.downloadCardLabel {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.downloadCardBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-300-stroke);
+  background: var(--gray-000);
+  color: var(--gray-800);
+  flex-shrink: 0;
+}
+
+.downloadCardBtn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-500);
+}
+
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.loadingRow .miaText {
+  margin: 0;
+}
+
+.spinner {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  border: 2px solid var(--gray-300);
+  border-top-color: var(--blue-700);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
