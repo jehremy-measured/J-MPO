@@ -280,6 +280,61 @@
   padding: 14px 12px;
 }
 
+.downloadCardWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-self: flex-start;
+  max-width: 92%;
+}
+
+.downloadCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  background: var(--gray-000);
+}
+
+.downloadCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  flex-shrink: 0;
+}
+
+.downloadCardLabel {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.downloadCardBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--gray-300-stroke);
+  background: var(--gray-000);
+  color: var(--gray-800);
+  flex-shrink: 0;
+}
+
+.downloadCardBtn:hover {
+  background: var(--gray-100);
+  border-color: var(--gray-500);
+}
+
 .typingDot {
   width: 6px;
   height: 6px;

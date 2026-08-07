@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { downloadBudgetTemplate } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
-import type { CreatePlanInput } from "../mpo/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
+import { DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
@@ -11,6 +12,7 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
+  kind?: "download-card";
 };
 
 type Prompt =
@@ -39,8 +41,6 @@ const WELCOME_TITLE = "Hi, I'm Mia";
 const WELCOME_SUBTEXT =
   "Ask about budgets and tactics, or start the guided flow to create a new plan.";
 
-const REMOVE_INTENT = /\bremove\b/i;
-
 function shouldStartCreatePlanFlow(text: string): boolean {
   const lower = text.toLowerCase();
   return (
@@ -56,11 +56,10 @@ function shouldStartCreatePlanFlow(text: string): boolean {
 type Props = {
   open: boolean;
   onClose: () => void;
-  onCreatePlan: (input: CreatePlanInput) => { label: string };
   onEditInMainFlow: (state: BuildPlanState) => void;
 };
 
-export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: Props) {
+export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -70,17 +69,16 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
   const [isTyping, setIsTyping] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
-  const [atSummary, setAtSummary] = useState(false);
-  const [editSignal, setEditSignal] = useState(0);
 
   const appendMessages = useCallback(
-    (items: { role: "mia" | "user"; text: string }[]) => {
+    (items: { role: "mia" | "user"; text: string; kind?: "download-card" }[]) => {
       setMessages((prev) => [
         ...prev,
         ...items.map((item) => ({
           id: `${item.role}-${Date.now()}-${Math.random()}`,
           role: item.role,
           text: item.text,
+          kind: item.kind,
         })),
       ]);
     },
@@ -89,7 +87,6 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
 
   const cancelCreateFlow = useCallback(() => {
     setFlowActive(false);
-    setAtSummary(false);
     appendMessages([
       {
         role: "mia",
@@ -109,7 +106,6 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
       appendMessages(batch);
       setFlowKey((k) => k + 1);
       setFlowActive(true);
-      setAtSummary(false);
       setDraft("");
     },
     [appendMessages]
@@ -118,7 +114,6 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
   useEffect(() => {
     if (!open) {
       setFlowActive(false);
-      setAtSummary(false);
       setMessages([]);
       setDraft("");
       setIsTyping(false);
@@ -162,37 +157,30 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
 
   if (!open) return null;
 
-  const handleFlowComplete = (input: CreatePlanInput) => {
-    const result = onCreatePlan(input);
+  const handleFlowHandoff = (nextState: BuildPlanState, method: "upload" | "fetch") => {
     setFlowActive(false);
-    setAtSummary(false);
-    onClose();
-    appendMessages([
-      {
-        role: "mia",
-        text: `Your plan "${result.label}" is ready — take a look on the main page.`,
-      },
-    ]);
-  };
-
-  const handleFlowEdit = (state: BuildPlanState) => {
-    setFlowActive(false);
-    setAtSummary(false);
-    onEditInMainFlow(state);
+    onEditInMainFlow(nextState);
+    if (method === "upload") {
+      appendMessages([
+        {
+          role: "mia",
+          kind: "download-card",
+          text: "Fill in your tactic budgets, then upload the file in the panel on the left.",
+        },
+      ]);
+    } else {
+      appendMessages([
+        {
+          role: "mia",
+          text: "Pick your source period and review your budget in the panel on the left.",
+        },
+      ]);
+    }
   };
 
   const sendUserText = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
-
-    if (flowActive && atSummary && REMOVE_INTENT.test(trimmed)) {
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-${Date.now()}`, role: "user", text: trimmed },
-      ]);
-      setEditSignal((c) => c + 1);
-      return;
-    }
 
     if (shouldStartCreatePlanFlow(trimmed)) {
       startCreateFlow(trimmed);
@@ -211,7 +199,7 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
   };
 
   const submitComposer = () => {
-    if (flowActive && !atSummary) return;
+    if (flowActive) return;
     const trimmed = draft.trim();
     if (!trimmed) return;
     setDraft("");
@@ -226,12 +214,8 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
     sendUserText(prompt.label);
   };
 
-  const placeholder = flowActive
-    ? atSummary
-      ? 'Try "remove Google Brand"…'
-      : "Finish the setup above"
-    : "Type your message…";
-  const canSend = (!flowActive || atSummary) && draft.trim().length > 0;
+  const placeholder = flowActive ? "Finish the setup above" : "Type your message…";
+  const canSend = !flowActive && draft.trim().length > 0;
 
   return (
     <aside
@@ -298,29 +282,46 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
           </div>
         )}
 
-        {messages.map((msg) => (
-          <div
-            key={msg.id}
-            className={msg.role === "mia" ? styles.bubbleMia : styles.bubbleUser}
-          >
-            {msg.role === "mia" && (
-              <span className={styles.bubbleAvatar} aria-hidden>
-                <SparkleIcon size={12} />
-              </span>
-            )}
-            <p>{msg.text}</p>
-          </div>
-        ))}
-
-        {flowActive && (
-          <MiaBuildPlanFlow
-            key={flowKey}
-            onComplete={handleFlowComplete}
-            onEdit={handleFlowEdit}
-            onSummaryVisible={setAtSummary}
-            editSignal={editSignal}
-          />
+        {messages.map((msg) =>
+          msg.kind === "download-card" ? (
+            <div key={msg.id} className={styles.downloadCardWrap}>
+              <div className={styles.downloadCard}>
+                <span className={styles.downloadCardIcon} aria-hidden>
+                  <FileIcon size={16} />
+                </span>
+                <span className={styles.downloadCardLabel}>MPO_budget_template.xlsx</span>
+                <button
+                  type="button"
+                  className={styles.downloadCardBtn}
+                  aria-label="Download template"
+                  onClick={downloadBudgetTemplate}
+                >
+                  <DownloadIcon size={16} />
+                </button>
+              </div>
+              <div className={styles.bubbleMia}>
+                <span className={styles.bubbleAvatar} aria-hidden>
+                  <SparkleIcon size={12} />
+                </span>
+                <p>{msg.text}</p>
+              </div>
+            </div>
+          ) : (
+            <div
+              key={msg.id}
+              className={msg.role === "mia" ? styles.bubbleMia : styles.bubbleUser}
+            >
+              {msg.role === "mia" && (
+                <span className={styles.bubbleAvatar} aria-hidden>
+                  <SparkleIcon size={12} />
+                </span>
+              )}
+              <p>{msg.text}</p>
+            </div>
+          )
         )}
+
+        {flowActive && <MiaBuildPlanFlow key={flowKey} onHandoff={handleFlowHandoff} />}
 
         {isTyping && (
           <div className={styles.bubbleMia}>
@@ -352,7 +353,7 @@ export function MiaSidePanel({ open, onClose, onCreatePlan, onEditInMainFlow }: 
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive && !atSummary}
+            disabled={flowActive}
           />
           <button
             type="submit"

@@ -91,7 +91,6 @@ export function MpoPage() {
         <MiaSidePanel
           open={miaOpen}
           onClose={() => setMiaOpen(false)}
-          onCreatePlan={handleCreatePlan}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
         />
       </div>

@@ -1,7 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
-import { budgetFromUpload, budgetFromWindow, channelsPresent, defaultIncludes, planDaysFor } from "./logic";
+import {
+  applyMethodChoice,
+  budgetFromUpload,
+  budgetFromWindow,
+  channelsPresent,
+  defaultIncludes,
+} from "./logic";
 import type { BuildPlanState, BuildScreen } from "./types";
 
 function initialState(): BuildPlanState {
@@ -54,24 +60,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   const continueFromCT = useCallback(() => goTo("method"), [goTo]);
 
   const chooseMethod = useCallback((method: "upload" | "fetch") => {
-    setState((s) => {
-      const reset: BuildPlanState = {
-        ...s,
-        method,
-        overridden: {},
-        budget: {},
-        sourceStart: defaultSourceStart(planDaysFor(s)),
-        source: "",
-        included: {},
-        query: "",
-        channels: channelsPresent(),
-      };
-      if (method === "upload") {
-        return { ...reset, screen: "upload" };
-      }
-      const { budget } = budgetFromWindow(reset);
-      return { ...reset, budget, included: defaultIncludes("fetch", budget), screen: "review" };
-    });
+    setState((s) => applyMethodChoice(s, method));
   }, []);
 
   const markUploadFilled = useCallback(() => {

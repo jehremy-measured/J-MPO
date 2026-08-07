@@ -6,6 +6,7 @@ import {
   CT_LOOKUP,
   DAILY_RATE,
   XLS_BUDGET,
+  defaultSourceStart,
   windowFromStart,
 } from "./data";
 import { daysBetweenInclusive, formatRangeLabel } from "./dateUtils";
@@ -76,6 +77,29 @@ export function channelFilterLabel(state: BuildPlanState): string {
   const total = channelsPresent().length;
   if (state.channels.length === total) return "All channels";
   return `${state.channels.length} channel${state.channels.length === 1 ? "" : "s"}`;
+}
+
+/** Pure state transition for picking a budget method — shared by the hook action and any caller that needs the resulting state synchronously (e.g. handing off to another view before committing to the flow's own state). */
+export function applyMethodChoice(
+  state: BuildPlanState,
+  method: "upload" | "fetch"
+): BuildPlanState {
+  const reset: BuildPlanState = {
+    ...state,
+    method,
+    overridden: {},
+    budget: {},
+    sourceStart: defaultSourceStart(planDaysFor(state)),
+    source: "",
+    included: {},
+    query: "",
+    channels: channelsPresent(),
+  };
+  if (method === "upload") {
+    return { ...reset, screen: "upload" };
+  }
+  const { budget } = budgetFromWindow(reset);
+  return { ...reset, budget, included: defaultIncludes("fetch", budget), screen: "review" };
 }
 
 /** Tactics that made the cut, in catalog order — used by read-only summaries. */
