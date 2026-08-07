@@ -79,6 +79,22 @@ export function channelFilterLabel(state: BuildPlanState): string {
   return `${state.channels.length} channel${state.channels.length === 1 ? "" : "s"}`;
 }
 
+/** Pure state transition for landing an uploaded budget — shared by the hook action and any
+ * caller that needs the resulting state synchronously (e.g. a caller that computes the
+ * post-upload state ahead of a delay, before handing off to another view). */
+export function applyUploadedBudget(state: BuildPlanState): BuildPlanState {
+  const budget = budgetFromUpload();
+  return {
+    ...state,
+    budget,
+    source: "budget_plan.xlsx",
+    included: defaultIncludes("upload", budget),
+    query: "",
+    channels: channelsPresent(),
+    screen: "review",
+  };
+}
+
 /** Pure state transition for picking a budget method — shared by the hook action and any caller that needs the resulting state synchronously (e.g. handing off to another view before committing to the flow's own state). */
 export function applyMethodChoice(
   state: BuildPlanState,

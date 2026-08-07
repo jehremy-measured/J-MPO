@@ -1,13 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
-import {
-  applyMethodChoice,
-  budgetFromUpload,
-  budgetFromWindow,
-  channelsPresent,
-  defaultIncludes,
-} from "./logic";
+import { applyMethodChoice, applyUploadedBudget, budgetFromWindow, channelsPresent } from "./logic";
 import type { BuildPlanState, BuildScreen } from "./types";
 
 function initialState(): BuildPlanState {
@@ -68,18 +62,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   }, []);
 
   const continueFromUpload = useCallback(() => {
-    setState((s) => {
-      const budget = budgetFromUpload();
-      return {
-        ...s,
-        budget,
-        source: "budget_plan.xlsx",
-        included: defaultIncludes("upload", budget),
-        query: "",
-        channels: channelsPresent(),
-        screen: "review",
-      };
-    });
+    setState((s) => applyUploadedBudget(s));
   }, []);
 
   const setSourceStart = useCallback((sourceStart: Date) => {

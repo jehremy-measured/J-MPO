@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import { downloadBudgetTemplate } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
-import { DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
@@ -12,7 +10,6 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
-  kind?: "download-card";
 };
 
 type Prompt =
@@ -71,14 +68,13 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const [flowKey, setFlowKey] = useState(0);
 
   const appendMessages = useCallback(
-    (items: { role: "mia" | "user"; text: string; kind?: "download-card" }[]) => {
+    (items: { role: "mia" | "user"; text: string }[]) => {
       setMessages((prev) => [
         ...prev,
         ...items.map((item) => ({
           id: `${item.role}-${Date.now()}-${Math.random()}`,
           role: item.role,
           text: item.text,
-          kind: item.kind,
         })),
       ]);
     },
@@ -157,21 +153,23 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
 
   if (!open) return null;
 
+  const handleMethodChosen = (method: "upload" | "fetch") => {
+    appendMessages([
+      { role: "user", text: method === "upload" ? "Upload budget" : "Fetch from past period" },
+    ]);
+  };
+
   const handleFlowHandoff = (nextState: BuildPlanState, method: "upload" | "fetch") => {
     setFlowActive(false);
     onEditInMainFlow(nextState);
     appendMessages([
-      { role: "user", text: method === "upload" ? "Upload budget" : "Fetch from past period" },
-      method === "upload"
-        ? {
-            role: "mia",
-            kind: "download-card",
-            text: "Fill in your tactic budgets, then upload the file in the panel on the left.",
-          }
-        : {
-            role: "mia",
-            text: "Pick your source period and review your budget in the panel on the left.",
-          },
+      {
+        role: "mia",
+        text:
+          method === "upload"
+            ? "Your plan is ready — reviewing it on the left."
+            : "Pick your source period and review your budget in the panel on the left.",
+      },
     ]);
   };
 
@@ -280,25 +278,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         )}
 
         {messages.map((msg) =>
-          msg.kind === "download-card" ? (
-            <div key={msg.id} className={styles.downloadCardWrap}>
-              <div className={styles.downloadCard}>
-                <span className={styles.downloadCardIcon} aria-hidden>
-                  <FileIcon size={16} />
-                </span>
-                <span className={styles.downloadCardLabel}>MPO_budget_template.xlsx</span>
-                <button
-                  type="button"
-                  className={styles.downloadCardBtn}
-                  aria-label="Download template"
-                  onClick={downloadBudgetTemplate}
-                >
-                  <DownloadIcon size={16} />
-                </button>
-              </div>
-              <p className={styles.miaText}>{msg.text}</p>
-            </div>
-          ) : msg.role === "mia" ? (
+          msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}
             </p>
@@ -309,7 +289,13 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           )
         )}
 
-        {flowActive && <MiaBuildPlanFlow key={flowKey} onHandoff={handleFlowHandoff} />}
+        {flowActive && (
+          <MiaBuildPlanFlow
+            key={flowKey}
+            onMethodChosen={handleMethodChosen}
+            onHandoff={handleFlowHandoff}
+          />
+        )}
 
         {isTyping && (
           <div className={styles.bubbleMia}>
