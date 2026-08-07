@@ -47,54 +47,32 @@
 }
 
 /* Compact chat bubbles for completed steps */
-.bubbleMia,
 .bubbleUser {
   display: flex;
   gap: 8px;
   max-width: 92%;
-}
-
-.bubbleMia {
-  align-self: flex-start;
-}
-
-.bubbleUser {
   align-self: flex-end;
   flex-direction: row-reverse;
 }
 
-.bubbleAvatar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  margin-top: 1px;
-  border-radius: 50%;
-  background: var(--gradient-mia-avatar);
-  color: var(--gray-000);
-}
-
-.bubbleMia p,
 .bubbleUser p {
   margin: 0;
   padding: 8px 11px;
   font-size: 13px;
   line-height: 1.4;
   border-radius: 11px;
-}
-
-.bubbleMia p {
-  background: var(--gray-200);
-  color: var(--gray-1000);
-  border-top-left-radius: 4px;
-}
-
-.bubbleUser p {
   background: var(--gray-1000);
   color: var(--gray-000);
   border-top-right-radius: 4px;
+}
+
+.miaText {
+  align-self: flex-start;
+  max-width: 92%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--gray-1000);
 }
 
 .backLink {

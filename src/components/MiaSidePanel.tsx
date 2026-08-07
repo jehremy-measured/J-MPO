@@ -160,22 +160,19 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const handleFlowHandoff = (nextState: BuildPlanState, method: "upload" | "fetch") => {
     setFlowActive(false);
     onEditInMainFlow(nextState);
-    if (method === "upload") {
-      appendMessages([
-        {
-          role: "mia",
-          kind: "download-card",
-          text: "Fill in your tactic budgets, then upload the file in the panel on the left.",
-        },
-      ]);
-    } else {
-      appendMessages([
-        {
-          role: "mia",
-          text: "Pick your source period and review your budget in the panel on the left.",
-        },
-      ]);
-    }
+    appendMessages([
+      { role: "user", text: method === "upload" ? "Upload budget" : "Fetch from past period" },
+      method === "upload"
+        ? {
+            role: "mia",
+            kind: "download-card",
+            text: "Fill in your tactic budgets, then upload the file in the panel on the left.",
+          }
+        : {
+            role: "mia",
+            text: "Pick your source period and review your budget in the panel on the left.",
+          },
+    ]);
   };
 
   const sendUserText = (text: string) => {
@@ -299,23 +296,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
                   <DownloadIcon size={16} />
                 </button>
               </div>
-              <div className={styles.bubbleMia}>
-                <span className={styles.bubbleAvatar} aria-hidden>
-                  <SparkleIcon size={12} />
-                </span>
-                <p>{msg.text}</p>
-              </div>
+              <p className={styles.miaText}>{msg.text}</p>
             </div>
+          ) : msg.role === "mia" ? (
+            <p key={msg.id} className={styles.miaText}>
+              {msg.text}
+            </p>
           ) : (
-            <div
-              key={msg.id}
-              className={msg.role === "mia" ? styles.bubbleMia : styles.bubbleUser}
-            >
-              {msg.role === "mia" && (
-                <span className={styles.bubbleAvatar} aria-hidden>
-                  <SparkleIcon size={12} />
-                </span>
-              )}
+            <div key={msg.id} className={styles.bubbleUser}>
               <p>{msg.text}</p>
             </div>
           )

@@ -280,6 +280,17 @@
   padding: 14px 12px;
 }
 
+.miaText {
+  align-self: flex-start;
+  max-width: 92%;
+  margin: 0;
+  font-family: var(--font-inter);
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--gray-1000);
+  animation: bubbleIn 0.18s ease-out;
+}
+
 .downloadCardWrap {
   display: flex;
   flex-direction: column;

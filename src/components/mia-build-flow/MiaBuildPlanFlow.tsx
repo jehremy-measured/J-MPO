@@ -5,7 +5,6 @@ import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState } from "../../mpo/buildPlan/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
-import { SparkleIcon } from "../icons/SparkleIcon";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
@@ -19,14 +18,7 @@ function MiaTurn({ children }: { children: ReactNode }) {
 }
 
 function QuestionBubble({ text }: { text: string }) {
-  return (
-    <div className={styles.bubbleMia}>
-      <span className={styles.bubbleAvatar} aria-hidden>
-        <SparkleIcon size={11} />
-      </span>
-      <p>{text}</p>
-    </div>
-  );
+  return <p className={styles.miaText}>{text}</p>;
 }
 
 function AnswerBubble({ text }: { text: string }) {
