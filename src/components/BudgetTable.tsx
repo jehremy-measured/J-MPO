@@ -4,17 +4,10 @@ import styles from "./BudgetTable.module.css";
 type TacticRow = {
   name: string;
   channel: string;
-  logo: string;
-  budgetNew: string;
-  budgetOld: string;
-  adjustment: string;
-  adjustmentUp: boolean;
-  locked?: boolean;
-  salesNew: string;
-  salesOld: string;
+  budget: string;
+  sales: string;
   salesUp: boolean;
-  roasNew: string;
-  roasOld: string;
+  roas: string;
   roasUp: boolean;
   marginal: string;
 };
@@ -23,82 +16,50 @@ const rows: TacticRow[] = [
   {
     name: "Google Performance Max",
     channel: "Search",
-    logo: assets.google,
-    budgetNew: "$318,638",
-    budgetOld: "$243,988",
-    adjustment: "$3,426",
-    adjustmentUp: true,
-    salesNew: "$1,234,567",
-    salesOld: "$1,100,000",
+    budget: "$318,638",
+    sales: "$1,234,567",
     salesUp: true,
-    roasNew: "$4.12",
-    roasOld: "$3.98",
+    roas: "$4.12",
     roasUp: true,
     marginal: "$5.21",
   },
   {
     name: "Facebook Prospecting",
     channel: "Social",
-    logo: assets.meta,
-    budgetNew: "$124,995",
-    budgetOld: "$111,245",
-    adjustment: "$2,100",
-    adjustmentUp: true,
-    salesNew: "$890,000",
-    salesOld: "$850,000",
+    budget: "$124,995",
+    sales: "$890,000",
     salesUp: true,
-    roasNew: "$3.45",
-    roasOld: "$3.20",
+    roas: "$3.45",
     roasUp: true,
     marginal: "$4.80",
   },
   {
     name: "TikTok Prospecting",
     channel: "Social",
-    logo: assets.tiktok,
-    budgetNew: "$98,500",
-    budgetOld: "$98,500",
-    adjustment: "$0",
-    adjustmentUp: true,
-    locked: true,
-    salesNew: "$450,000",
-    salesOld: "$450,000",
+    budget: "$98,500",
+    sales: "$450,000",
     salesUp: true,
-    roasNew: "$2.90",
-    roasOld: "$2.90",
+    roas: "$2.90",
     roasUp: true,
     marginal: "$3.10",
   },
   {
     name: "Bing Non-Brand Search",
     channel: "Search",
-    logo: assets.bing,
-    budgetNew: "$45,200",
-    budgetOld: "$51,096",
-    adjustment: "$5,896",
-    adjustmentUp: false,
-    salesNew: "$5,333,463",
-    salesOld: "$5,400,000",
+    budget: "$45,200",
+    sales: "$5,333,463",
     salesUp: false,
-    roasNew: "$2.10",
-    roasOld: "$2.25",
+    roas: "$2.10",
     roasUp: false,
     marginal: "$1.95",
   },
   {
     name: "Snapchat Search",
     channel: "Social",
-    logo: assets.snapchat,
-    budgetNew: "$32,000",
-    budgetOld: "$32,000",
-    adjustment: "$0",
-    adjustmentUp: true,
-    locked: true,
-    salesNew: "$120,000",
-    salesOld: "$120,000",
+    budget: "$32,000",
+    sales: "$120,000",
     salesUp: true,
-    roasNew: "$1.80",
-    roasOld: "$1.80",
+    roas: "$1.80",
     roasUp: true,
     marginal: "$2.00",
   },
@@ -130,19 +91,12 @@ export function BudgetTable() {
         </div>
       </div>
 
-      <div className={styles.banner}>
-        <span aria-hidden>📣</span>
-        It&apos;s a big season — let us help! Connect with your CS rep to confirm
-        your MPO budget plan is accurate and ready to activate.
-      </div>
-
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
             <tr>
               <th>Tactic</th>
               <th>Budget</th>
-              <th>Budget Adjustments</th>
               <th>Incremental Sales</th>
               <th>Incremental ROAS</th>
               <th>Marginal ROAS</th>
@@ -150,79 +104,13 @@ export function BudgetTable() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.name}>
-                <td>
-                  <div className={styles.tacticCell}>
-                    <img src={row.logo} alt="" className={styles.logo} />
-                    <div>
-                      <div className={styles.tacticName}>{row.name}</div>
-                      <div className={styles.tacticChannel}>{row.channel}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={styles.valueTeal}>{row.budgetNew}</span>
-                    <span className={styles.valueMuted}>{row.budgetOld}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.adjustCell}>
-                    <div className={styles.adjustBar}>
-                      <span
-                        className={
-                          row.adjustmentUp
-                            ? styles.adjustFillUp
-                            : styles.adjustFillDown
-                        }
-                        style={{ width: row.locked ? "0%" : "55%" }}
-                      />
-                    </div>
-                    <span
-                      className={
-                        row.adjustmentUp ? styles.changeUp : styles.changeDown
-                      }
-                    >
-                      {row.adjustmentUp ? "↑" : "↓"} {row.adjustment}
-                    </span>
-                    {row.locked && (
-                      <img src={assets.lock} alt="Locked" className={styles.lock} />
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
-                      {row.salesNew}
-                    </span>
-                    <span className={styles.valueMuted}>{row.salesOld}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={row.roasUp ? styles.valueTeal : styles.valueRed}>
-                      {row.roasNew}
-                    </span>
-                    <span className={styles.valueMuted}>{row.roasOld}</span>
-                  </div>
-                </td>
-                <td>{row.marginal}</td>
-                <td>
-                  <img src={assets.sparkline} alt="" className={styles.sparkline} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
+            <tr className={styles.totalsRow}>
               <td>
                 <strong>Total</strong>
               </td>
               <td>
                 <strong>$9,394,384</strong>
               </td>
-              <td />
               <td>
                 <strong>$12.34</strong>
               </td>
@@ -234,7 +122,39 @@ export function BudgetTable() {
               </td>
               <td />
             </tr>
-          </tfoot>
+            {rows.map((row) => (
+              <tr key={row.name}>
+                <td>
+                  <div className={styles.tacticCell}>
+                    <span className={styles.logoPlaceholder} aria-hidden>
+                      {row.name.charAt(0)}
+                    </span>
+                    <div>
+                      <div className={styles.tacticName}>{row.name}</div>
+                      <div className={styles.tacticChannel}>{row.channel}</div>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span className={styles.valueTeal}>{row.budget}</span>
+                </td>
+                <td>
+                  <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
+                    {row.sales}
+                  </span>
+                </td>
+                <td>
+                  <span className={row.roasUp ? styles.valueTeal : styles.valueRed}>
+                    {row.roas}
+                  </span>
+                </td>
+                <td>{row.marginal}</td>
+                <td>
+                  <img src={assets.sparkline} alt="" className={styles.sparkline} />
+                </td>
+              </tr>
+            ))}
+          </tbody>
         </table>
       </div>
     </section>
