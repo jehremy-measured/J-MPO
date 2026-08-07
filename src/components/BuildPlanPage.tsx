@@ -12,6 +12,7 @@ import {
   includedTotal,
   periodLabel,
   planDaysFor,
+  targetNeedsValue,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
 import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
@@ -107,6 +108,59 @@ function BudgetInput({
   );
 }
 
+function TargetValueInput({
+  target,
+  value,
+  onChange,
+}: {
+  target: "incremental-sales" | "incremental-roas";
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  const [text, setText] = useState(
+    value == null ? "" : target === "incremental-sales" ? value.toLocaleString("en-US") : String(value)
+  );
+
+  if (target === "incremental-sales") {
+    return (
+      <div className={styles.targetInputWrap}>
+        <span className={styles.dol}>$</span>
+        <input
+          className={`${styles.targetInput} ${styles.targetInputPrefixed}`}
+          inputMode="numeric"
+          placeholder="e.g. 250,000"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+            onChange(isNaN(n) ? null : n);
+          }}
+          onBlur={() => {
+            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.targetInputWrap}>
+      <input
+        className={styles.targetInput}
+        inputMode="decimal"
+        placeholder="e.g. 4.50"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          const n = parseFloat(e.target.value);
+          onChange(isNaN(n) ? null : n);
+        }}
+      />
+    </div>
+  );
+}
+
 export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
@@ -151,7 +205,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
               <button
                 type="button"
                 className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
-                disabled={!state.target}
+                disabled={!state.target || (targetNeedsValue(state.target) && !(state.targetValue! > 0))}
                 onClick={flow.continueFromTarget}
               >
                 Continue
@@ -173,6 +227,19 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
               </label>
             ))}
           </div>
+          {targetNeedsValue(state.target) && (
+            <div className={styles.targetField}>
+              <label className={styles.targetLabel}>
+                {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
+              </label>
+              <TargetValueInput
+                key={state.target}
+                target={state.target as "incremental-sales" | "incremental-roas"}
+                value={state.targetValue}
+                onChange={flow.setTargetValue}
+              />
+            </div>
+          )}
         </Card>
       )}
 

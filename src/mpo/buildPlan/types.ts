@@ -39,6 +39,7 @@ export type BuildPlanState = {
   planStart: Date;
   planEnd: Date;
   target: PlanTarget | null;
+  targetValue: number | null;
   singleCT: string | null;
   attrs: string[];
   method: BuildMethod;

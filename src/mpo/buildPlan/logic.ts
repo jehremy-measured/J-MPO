@@ -1,5 +1,6 @@
 import { assets } from "../../assets/figma";
-import type { CreatePlanInput, Tactic } from "../types";
+import type { CreatePlanInput, PlanTarget, Tactic } from "../types";
+import { formatBudget } from "../types";
 import {
   BUILD_TACTICS,
   CHANNEL_COLORS,
@@ -158,8 +159,16 @@ export function periodLabel(state: BuildPlanState): string {
   return formatRangeLabel(state.planStart, state.planEnd);
 }
 
+export function targetNeedsValue(target: PlanTarget | null): boolean {
+  return target === "incremental-sales" || target === "incremental-roas";
+}
+
 export function targetLabel(state: BuildPlanState): string {
-  return TARGET_OPTIONS.find((o) => o.id === state.target)?.label ?? "Not sure";
+  const label = TARGET_OPTIONS.find((o) => o.id === state.target)?.label ?? "Not sure";
+  if (state.targetValue == null || !targetNeedsValue(state.target)) return label;
+  const value =
+    state.target === "incremental-roas" ? `${state.targetValue.toFixed(2)} ROAS` : formatBudget(state.targetValue);
+  return `${label} · ${value}`;
 }
 
 function initialsIconDataUri(tactic: BuildTactic): string {
@@ -218,6 +227,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
     channelCount: channelsPresent().length,
     tactics,
     target: state.target ?? "not-sure",
+    targetValue: state.targetValue,
   };
 }
 

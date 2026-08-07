@@ -72,10 +72,9 @@ export function MpoPage() {
                     <>
                       <TargetBanner
                         target={state.newPlanSummary.target}
+                        targetValue={state.newPlanSummary.targetValue}
                         incrementalSales={state.totals.sales}
                         roas={state.totals.roas}
-                        salesForecast={state.baselineSalesForecast}
-                        targetBudget={state.targetBudget}
                       />
                       <PlanSummaryCards
                         planningWindow={state.newPlanSummary.planningWindow}

@@ -11,6 +11,7 @@ function initialState(): BuildPlanState {
     planStart: DEFAULT_PLAN_START,
     planEnd: DEFAULT_PLAN_END,
     target: null,
+    targetValue: null,
     singleCT: null,
     attrs: [],
     method: null,
@@ -38,7 +39,11 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   const continueFromPeriod = useCallback(() => goTo("target"), [goTo]);
 
   const setTarget = useCallback((target: PlanTarget) => {
-    setState((s) => ({ ...s, target }));
+    setState((s) => ({ ...s, target, targetValue: null }));
+  }, []);
+
+  const setTargetValue = useCallback((targetValue: number | null) => {
+    setState((s) => ({ ...s, targetValue }));
   }, []);
 
   const continueFromTarget = useCallback(() => goTo("ct"), [goTo]);
@@ -135,6 +140,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setPeriod,
       continueFromPeriod,
       setTarget,
+      setTargetValue,
       continueFromTarget,
       toggleSingleCT,
       toggleAttr,
@@ -155,6 +161,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setPeriod,
       continueFromPeriod,
       setTarget,
+      setTargetValue,
       continueFromTarget,
       toggleSingleCT,
       toggleAttr,

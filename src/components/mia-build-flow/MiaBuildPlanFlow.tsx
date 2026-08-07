@@ -1,6 +1,13 @@
 import { useState, type ReactNode } from "react";
 import { CT_GROUPS, TARGET_OPTIONS } from "../../mpo/buildPlan/data";
-import { applyMethodChoice, ctSummary, periodLabel, planDaysFor, targetLabel } from "../../mpo/buildPlan/logic";
+import {
+  applyMethodChoice,
+  ctSummary,
+  periodLabel,
+  planDaysFor,
+  targetLabel,
+  targetNeedsValue,
+} from "../../mpo/buildPlan/logic";
 import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState } from "../../mpo/buildPlan/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
@@ -36,6 +43,59 @@ function BackLink({ onClick }: { onClick: () => void }) {
     <button type="button" className={styles.backLink} onClick={onClick}>
       Back
     </button>
+  );
+}
+
+function TargetValueInput({
+  target,
+  value,
+  onChange,
+}: {
+  target: "incremental-sales" | "incremental-roas";
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  const [text, setText] = useState(
+    value == null ? "" : target === "incremental-sales" ? value.toLocaleString("en-US") : String(value)
+  );
+
+  if (target === "incremental-sales") {
+    return (
+      <div className={styles.targetInputWrap}>
+        <span className={styles.dol}>$</span>
+        <input
+          className={`${styles.targetInput} ${styles.targetInputPrefixed}`}
+          inputMode="numeric"
+          placeholder="e.g. 250,000"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+            onChange(isNaN(n) ? null : n);
+          }}
+          onBlur={() => {
+            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+          }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className={styles.targetInputWrap}>
+      <input
+        className={styles.targetInput}
+        inputMode="decimal"
+        placeholder="e.g. 4.50"
+        value={text}
+        onChange={(e) => {
+          setText(e.target.value);
+          const n = parseFloat(e.target.value);
+          onChange(isNaN(n) ? null : n);
+        }}
+      />
+    </div>
   );
 }
 
@@ -107,12 +167,25 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
               </label>
             ))}
           </div>
+          {targetNeedsValue(state.target) && (
+            <div className={styles.targetField}>
+              <label className={styles.targetLabel}>
+                {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
+              </label>
+              <TargetValueInput
+                key={state.target}
+                target={state.target as "incremental-sales" | "incremental-roas"}
+                value={state.targetValue}
+                onChange={flow.setTargetValue}
+              />
+            </div>
+          )}
           <div className={styles.turnActions}>
             <BackLink onClick={goBack} />
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
-              disabled={!state.target}
+              disabled={!state.target || (targetNeedsValue(state.target) && !(state.targetValue! > 0))}
               onClick={() =>
                 commit("What is your target for this period?", targetLabel(state), flow.continueFromTarget)
               }

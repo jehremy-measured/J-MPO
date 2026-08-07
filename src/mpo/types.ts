@@ -61,6 +61,7 @@ export type CreatePlanInput = {
   channelCount: number;
   tactics: Tactic[];
   target: PlanTarget;
+  targetValue: number | null;
 };
 
 export function goalTypeLabel(type: PlanGoalType): string {

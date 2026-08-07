@@ -106,6 +106,7 @@ export function useMpoState() {
     tacticsCount: number;
     totalBudget: number;
     target: PlanTarget;
+    targetValue: number | null;
   } | null>(null);
 
   const notify = useCallback((message: string) => {
@@ -205,6 +206,7 @@ export function useMpoState() {
         tacticsCount: input.tactics.length,
         totalBudget: input.targetBudget,
         target: input.target,
+        targetValue: input.targetValue,
       });
       notify(`Created "${label}" with Mia`);
 
