@@ -1,5 +1,5 @@
 import { useRef, useState, type ReactNode } from "react";
-import type { CreatePlanInput } from "../mpo/types";
+import type { CreatePlanInput, PlanTarget } from "../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import {
@@ -13,6 +13,7 @@ import {
   includedTotal,
   periodLabel,
   planDaysFor,
+  referenceTargetDefault,
   targetNeedsValue,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
@@ -166,7 +167,19 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [moreOpen, setMoreOpen] = useState(false);
+  const [targetHint, setTargetHint] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const selectTarget = (id: PlanTarget) => {
+    flow.setTarget(id);
+    if (id === "incremental-sales" || id === "incremental-roas") {
+      const { value, subtext } = referenceTargetDefault(state, id);
+      flow.setTargetValue(value);
+      setTargetHint(subtext);
+    } else {
+      setTargetHint(null);
+    }
+  };
 
   return (
     <div className={styles.page} data-node-id="build-plan-page">
@@ -216,31 +229,34 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
         >
           <div className={styles.group}>
             {TARGET_OPTIONS.map((opt) => (
-              <label key={opt.id} className={styles.optRow}>
-                <input
-                  type="radio"
-                  name="plan-target"
-                  className={styles.optInput}
-                  checked={state.target === opt.id}
-                  onChange={() => flow.setTarget(opt.id)}
-                />
-                <span className={styles.optTitle}>{opt.label}</span>
-              </label>
+              <div key={opt.id}>
+                <label className={styles.optRow}>
+                  <input
+                    type="radio"
+                    name="plan-target"
+                    className={styles.optInput}
+                    checked={state.target === opt.id}
+                    onChange={() => selectTarget(opt.id)}
+                  />
+                  <span className={styles.optTitle}>{opt.label}</span>
+                </label>
+                {state.target === opt.id && targetNeedsValue(state.target) && (
+                  <div className={styles.targetField}>
+                    <label className={styles.targetLabel}>
+                      {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
+                    </label>
+                    <TargetValueInput
+                      key={state.target}
+                      target={state.target as "incremental-sales" | "incremental-roas"}
+                      value={state.targetValue}
+                      onChange={flow.setTargetValue}
+                    />
+                    {targetHint && <p className={styles.targetHint}>{targetHint}</p>}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
-          {targetNeedsValue(state.target) && (
-            <div className={styles.targetField}>
-              <label className={styles.targetLabel}>
-                {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
-              </label>
-              <TargetValueInput
-                key={state.target}
-                target={state.target as "incremental-sales" | "incremental-roas"}
-                value={state.targetValue}
-                onChange={flow.setTargetValue}
-              />
-            </div>
-          )}
         </Card>
       )}
 

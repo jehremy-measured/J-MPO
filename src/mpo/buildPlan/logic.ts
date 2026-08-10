@@ -7,12 +7,18 @@ import {
   CHANNEL_COLORS,
   CT_LOOKUP,
   DAILY_RATE,
+  REFERENCE_DAILY_INCREMENTAL_SALES,
+  REFERENCE_INCREMENTAL_SALES,
+  REFERENCE_ROAS,
+  REFERENCE_WINDOW_END,
+  REFERENCE_WINDOW_START,
   TARGET_OPTIONS,
   XLS_BUDGET,
+  currencyFormatter,
   defaultSourceStart,
   windowFromStart,
 } from "./data";
-import { daysBetweenInclusive, formatRangeLabel } from "./dateUtils";
+import { daysBetweenInclusive, formatRangeLabel, isSameDay, subtractYears } from "./dateUtils";
 import type { BuildPlanState, BuildTactic, SourceWindow } from "./types";
 
 export function planDaysFor(state: BuildPlanState): number {
@@ -170,6 +176,37 @@ export function targetLabel(state: BuildPlanState): string {
   const value =
     state.target === "incremental-roas" ? `${state.targetValue.toFixed(2)} ROAS` : formatBudget(state.targetValue);
   return `${label} · ${value}`;
+}
+
+/** Default value + explanation for the target field: last year's actuals for this exact period, or
+ * the latest comparable period when last year isn't covered by the data we have. */
+export function referenceTargetDefault(
+  state: BuildPlanState,
+  target: "incremental-sales" | "incremental-roas"
+): { value: number; subtext: string } {
+  const planDays = planDaysFor(state);
+  const priorYearStart = subtractYears(state.planStart, 1);
+  const priorYearEnd = subtractYears(state.planEnd, 1);
+  const priorYearLabel = formatRangeLabel(priorYearStart, priorYearEnd);
+  const priorYearCovered =
+    isSameDay(priorYearStart, REFERENCE_WINDOW_START) && isSameDay(priorYearEnd, REFERENCE_WINDOW_END);
+
+  const sales = priorYearCovered
+    ? REFERENCE_INCREMENTAL_SALES
+    : Math.round(REFERENCE_DAILY_INCREMENTAL_SALES * planDays);
+  const roas = REFERENCE_ROAS;
+  const value = target === "incremental-roas" ? roas : sales;
+  const formatted = target === "incremental-roas" ? `${roas.toFixed(2)} ROAS` : currencyFormatter.format(sales);
+
+  if (priorYearCovered) {
+    return { value, subtext: `Based on ${priorYearLabel} actuals: ${formatted}` };
+  }
+
+  const fallbackWindow = windowFromStart(defaultSourceStart(planDays), planDays);
+  return {
+    value,
+    subtext: `No data for ${priorYearLabel} — showing the latest comparable period, ${fallbackWindow.label}: ${formatted}`,
+  };
 }
 
 function initialsIconDataUri(tactic: BuildTactic): string {

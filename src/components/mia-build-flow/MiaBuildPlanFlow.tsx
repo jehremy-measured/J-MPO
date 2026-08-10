@@ -5,11 +5,13 @@ import {
   ctSummary,
   periodLabel,
   planDaysFor,
+  referenceTargetDefault,
   targetLabel,
   targetNeedsValue,
 } from "../../mpo/buildPlan/logic";
 import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState } from "../../mpo/buildPlan/types";
+import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
@@ -104,10 +106,22 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
   const { state } = flow;
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
+  const [targetHint, setTargetHint] = useState<string | null>(null);
 
   const commit = (question: string, answer: string, action: () => void) => {
     setHistory((h) => [...h, { id: `${h.length}-${question}`, question, answer }]);
     action();
+  };
+
+  const selectTarget = (id: PlanTarget) => {
+    flow.setTarget(id);
+    if (id === "incremental-sales" || id === "incremental-roas") {
+      const { value, subtext } = referenceTargetDefault(state, id);
+      flow.setTargetValue(value);
+      setTargetHint(subtext);
+    } else {
+      setTargetHint(null);
+    }
   };
 
   const goBack = () => {
@@ -155,31 +169,34 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
           <p className={styles.q}>What is your target for this period?</p>
           <div className={styles.turnContent}>
             {TARGET_OPTIONS.map((opt) => (
-              <label key={opt.id} className={styles.optRow}>
-                <input
-                  type="radio"
-                  name="mia-target"
-                  className={styles.optInput}
-                  checked={state.target === opt.id}
-                  onChange={() => flow.setTarget(opt.id)}
-                />
-                <span className={styles.optTitle}>{opt.label}</span>
-              </label>
+              <div key={opt.id}>
+                <label className={styles.optRow}>
+                  <input
+                    type="radio"
+                    name="mia-target"
+                    className={styles.optInput}
+                    checked={state.target === opt.id}
+                    onChange={() => selectTarget(opt.id)}
+                  />
+                  <span className={styles.optTitle}>{opt.label}</span>
+                </label>
+                {state.target === opt.id && targetNeedsValue(state.target) && (
+                  <div className={styles.targetField}>
+                    <label className={styles.targetLabel}>
+                      {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
+                    </label>
+                    <TargetValueInput
+                      key={state.target}
+                      target={state.target as "incremental-sales" | "incremental-roas"}
+                      value={state.targetValue}
+                      onChange={flow.setTargetValue}
+                    />
+                    {targetHint && <p className={styles.targetHint}>{targetHint}</p>}
+                  </div>
+                )}
+              </div>
             ))}
           </div>
-          {targetNeedsValue(state.target) && (
-            <div className={styles.targetField}>
-              <label className={styles.targetLabel}>
-                {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
-              </label>
-              <TargetValueInput
-                key={state.target}
-                target={state.target as "incremental-sales" | "incremental-roas"}
-                value={state.targetValue}
-                onChange={flow.setTargetValue}
-              />
-            </div>
-          )}
           <div className={styles.turnActions}>
             <BackLink onClick={goBack} />
             <button

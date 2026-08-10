@@ -195,6 +195,19 @@ export function windowFromStart(start: Date, planDays: number): SourceWindow {
   return { start, end, label: `${formatShortDate(start)} – ${formatShortDate(end)} (${planDays} days)` };
 }
 
+/** The exact bounds of the only historical performance window we have actuals for. */
+export const REFERENCE_WINDOW_START = new Date(2026, 6, 10); // Jul 10, 2026
+export const REFERENCE_WINDOW_END = ANCHOR; // Aug 10, 2026
+
+const REFERENCE_TOTAL_SPEND = Object.values(LULUS_REF_TOTAL).reduce((sum, v) => sum + v, 0);
+
+/** Blended incremental ROAS for Lulus, Online Orders, over the reference window. */
+export const REFERENCE_ROAS = 4.32;
+
+/** Reference incremental sales for that same window, and its per-day rate for scaling to other lengths. */
+export const REFERENCE_INCREMENTAL_SALES = Math.round(REFERENCE_TOTAL_SPEND * REFERENCE_ROAS);
+export const REFERENCE_DAILY_INCREMENTAL_SALES = REFERENCE_INCREMENTAL_SALES / LULUS_REF_DAYS;
+
 export const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
