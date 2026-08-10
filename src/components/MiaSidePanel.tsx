@@ -1,10 +1,17 @@
 import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
-import { applyUploadedBudget, downloadBudgetTemplate } from "../mpo/buildPlan/logic";
+import { currencyFormatter } from "../mpo/buildPlan/data";
+import {
+  applyUploadedBudget,
+  downloadBudgetTemplate,
+  includedCount,
+  includedTotal,
+  periodLabel,
+} from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
-import { DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
+import { ChevronRightIcon, DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
@@ -14,7 +21,9 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
-  kind?: "download-card";
+  kind?: "download-card" | "plan-card";
+  subtext?: string;
+  planState?: BuildPlanState;
 };
 
 type Prompt =
@@ -82,7 +91,15 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   }, [onEditInMainFlow]);
 
   const appendMessages = useCallback(
-    (items: { role: "mia" | "user"; text: string; kind?: "download-card" }[]) => {
+    (
+      items: {
+        role: "mia" | "user";
+        text: string;
+        kind?: "download-card" | "plan-card";
+        subtext?: string;
+        planState?: BuildPlanState;
+      }[]
+    ) => {
       setMessages((prev) => [
         ...prev,
         ...items.map((item) => ({
@@ -90,6 +107,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           role: item.role,
           text: item.text,
           kind: item.kind,
+          subtext: item.subtext,
+          planState: item.planState,
         })),
       ]);
     },
@@ -126,10 +145,20 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
 
   useEffect(() => {
     if (!loadingReviewState) return;
+    const reviewState = loadingReviewState;
     const timer = window.setTimeout(() => {
-      onEditInMainFlowRef.current(loadingReviewState);
+      onEditInMainFlowRef.current(reviewState);
       setLoadingReviewState(null);
-      appendMessages([{ role: "mia", text: "Your plan is ready — reviewing it on the left." }]);
+      appendMessages([
+        { role: "mia", text: "Your plan is ready — reviewing it on the left." },
+        {
+          role: "mia",
+          kind: "plan-card",
+          text: `${periodLabel(reviewState)} plan`,
+          subtext: `${includedCount(reviewState)} tactics · ${currencyFormatter.format(includedTotal(reviewState))}`,
+          planState: reviewState,
+        },
+      ]);
     }, 5000);
     return () => window.clearTimeout(timer);
   }, [loadingReviewState, appendMessages]);
@@ -139,7 +168,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       setFlowActive(false);
       setUploadState(null);
       setLoadingReviewState(null);
-      setMessages([]);
       setDraft("");
       setIsTyping(false);
       return;
@@ -363,6 +391,24 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
               </div>
               <p className={styles.miaText}>{msg.text}</p>
             </div>
+          ) : msg.kind === "plan-card" ? (
+            <button
+              key={msg.id}
+              type="button"
+              className={styles.planCard}
+              onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
+            >
+              <span className={styles.planCardIcon} aria-hidden>
+                <FileIcon size={16} />
+              </span>
+              <span className={styles.planCardBody}>
+                <span className={styles.planCardTitle}>{msg.text}</span>
+                <span className={styles.planCardSub}>{msg.subtext}</span>
+              </span>
+              <span className={styles.planCardChevron} aria-hidden>
+                <ChevronRightIcon size={16} />
+              </span>
+            </button>
           ) : msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}

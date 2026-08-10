@@ -478,6 +478,65 @@
   border-color: var(--gray-500);
 }
 
+.planCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 92%;
+  padding: 12px 14px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  background: var(--gray-000);
+  text-align: left;
+  cursor: pointer;
+  align-self: flex-start;
+}
+
+.planCard:hover {
+  background: var(--gray-100);
+  border-color: var(--blue-300);
+}
+
+.planCardIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  background: var(--green-100);
+  color: var(--green-800);
+  flex-shrink: 0;
+}
+
+.planCardBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.planCardTitle {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.planCardSub {
+  font-size: 12px;
+  color: var(--gray-800);
+}
+
+.planCardChevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray-500);
+  flex-shrink: 0;
+}
+
 .loadingRow {
   display: flex;
   align-items: center;
