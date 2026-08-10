@@ -1,6 +1,7 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput } from "../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
+import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import {
   activeWindow,
   buildPlanToCreatePlanInput,
@@ -349,7 +350,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
               <FileIcon size={18} />
             </div>
             <div className={styles.tt}>
-              <strong>MPO_budget_template.xlsx</strong>
+              <strong>{BUDGET_TEMPLATE_FILENAME}</strong>
               <span>{BUILD_TACTICS.length} tactics · Tactic, Channel, Budget columns</span>
             </div>
             <button type="button" className={styles.btn} onClick={downloadBudgetTemplate}>

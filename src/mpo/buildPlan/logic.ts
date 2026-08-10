@@ -1,6 +1,7 @@
 import { assets } from "../../assets/figma";
 import type { CreatePlanInput, PlanTarget, Tactic } from "../types";
 import { formatBudget } from "../types";
+import { BUDGET_TEMPLATE_BASE64, BUDGET_TEMPLATE_FILENAME, BUDGET_TEMPLATE_MIME } from "./budgetTemplateData";
 import {
   BUILD_TACTICS,
   CHANNEL_COLORS,
@@ -232,14 +233,11 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
 }
 
 export function downloadBudgetTemplate(): void {
-  let csv = "Tactic,Channel,Budget\n";
-  BUILD_TACTICS.forEach((t) => {
-    csv += `${t.name},${t.channel},\n`;
-  });
-  const blob = new Blob([csv], { type: "text/csv" });
+  const bytes = Uint8Array.from(atob(BUDGET_TEMPLATE_BASE64), (c) => c.charCodeAt(0));
+  const blob = new Blob([bytes], { type: BUDGET_TEMPLATE_MIME });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "MPO_budget_template.csv";
+  a.download = BUDGET_TEMPLATE_FILENAME;
   a.click();
   URL.revokeObjectURL(a.href);
 }

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
+import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { applyUploadedBudget, downloadBudgetTemplate } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
@@ -350,7 +351,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
                 <span className={styles.downloadCardIcon} aria-hidden>
                   <FileIcon size={16} />
                 </span>
-                <span className={styles.downloadCardLabel}>MPO_budget_template.xlsx</span>
+                <span className={styles.downloadCardLabel}>{BUDGET_TEMPLATE_FILENAME}</span>
                 <button
                   type="button"
                   className={styles.downloadCardBtn}
