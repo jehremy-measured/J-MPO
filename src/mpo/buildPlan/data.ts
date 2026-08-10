@@ -5,8 +5,8 @@ import type { BuildTactic, ConversionTypeGroup, SourceWindow } from "./types";
 export { formatShortDate };
 
 /** Default planning window shown when the build-plan flow first opens. */
-export const DEFAULT_PLAN_START = new Date(2025, 9, 1); // Oct 1, 2025
-export const DEFAULT_PLAN_END = new Date(2025, 11, 31); // Dec 31, 2025
+export const DEFAULT_PLAN_START = new Date(2026, 7, 11); // Aug 11, 2026
+export const DEFAULT_PLAN_END = new Date(2026, 8, 11); // Sep 11, 2026
 
 export const TARGET_OPTIONS: { id: PlanTarget; label: string }[] = [
   { id: "incremental-sales", label: "Incremental Sales" },
@@ -54,52 +54,136 @@ CT_GROUPS.forEach((g) => g.items.forEach((i) => (CT_LOOKUP[i.id] = i.name)));
 
 export const CHANNEL_COLORS: Record<string, string> = {
   "Paid Search": "#2f5fbd",
+  "Paid Search (SEM)": "#2f5fbd",
   "Paid Social": "#e01e5a",
   Display: "#1da696",
   Video: "#ff5420",
+  Affiliate: "#8b5cf6",
+  AppLovin: "#f59e0b",
+  Klaviyo: "#0d9488",
+  Remarketing: "#7c6f57",
+  "Shopping (PLA)": "#22a559",
+  TV: "#b45309",
+  Youtube: "#ff0000",
 };
 
+/** Lulus's real tactic list, sourced from Measured's reference-period spend for Jul 10 – Aug 10, 2026. */
 export const BUILD_TACTICS: BuildTactic[] = [
-  { id: "gb", name: "Google Brand", channel: "Paid Search" },
-  { id: "gnb", name: "Google Non-Brand", channel: "Paid Search" },
-  { id: "mp", name: "Meta Prospecting", channel: "Paid Social" },
-  { id: "mr", name: "Meta Retargeting", channel: "Paid Social" },
-  { id: "tt", name: "TikTok", channel: "Paid Social", dormant: true },
-  { id: "pin", name: "Pinterest", channel: "Paid Social" },
-  { id: "pd", name: "Programmatic Display", channel: "Display" },
-  { id: "cr", name: "Criteo Retargeting", channel: "Display", dormant: true },
-  { id: "yt", name: "YouTube", channel: "Video" },
+  { id: "google_pla_troas", name: "Google - PLA tROAS", channel: "Shopping (PLA)" },
+  { id: "facebook_conversion_prospecting", name: "Facebook - Conversion - Prospecting", channel: "Paid Social" },
+  { id: "facebook_conversion_remarketing", name: "Facebook - Conversion - Remarketing", channel: "Paid Social" },
+  { id: "pinterest_conversion_prospecting", name: "Pinterest - Conversion - Prospecting", channel: "Paid Social" },
+  { id: "affiliate_loyalty", name: "Affiliate - Loyalty", channel: "Affiliate" },
+  { id: "google_non_brand_search_troas_us", name: "Google - Non Brand Search tROAS US", channel: "Paid Search (SEM)" },
+  { id: "rtb_house_retargeting", name: "RTB House Retargeting", channel: "Remarketing" },
+  { id: "applovin_prospecting", name: "Applovin - Prospecting", channel: "AppLovin" },
+  { id: "affiliate_subnetwork", name: "Affiliate - Subnetwork", channel: "Affiliate" },
+  { id: "reddit_conversion_prospecting", name: "Reddit - Conversion - Prospecting", channel: "Paid Social" },
+  { id: "tiktok_conversion_prospecting", name: "TikTok - Conversion - Prospecting", channel: "Paid Social" },
+  { id: "facebook_branded_performance", name: "Facebook - Branded - Performance", channel: "Paid Social" },
+  { id: "google_brand_us", name: "Google - Brand US", channel: "Paid Search (SEM)" },
+  { id: "others", name: "Others", channel: "TV" },
+  { id: "criteo_retargeting", name: "Criteo Retargeting", channel: "Remarketing" },
+  { id: "ctv_prospecting", name: "CTV - Prospecting", channel: "TV" },
+  { id: "facebook_conversion_prospecting_auto", name: "Facebook - Conversion - Prospecting - Auto", channel: "Paid Social" },
+  { id: "affiliate_creator", name: "Affiliate - Creator", channel: "Affiliate" },
+  { id: "snapchat_conversion_prospecting", name: "Snapchat - Conversion - Prospecting", channel: "Paid Social" },
+  { id: "klaviyo_sms", name: "Klaviyo - SMS", channel: "Klaviyo" },
+  { id: "tv_scientific_prospecting", name: "TV Scientific Prospecting", channel: "TV" },
+  { id: "facebook_conversion_retargeting", name: "Facebook - Conversion - Retargeting", channel: "Paid Social" },
+  { id: "affiliate_content", name: "Affiliate - Content", channel: "Affiliate" },
+  { id: "pinterest_conversions_prospecting_auto", name: "Pinterest  - Conversions - Prospecting - Auto", channel: "Paid Social" },
+  { id: "klaviyo_email", name: "Klaviyo - Email", channel: "Klaviyo" },
+  { id: "youtube_demand_gen_remarketing", name: "YouTube Demand Gen - Remarketing", channel: "Youtube" },
+  { id: "youtube_demand_gen_midfunnel", name: "YouTube Demand Gen - MidFunnel", channel: "Youtube" },
+  { id: "pinterest_branded_performance", name: "Pinterest - Branded - Performance", channel: "Paid Social" },
+  { id: "rtb_house_prospecting", name: "RTB House Prospecting", channel: "Display" },
+  { id: "tv_scientific_retargeting", name: "TV Scientific Retargeting", channel: "TV" },
+  { id: "ctv_retargeting", name: "CTV - Retargeting", channel: "TV" },
+  { id: "reddit_brand_performance", name: "Reddit - Brand - Performance", channel: "Paid Social" },
+  { id: "tiktok_branded_performance", name: "TikTok - Branded - Performance", channel: "Paid Social" },
+  { id: "bing_pla", name: "Bing - PLA", channel: "Shopping (PLA)" },
+  { id: "pinterest_shopping_prospecting", name: "Pinterest Shopping Prospecting", channel: "Paid Social" },
+  { id: "bing_non_brand_us", name: "Bing - Non Brand US", channel: "Paid Search (SEM)" },
+  { id: "snapchat_conversion_retargeting", name: "Snapchat - Conversion - Retargeting", channel: "Paid Social" },
+  { id: "youtube_demand_gen_crossselling", name: "YouTube Demand Gen - CrossSelling", channel: "Youtube" },
+  { id: "bing_brand_us", name: "Bing - Brand US", channel: "Paid Search (SEM)" },
+  { id: "affiliate_shopping", name: "Affiliate - Shopping", channel: "Affiliate" },
+  { id: "youtube_demand_gen_acquisition", name: "YouTube Demand Gen - Acquisition", channel: "Youtube" },
+  { id: "tiktok_conversion_retargeting", name: "TikTok - Conversion - Retargeting", channel: "Paid Social" },
+  { id: "gdn_retargeting", name: "GDN Retargeting", channel: "Remarketing" },
+  { id: "criteo_prospecting", name: "Criteo Prospecting", channel: "Display" },
+  { id: "snapchat_branded_performance", name: "Snapchat - Branded - Performance", channel: "Paid Social" },
+  { id: "affiliate_coupon", name: "Affiliate - Coupon", channel: "Affiliate" },
+  { id: "others_2", name: "Others", channel: "Paid Social" },
+  { id: "youtube_ppc_acquisition_vac", name: "YouTube PPC - Acquisition VAC", channel: "Youtube" },
+  { id: "affiliate_other", name: "Affiliate - Other", channel: "Affiliate" },
+  { id: "google_pla", name: "Google - PLA", channel: "Shopping (PLA)" },
 ];
 
-const Q3_92: Record<string, number> = {
-  gb: 118_000,
-  gnb: 249_000,
-  mp: 337_000,
-  mr: 104_000,
-  tt: 79_000,
-  pin: 53_000,
-  pd: 150_000,
-  cr: 60_000,
-  yt: 86_000,
+/** Total actual spend per tactic over the Jul 10 – Aug 10, 2026 reference window (32 days) — Lulus, Online Orders. */
+const LULUS_REF_TOTAL: Record<string, number> = {
+  google_pla_troas: 655571,
+  facebook_conversion_prospecting: 383281,
+  facebook_conversion_remarketing: 228356,
+  pinterest_conversion_prospecting: 181816,
+  affiliate_loyalty: 152193,
+  google_non_brand_search_troas_us: 150682,
+  rtb_house_retargeting: 131343,
+  applovin_prospecting: 120199,
+  affiliate_subnetwork: 104918,
+  reddit_conversion_prospecting: 100551,
+  tiktok_conversion_prospecting: 98889,
+  facebook_branded_performance: 97340,
+  google_brand_us: 77847,
+  others: 62945,
+  criteo_retargeting: 52487,
+  ctv_prospecting: 47874,
+  facebook_conversion_prospecting_auto: 47813,
+  affiliate_creator: 47261,
+  snapchat_conversion_prospecting: 46810,
+  klaviyo_sms: 44851,
+  tv_scientific_prospecting: 38075,
+  facebook_conversion_retargeting: 33883,
+  affiliate_content: 33506,
+  pinterest_conversions_prospecting_auto: 32526,
+  klaviyo_email: 30118,
+  youtube_demand_gen_remarketing: 28659,
+  youtube_demand_gen_midfunnel: 28344,
+  pinterest_branded_performance: 24441,
+  rtb_house_prospecting: 19879,
+  tv_scientific_retargeting: 18075,
+  ctv_retargeting: 17272,
+  reddit_brand_performance: 16737,
+  tiktok_branded_performance: 14971,
+  bing_pla: 11717,
+  pinterest_shopping_prospecting: 10969,
+  bing_non_brand_us: 10804,
+  snapchat_conversion_retargeting: 9586,
+  youtube_demand_gen_crossselling: 5973,
+  bing_brand_us: 5521,
+  affiliate_shopping: 4105,
+  youtube_demand_gen_acquisition: 3992,
+  tiktok_conversion_retargeting: 3669,
+  gdn_retargeting: 2415,
+  criteo_prospecting: 2379,
+  snapchat_branded_performance: 1999,
+  affiliate_coupon: 1996,
+  others_2: 1901,
+  youtube_ppc_acquisition_vac: 466,
+  affiliate_other: 16,
+  google_pla: 2,
 };
+
+const LULUS_REF_DAYS = 32;
 
 export const DAILY_RATE: Record<string, number> = {};
-BUILD_TACTICS.forEach((t) => (DAILY_RATE[t.id] = Q3_92[t.id] / 92));
+BUILD_TACTICS.forEach((t) => (DAILY_RATE[t.id] = LULUS_REF_TOTAL[t.id] / LULUS_REF_DAYS));
 
-/** budget_plan.xlsx as "uploaded" — Pinterest & YouTube left blank in the seed file */
-export const XLS_BUDGET: Record<string, number | null> = {
-  gb: 42_000,
-  gnb: 88_000,
-  mp: 120_000,
-  mr: 36_000,
-  tt: 28_000,
-  pin: null,
-  pd: 54_000,
-  cr: 22_000,
-  yt: null,
-};
+/** budget_plan.xlsx as "uploaded" — Lulus's reference-period spend by tactic. */
+export const XLS_BUDGET: Record<string, number | null> = { ...LULUS_REF_TOTAL };
 
-const ANCHOR = new Date(2025, 8, 30);
+const ANCHOR = new Date(2026, 7, 10); // Aug 10, 2026 — day before the planning period starts
 
 /** Default source-period start: the most recent window of this length ending at the anchor date. */
 export function defaultSourceStart(planDays: number): Date {
