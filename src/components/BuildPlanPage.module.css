@@ -272,14 +272,6 @@
   border-color: var(--blue-700);
 }
 
-.targetHint {
-  margin: 8px 0 0;
-  max-width: 320px;
-  font-size: 12px;
-  line-height: 1.4;
-  color: var(--gray-700);
-}
-
 /* Method screen */
 .methods {
   display: grid;

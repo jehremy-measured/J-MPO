@@ -5,10 +5,9 @@
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 16px;
   margin-bottom: 24px;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
 }
 
 .header h2 {
@@ -22,21 +21,14 @@
 .headerControls {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex-wrap: nowrap;
-}
-
-.select {
-  min-width: 160px;
-  padding: 5px 32px 5px 12px;
-  border: 1px solid var(--gray-500);
-  border-radius: var(--radius-sm);
-  font-size: 14px;
-  background: var(--gray-000);
+  gap: 12px;
+  flex: 1 1 280px;
+  min-width: 0;
 }
 
 .viewToggle {
   display: flex;
+  flex-shrink: 0;
   background: var(--gray-200);
   border-radius: var(--radius-sm);
   padding: 2px;
@@ -48,6 +40,7 @@
   font-weight: 500;
   color: var(--gray-1000);
   border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
 .viewActive {
@@ -55,7 +48,8 @@
 }
 
 .search {
-  width: 208px;
+  flex: 1;
+  min-width: 80px;
   height: 32px;
   padding: 0 12px;
   border: none;
@@ -65,6 +59,7 @@
 }
 
 .iconBtn {
+  flex-shrink: 0;
   width: 24px;
   height: 24px;
   font-size: 16px;

@@ -60,12 +60,7 @@ export function MpoPage() {
                 <PlanTabs
                   plans={state.plans}
                   activePlanId={state.activePlanId}
-                  onSelectPlan={(id) => {
-                    state.selectPlan(id);
-                    state.notify(
-                      `Switched to ${state.plans.find((p) => p.id === id)?.label ?? "plan"}`
-                    );
-                  }}
+                  onSelectPlan={(id) => state.selectPlan(id)}
                 />
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (

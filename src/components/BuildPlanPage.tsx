@@ -167,17 +167,12 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [moreOpen, setMoreOpen] = useState(false);
-  const [targetHint, setTargetHint] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const selectTarget = (id: PlanTarget) => {
     flow.setTarget(id);
     if (id === "incremental-sales" || id === "incremental-roas") {
-      const { value, subtext } = referenceTargetDefault(state, id);
-      flow.setTargetValue(value);
-      setTargetHint(subtext);
-    } else {
-      setTargetHint(null);
+      flow.setTargetValue(referenceTargetDefault(state, id));
     }
   };
 
@@ -251,7 +246,6 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
                       value={state.targetValue}
                       onChange={flow.setTargetValue}
                     />
-                    {targetHint && <p className={styles.targetHint}>{targetHint}</p>}
                   </div>
                 )}
               </div>

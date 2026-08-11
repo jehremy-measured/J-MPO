@@ -257,15 +257,11 @@ export function useMpoState() {
     return rows;
   }, [filteredTactics, budgetView]);
 
-  const handleTargetBudgetChange = useCallback(
-    (value: number) => {
-      const clamped = clampTargetBudget(value);
-      setTargetBudget(clamped);
-      setTactics((prev) => applyTargetBudget(prev, clamped));
-      notify(`Target budget set to $${clamped.toLocaleString()}`);
-    },
-    [notify]
-  );
+  const handleTargetBudgetChange = useCallback((value: number) => {
+    const clamped = clampTargetBudget(value);
+    setTargetBudget(clamped);
+    setTactics((prev) => applyTargetBudget(prev, clamped));
+  }, []);
 
   const handleTacticAdjustmentChange = useCallback(
     (id: string, adjustment: number) => {
@@ -290,21 +286,15 @@ export function useMpoState() {
     setTactics(cloneTactics(baseline));
     setTargetBudget(DEFAULT_TARGET_BUDGET);
     setOptimizationMode("balanced");
-    notify("Goals reset to saved baseline");
-  }, [baseline, notify]);
+  }, [baseline]);
 
   const handleSaveBaseline = useCallback(() => {
     setBaseline(cloneTactics(tactics));
-    notify("Current plan saved as baseline for Reset");
-  }, [tactics, notify]);
+  }, [tactics]);
 
-  const handleBaselineSalesForecastChange = useCallback(
-    (value: number) => {
-      setBaselineSalesForecast(value);
-      notify(`Baseline sales forecast set to $${value.toLocaleString()}`);
-    },
-    [notify]
-  );
+  const handleBaselineSalesForecastChange = useCallback((value: number) => {
+    setBaselineSalesForecast(value);
+  }, []);
 
   const activePlanLabel =
     plans.find((p) => p.id === activePlanId)?.label ?? "Untitled plan";

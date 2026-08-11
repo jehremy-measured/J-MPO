@@ -71,9 +71,6 @@ export function BudgetTable() {
       <div className={styles.header}>
         <h2>Budget Recommendations</h2>
         <div className={styles.headerControls}>
-          <select className={styles.select} defaultValue="us">
-            <option value="us">US Online Orders</option>
-          </select>
           <div className={styles.viewToggle}>
             <button type="button">Segments</button>
             <button type="button">Channels</button>

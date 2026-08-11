@@ -106,7 +106,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
   const { state } = flow;
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
-  const [targetHint, setTargetHint] = useState<string | null>(null);
 
   const commit = (question: string, answer: string, action: () => void) => {
     setHistory((h) => [...h, { id: `${h.length}-${question}`, question, answer }]);
@@ -116,11 +115,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
   const selectTarget = (id: PlanTarget) => {
     flow.setTarget(id);
     if (id === "incremental-sales" || id === "incremental-roas") {
-      const { value, subtext } = referenceTargetDefault(state, id);
-      flow.setTargetValue(value);
-      setTargetHint(subtext);
-    } else {
-      setTargetHint(null);
+      flow.setTargetValue(referenceTargetDefault(state, id));
     }
   };
 
@@ -191,7 +186,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
                       value={state.targetValue}
                       onChange={flow.setTargetValue}
                     />
-                    {targetHint && <p className={styles.targetHint}>{targetHint}</p>}
                   </div>
                 )}
               </div>

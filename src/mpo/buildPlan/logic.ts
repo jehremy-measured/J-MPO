@@ -14,7 +14,6 @@ import {
   REFERENCE_WINDOW_START,
   TARGET_OPTIONS,
   XLS_BUDGET,
-  currencyFormatter,
   defaultSourceStart,
   windowFromStart,
 } from "./data";
@@ -178,35 +177,23 @@ export function targetLabel(state: BuildPlanState): string {
   return `${label} · ${value}`;
 }
 
-/** Default value + explanation for the target field: last year's actuals for this exact period, or
- * the latest comparable period when last year isn't covered by the data we have. */
+/** Default value for the target field: last year's actuals for this exact period, or the latest
+ * comparable period when last year isn't covered by the data we have. */
 export function referenceTargetDefault(
   state: BuildPlanState,
   target: "incremental-sales" | "incremental-roas"
-): { value: number; subtext: string } {
+): number {
+  if (target === "incremental-roas") return REFERENCE_ROAS;
+
   const planDays = planDaysFor(state);
   const priorYearStart = subtractYears(state.planStart, 1);
   const priorYearEnd = subtractYears(state.planEnd, 1);
-  const priorYearLabel = formatRangeLabel(priorYearStart, priorYearEnd);
   const priorYearCovered =
     isSameDay(priorYearStart, REFERENCE_WINDOW_START) && isSameDay(priorYearEnd, REFERENCE_WINDOW_END);
 
-  const sales = priorYearCovered
+  return priorYearCovered
     ? REFERENCE_INCREMENTAL_SALES
     : Math.round(REFERENCE_DAILY_INCREMENTAL_SALES * planDays);
-  const roas = REFERENCE_ROAS;
-  const value = target === "incremental-roas" ? roas : sales;
-  const formatted = target === "incremental-roas" ? `${roas.toFixed(2)} ROAS` : currencyFormatter.format(sales);
-
-  if (priorYearCovered) {
-    return { value, subtext: `Based on ${priorYearLabel} actuals: ${formatted}` };
-  }
-
-  const fallbackWindow = windowFromStart(defaultSourceStart(planDays), planDays);
-  return {
-    value,
-    subtext: `No data for ${priorYearLabel} — showing the latest comparable period, ${fallbackWindow.label}: ${formatted}`,
-  };
 }
 
 function initialsIconDataUri(tactic: BuildTactic): string {
