@@ -173,7 +173,7 @@ export function targetLabel(state: BuildPlanState): string {
   const label = TARGET_OPTIONS.find((o) => o.id === state.target)?.label ?? "Not sure";
   if (state.targetValue == null || !targetNeedsValue(state.target)) return label;
   const value =
-    state.target === "incremental-roas" ? `${state.targetValue.toFixed(2)} ROAS` : formatBudget(state.targetValue);
+    state.target === "incremental-roas" ? `$${state.targetValue.toFixed(2)}` : formatBudget(state.targetValue);
   return `${label} · ${value}`;
 }
 

@@ -426,6 +426,12 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
             onMethodChosen={handleMethodChosen}
             onAwaitUpload={handleAwaitUpload}
             onFetchReady={handleFetchReady}
+            onExchange={(question, answer) =>
+              appendMessages([
+                { role: "mia", text: question },
+                { role: "user", text: answer },
+              ])
+            }
           />
         )}
 

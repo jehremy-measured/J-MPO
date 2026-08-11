@@ -16,7 +16,7 @@ export function TargetBanner({ target, targetValue, incrementalSales, roas }: Pr
   const pctLabel = `${Math.round(pct)}%`;
   const onTrack = pct >= 90;
 
-  const metricLabel = target === "incremental-roas" ? "Inc ROAS" : "Incremental Sales";
+  const metricLabel = target === "incremental-roas" ? "Incremental ROAS" : "Incremental Sales";
   const detail =
     target === "incremental-roas"
       ? `Your plan is projected to deliver a ${roas.toFixed(2)} ROAS, ${pctLabel} of your ${targetValue.toFixed(

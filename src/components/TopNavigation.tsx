@@ -49,34 +49,53 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
           </button>
         </div>
 
-        <div className={styles.tabSwitcher} ref={tabMenuRef}>
-          <button
-            type="button"
-            className={styles.tabSwitcherBtn}
-            onClick={() => setTabMenuOpen((v) => !v)}
-            aria-expanded={tabMenuOpen}
-            aria-haspopup="menu"
-          >
-            <span className={styles.tabSwitcherLabel}>{activeItem.label}</span>
-            {activeItem.badge && <span className={styles.newBadge}>NEW</span>}
-            <ChevronDownIcon size={16} />
-          </button>
-          {tabMenuOpen && (
-            <div className={styles.tabMenu} role="menu">
-              {navItems.map((item) => (
-                <a
-                  key={item.label}
-                  href="#"
-                  role="menuitem"
-                  className={item.active ? styles.tabMenuItemActive : undefined}
-                  onClick={() => setTabMenuOpen(false)}
-                >
-                  {item.label}
-                  {item.badge && <span className={styles.newBadge}>NEW</span>}
-                </a>
-              ))}
-            </div>
-          )}
+        <div className={styles.navCenter}>
+          <nav className={styles.navFull} aria-label="Primary">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href="#"
+                className={
+                  item.active
+                    ? `${styles.menuItem} ${styles.menuItemActive}`
+                    : styles.menuItem
+                }
+              >
+                {item.label}
+                {item.badge && <span className={styles.newBadge}>NEW</span>}
+              </a>
+            ))}
+          </nav>
+
+          <div className={styles.tabSwitcher} ref={tabMenuRef}>
+            <button
+              type="button"
+              className={styles.tabSwitcherBtn}
+              onClick={() => setTabMenuOpen((v) => !v)}
+              aria-expanded={tabMenuOpen}
+              aria-haspopup="menu"
+            >
+              <span className={styles.tabSwitcherLabel}>{activeItem.label}</span>
+              {activeItem.badge && <span className={styles.newBadge}>NEW</span>}
+              <ChevronDownIcon size={16} />
+            </button>
+            {tabMenuOpen && (
+              <div className={styles.tabMenu} role="menu">
+                {navItems.map((item) => (
+                  <a
+                    key={item.label}
+                    href="#"
+                    role="menuitem"
+                    className={item.active ? styles.tabMenuItemActive : undefined}
+                    onClick={() => setTabMenuOpen(false)}
+                  >
+                    {item.label}
+                    {item.badge && <span className={styles.newBadge}>NEW</span>}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
         <div className={styles.rightGroup}>

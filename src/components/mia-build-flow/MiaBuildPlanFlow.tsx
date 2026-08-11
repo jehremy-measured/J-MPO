@@ -20,24 +20,11 @@ type Props = {
   onMethodChosen: (method: "upload" | "fetch") => void;
   onAwaitUpload: (state: BuildPlanState) => void;
   onFetchReady: (state: BuildPlanState) => void;
+  onExchange: (question: string, answer: string) => void;
 };
-
-type HistoryEntry = { id: string; question: string; answer: string };
 
 function MiaTurn({ children }: { children: ReactNode }) {
   return <div className={styles.turn}>{children}</div>;
-}
-
-function QuestionBubble({ text }: { text: string }) {
-  return <p className={styles.miaText}>{text}</p>;
-}
-
-function AnswerBubble({ text }: { text: string }) {
-  return (
-    <div className={styles.bubbleUser}>
-      <p>{text}</p>
-    </div>
-  );
 }
 
 function BackLink({ onClick }: { onClick: () => void }) {
@@ -101,14 +88,13 @@ function TargetValueInput({
   );
 }
 
-export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }: Props) {
+export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, onExchange }: Props) {
   const flow = useBuildPlanFlow();
   const { state } = flow;
-  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
 
   const commit = (question: string, answer: string, action: () => void) => {
-    setHistory((h) => [...h, { id: `${h.length}-${question}`, question, answer }]);
+    onExchange(question, answer);
     action();
   };
 
@@ -119,10 +105,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
     }
   };
 
-  const goBack = () => {
-    setHistory((h) => h.slice(0, -1));
-    flow.back();
-  };
+  const goBack = () => flow.back();
 
   const periodAnswer = () => `${periodLabel(state)} · ${planDaysFor(state)} days`;
 
@@ -133,13 +116,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady }
 
   return (
     <>
-      {history.map((entry) => (
-        <div key={entry.id} className={styles.exchange}>
-          <QuestionBubble text={entry.question} />
-          <AnswerBubble text={entry.answer} />
-        </div>
-      ))}
-
       {state.screen === "period" && (
         <MiaTurn>
           <p className={styles.q}>What period are you planning for?</p>

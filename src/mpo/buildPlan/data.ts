@@ -10,7 +10,7 @@ export const DEFAULT_PLAN_END = new Date(2026, 8, 11); // Sep 11, 2026
 
 export const TARGET_OPTIONS: { id: PlanTarget; label: string }[] = [
   { id: "incremental-sales", label: "Incremental Sales" },
-  { id: "incremental-roas", label: "Inc ROAS" },
+  { id: "incremental-roas", label: "Incremental ROAS" },
   { id: "not-sure", label: "Not sure" },
 ];
 
