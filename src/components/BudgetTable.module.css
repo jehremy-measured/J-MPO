@@ -74,12 +74,14 @@
 .tableWrap {
   border: 1px solid var(--gray-300-stroke);
   border-radius: var(--radius-md);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .table {
   width: 100%;
-  border-collapse: collapse;
+  min-width: 840px;
+  border-collapse: separate;
+  border-spacing: 0;
   font-size: 14px;
 }
 
@@ -90,6 +92,7 @@
   color: var(--gray-000);
   font-size: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .table td {
@@ -98,9 +101,31 @@
   vertical-align: middle;
 }
 
+.table th:first-child,
+.table td:first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 220px;
+  box-shadow: 1px 0 0 var(--gray-300-stroke);
+}
+
+.table th:first-child {
+  z-index: 2;
+  background: var(--gray-1000);
+}
+
+.table td:first-child {
+  background: var(--gray-000);
+}
+
 .totalsRow td {
   background: var(--gray-100);
   font-weight: 600;
+}
+
+.totalsRow td:first-child {
+  background: var(--gray-100);
 }
 
 .tacticCell {
