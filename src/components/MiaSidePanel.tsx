@@ -11,11 +11,19 @@ import {
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
-import { ChevronRightIcon, DownloadIcon, FileIcon } from "./icons/BuildPlanIcons";
+import {
+  ChevronRightIcon,
+  DownloadIcon,
+  ExpandIcon,
+  FileIcon,
+  MenuIcon,
+} from "./icons/BuildPlanIcons";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
+
+const SETUP_DELAY_MS = 1600;
 
 type Message = {
   id: string;
@@ -76,6 +84,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileAttachRef = useRef<HTMLInputElement>(null);
+  const chatsMenuRef = useRef<HTMLDivElement>(null);
   const onEditInMainFlowRef = useRef(onEditInMainFlow);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
@@ -85,6 +94,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
+  const [settingUp, setSettingUp] = useState(false);
+  const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
 
   useEffect(() => {
     onEditInMainFlowRef.current = onEditInMainFlow;
@@ -125,23 +136,40 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     ]);
   }, [appendMessages]);
 
+  const resetToHome = useCallback(() => {
+    setFlowActive(false);
+    setUploadState(null);
+    setLoadingReviewState(null);
+    setMessages([]);
+    setDraft("");
+    setIsTyping(false);
+    setSettingUp(false);
+    setChatsMenuOpen(false);
+  }, []);
+
   const startCreateFlow = useCallback(
     (userText?: string) => {
-      const batch: { role: "mia" | "user"; text: string }[] = [];
-      if (userText) batch.push({ role: "user", text: userText });
-      batch.push({
-        role: "mia",
-        text: "Let's build your plan — I'll walk you through a few quick steps.",
-      });
-      appendMessages(batch);
-      setFlowKey((k) => k + 1);
-      setFlowActive(true);
+      if (userText) appendMessages([{ role: "user", text: userText }]);
       setUploadState(null);
       setLoadingReviewState(null);
       setDraft("");
+      setSettingUp(true);
     },
     [appendMessages]
   );
+
+  useEffect(() => {
+    if (!settingUp) return;
+    const timer = window.setTimeout(() => {
+      appendMessages([
+        { role: "mia", text: "Let's build your plan — I'll walk you through a few quick steps." },
+      ]);
+      setFlowKey((k) => k + 1);
+      setFlowActive(true);
+      setSettingUp(false);
+    }, SETUP_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [settingUp, appendMessages]);
 
   useEffect(() => {
     if (!loadingReviewState) return;
@@ -170,6 +198,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       setLoadingReviewState(null);
       setDraft("");
       setIsTyping(false);
+      setSettingUp(false);
+      setChatsMenuOpen(false);
       return;
     }
 
@@ -185,6 +215,17 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, onClose, flowActive, cancelCreateFlow]);
+
+  useEffect(() => {
+    if (!chatsMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (chatsMenuRef.current && !chatsMenuRef.current.contains(e.target as Node)) {
+        setChatsMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [chatsMenuOpen]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -209,12 +250,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   }, [open]);
 
   if (!open) return null;
-
-  const handleMethodChosen = (method: "upload" | "fetch") => {
-    appendMessages([
-      { role: "user", text: method === "upload" ? "Upload budget" : "Fetch from past period" },
-    ]);
-  };
 
   const handleAwaitUpload = (nextState: BuildPlanState) => {
     setFlowActive(false);
@@ -281,12 +316,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     sendUserText(prompt.label);
   };
 
-  const placeholder = flowActive
-    ? "Finish the setup above"
-    : uploadState
-      ? "Attach your budget file…"
-      : "Type your message…";
-  const canSend = !flowActive && draft.trim().length > 0;
+  const placeholder = settingUp
+    ? "Setting up your plan…"
+    : flowActive
+      ? "Finish the setup above"
+      : uploadState
+        ? "Attach your budget file…"
+        : "Type your message…";
+  const canSend = !flowActive && !settingUp && draft.trim().length > 0;
 
   const handleDragOver = (e: DragEvent) => {
     if (!uploadState) return;
@@ -315,13 +352,9 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       aria-labelledby={titleId}
     >
       <header className={styles.header}>
-        <div className={styles.headerTitle}>
-          <span className={styles.headerIcon}>
-            <SparkleIcon size={18} />
-          </span>
-          <h2 id={titleId}>Mia</h2>
-          <span className={styles.headerBadge}>Beta</span>
-        </div>
+        <h2 id={titleId} className={styles.headerTitle}>
+          Mia
+        </h2>
         <div className={styles.headerActions}>
           {flowActive && (
             <button
@@ -332,6 +365,9 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
               Cancel setup
             </button>
           )}
+          <button type="button" className={styles.expandBtn} aria-label="Expand">
+            <ExpandIcon size={15} />
+          </button>
           <button
             type="button"
             className={styles.closeBtn}
@@ -343,11 +379,32 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         </div>
       </header>
 
+      <div className={styles.subNav}>
+        <button type="button" className={styles.subNavItemActive} onClick={resetToHome}>
+          <PlusIcon size={14} /> New chat
+        </button>
+        <div className={styles.subNavChats} ref={chatsMenuRef}>
+          <button
+            type="button"
+            className={styles.subNavItem}
+            onClick={() => setChatsMenuOpen((v) => !v)}
+            aria-expanded={chatsMenuOpen}
+          >
+            <MenuIcon size={14} /> My chats
+          </button>
+          {chatsMenuOpen && (
+            <div className={styles.chatsMenu} role="menu">
+              No previous chats yet.
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className={styles.messages} ref={messagesContainerRef}>
-        {!flowActive && messages.length === 0 && (
+        {!flowActive && !settingUp && messages.length === 0 && (
           <div className={styles.welcome}>
             <span className={styles.welcomeAvatar} aria-hidden>
-              <SparkleIcon size={20} />
+              <SparkleIcon size={26} />
             </span>
             <h3 className={styles.welcomeTitle}>{WELCOME_TITLE}</h3>
             <p className={styles.welcomeSubtext}>{WELCOME_SUBTEXT}</p>
@@ -356,12 +413,9 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
                 <button
                   key={prompt.label}
                   type="button"
-                  className={styles.optionCard}
+                  className={styles.optionRow}
                   onClick={() => runPrompt(prompt)}
                 >
-                  <span className={styles.optionIcon} aria-hidden>
-                    <SparkleIcon size={14} />
-                  </span>
                   <span className={styles.optionCopy}>
                     <span className={styles.optionTitle}>{prompt.label}</span>
                     <span className={styles.optionDescription}>{prompt.description}</span>
@@ -420,10 +474,16 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           )
         )}
 
+        {settingUp && (
+          <div className={styles.loadingRow}>
+            <span className={styles.spinner} aria-hidden />
+            <p className={styles.miaText}>Setting up the flow for a new plan…</p>
+          </div>
+        )}
+
         {flowActive && (
           <MiaBuildPlanFlow
             key={flowKey}
-            onMethodChosen={handleMethodChosen}
             onAwaitUpload={handleAwaitUpload}
             onFetchReady={handleFetchReady}
             onExchange={(question, answer) =>
@@ -494,7 +554,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive}
+            disabled={flowActive || settingUp}
             className={uploadState ? styles.inputWithAttach : undefined}
           />
           <button
@@ -507,6 +567,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           </button>
         </div>
       </form>
+      <p className={styles.disclaimer}>AI can make mistakes. Please double-check responses.</p>
     </aside>
   );
 }

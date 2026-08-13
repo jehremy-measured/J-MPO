@@ -36,46 +36,22 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px;
-  border-bottom: 1px solid var(--gray-300-stroke);
-  background: var(--gray-000);
+  padding: 14px 16px;
+  background: var(--gradient-mia-header);
 }
 
 .headerTitle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.headerIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--green-700);
-}
-
-.headerTitle h2 {
   margin: 0;
-  font-size: 16px;
-  font-weight: 500;
-  line-height: 1.2;
-  color: var(--slate-700);
-}
-
-.headerBadge {
-  padding: 2px 8px;
-  font-size: 11px;
+  font-size: 17px;
   font-weight: 600;
-  line-height: 1.4;
-  color: var(--green-800);
-  background: var(--green-100);
-  border-radius: 999px;
+  line-height: 1.2;
+  color: var(--gray-1000);
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   flex-shrink: 0;
 }
 
@@ -90,22 +66,78 @@
 
 .cancelFlowBtn:hover {
   color: var(--gray-1000);
-  background: var(--gray-200);
+  background: rgba(13, 45, 66, 0.08);
 }
 
+.expandBtn,
 .closeBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-sm);
   color: var(--gray-800);
 }
 
+.expandBtn:hover,
 .closeBtn:hover {
-  background: var(--gray-200);
+  background: rgba(13, 45, 66, 0.08);
   color: var(--gray-1000);
+}
+
+.subNav {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--gray-300-stroke);
+  background: var(--gray-000);
+}
+
+.subNavItemActive,
+.subNavItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  white-space: nowrap;
+}
+
+.subNavItemActive {
+  color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.subNavItem {
+  color: var(--gray-800);
+}
+
+.subNavItem:hover {
+  color: var(--gray-1000);
+  background: var(--gray-100);
+}
+
+.subNavChats {
+  position: relative;
+}
+
+.chatsMenu {
+  position: absolute;
+  left: 0;
+  top: 38px;
+  padding: 10px 12px;
+  min-width: 180px;
+  font-size: 12.5px;
+  color: var(--gray-600);
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  z-index: 20;
 }
 
 .messages {
@@ -131,10 +163,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: var(--gradient-mia-avatar);
+  background: var(--gradient-mia-hero);
   color: var(--gray-000);
 }
 
@@ -159,38 +191,31 @@
 .optionList {
   display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 100%;
   margin-top: 8px;
-}
-
-.optionCard {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  width: 100%;
-  padding: 12px;
-  text-align: left;
   background: var(--gray-000);
   border: 1px solid var(--gray-300-stroke);
   border-radius: var(--radius-lg);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  overflow: hidden;
 }
 
-.optionCard:hover {
-  border-color: var(--green-700);
-  background: var(--green-100);
-}
-
-.optionIcon {
+.optionRow {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
-  color: var(--green-700);
+  align-items: flex-start;
+  width: 100%;
+  padding: 12px 14px;
+  text-align: left;
+  background: var(--gray-000);
+  border-bottom: 1px solid var(--gray-300-stroke);
+  transition: background 0.15s ease;
+}
+
+.optionRow:last-child {
+  border-bottom: none;
+}
+
+.optionRow:hover {
+  background: var(--blue-100);
 }
 
 .optionCopy {
@@ -205,7 +230,7 @@
   font-size: 14px;
   line-height: 20px;
   font-weight: 500;
-  color: var(--gray-1000);
+  color: var(--blue-700);
 }
 
 .optionDescription {
@@ -327,8 +352,18 @@
 }
 
 .composer {
-  padding: 12px 16px 16px;
+  padding: 12px 16px 8px;
   border-top: 1px solid var(--gray-300-stroke);
+  background: var(--gray-000);
+}
+
+.disclaimer {
+  margin: 0;
+  padding: 0 16px 12px;
+  font-size: 11px;
+  line-height: 1.4;
+  text-align: center;
+  color: var(--gray-500);
   background: var(--gray-000);
 }
 

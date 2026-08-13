@@ -50,4 +50,6 @@
   --radius-lg: 8px;
   --shadow-base: 0 0 0 1px rgba(13, 45, 66, 0.05);
   --gradient-mia-avatar: linear-gradient(135deg, var(--green-700) 0%, var(--blue-800) 100%);
+  --gradient-mia-header: linear-gradient(120deg, #ece4fb 0%, #fbe6f2 100%);
+  --gradient-mia-hero: linear-gradient(135deg, #7c5cff 0%, #4b8ef0 100%);
 }

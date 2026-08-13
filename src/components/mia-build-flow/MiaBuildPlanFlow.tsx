@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { CT_GROUPS, TARGET_OPTIONS } from "../../mpo/buildPlan/data";
 import {
   applyMethodChoice,
@@ -17,21 +17,24 @@ import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
-  onMethodChosen: (method: "upload" | "fetch") => void;
   onAwaitUpload: (state: BuildPlanState) => void;
   onFetchReady: (state: BuildPlanState) => void;
   onExchange: (question: string, answer: string) => void;
 };
 
+const STEP_DELAY_MS = 1600;
+
 function MiaTurn({ children }: { children: ReactNode }) {
   return <div className={styles.turn}>{children}</div>;
 }
 
-function BackLink({ onClick }: { onClick: () => void }) {
+function TypingIndicator() {
   return (
-    <button type="button" className={styles.backLink} onClick={onClick}>
-      Back
-    </button>
+    <div className={styles.typingRow}>
+      <span className={styles.typingDot} />
+      <span className={styles.typingDot} />
+      <span className={styles.typingDot} />
+    </div>
   );
 }
 
@@ -88,14 +91,26 @@ function TargetValueInput({
   );
 }
 
-export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, onExchange }: Props) {
+export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Props) {
   const flow = useBuildPlanFlow();
   const { state } = flow;
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
+  const [pending, setPending] = useState(false);
+  const timeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current != null) window.clearTimeout(timeoutRef.current);
+    };
+  }, []);
 
   const commit = (question: string, answer: string, action: () => void) => {
     onExchange(question, answer);
-    action();
+    setPending(true);
+    timeoutRef.current = window.setTimeout(() => {
+      action();
+      setPending(false);
+    }, STEP_DELAY_MS);
   };
 
   const selectTarget = (id: PlanTarget) => {
@@ -104,8 +119,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
       flow.setTargetValue(referenceTargetDefault(state, id));
     }
   };
-
-  const goBack = () => flow.back();
 
   const periodAnswer = () => `${periodLabel(state)} · ${planDaysFor(state)} days`;
 
@@ -116,7 +129,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
 
   return (
     <>
-      {state.screen === "period" && (
+      {!pending && state.screen === "period" && (
         <MiaTurn>
           <p className={styles.q}>What period are you planning for?</p>
           <div className={styles.turnContent}>
@@ -135,7 +148,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
         </MiaTurn>
       )}
 
-      {state.screen === "target" && (
+      {!pending && state.screen === "target" && (
         <MiaTurn>
           <p className={styles.q}>What is your target for this period?</p>
           <div className={styles.turnContent}>
@@ -168,7 +181,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
             ))}
           </div>
           <div className={styles.turnActions}>
-            <BackLink onClick={goBack} />
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
@@ -183,7 +195,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
         </MiaTurn>
       )}
 
-      {state.screen === "ct" && (
+      {!pending && state.screen === "ct" && (
         <MiaTurn>
           <p className={styles.q}>Select conversion type</p>
           <div className={styles.turnContent}>
@@ -216,7 +228,6 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
             ))}
           </div>
           <div className={styles.turnActions}>
-            <BackLink onClick={goBack} />
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
@@ -229,7 +240,7 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
         </MiaTurn>
       )}
 
-      {state.screen === "method" && (
+      {!pending && state.screen === "method" && (
         <MiaTurn>
           <p className={styles.q}>What is your budget for this period?</p>
           <div className={styles.turnContent}>
@@ -263,20 +274,27 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
             </div>
           </div>
           <div className={styles.turnActions}>
-            <BackLink onClick={goBack} />
             <button
               type="button"
               className={`${styles.btn} ${styles.btnPrimary}`}
               disabled={!methodChoice}
               onClick={() => {
                 if (!methodChoice) return;
-                onMethodChosen(methodChoice);
-                const nextState = applyMethodChoice(state, methodChoice);
-                if (methodChoice === "upload") {
-                  onAwaitUpload(nextState);
-                } else {
-                  onFetchReady(nextState);
-                }
+                const choice = methodChoice;
+                onExchange(
+                  "What is your budget for this period?",
+                  choice === "upload" ? "Upload budget" : "Fetch from past period"
+                );
+                setPending(true);
+                timeoutRef.current = window.setTimeout(() => {
+                  const nextState = applyMethodChoice(state, choice);
+                  if (choice === "upload") {
+                    onAwaitUpload(nextState);
+                  } else {
+                    onFetchReady(nextState);
+                  }
+                  setPending(false);
+                }, STEP_DELAY_MS);
               }}
             >
               Next
@@ -284,6 +302,8 @@ export function MiaBuildPlanFlow({ onMethodChosen, onAwaitUpload, onFetchReady, 
           </div>
         </MiaTurn>
       )}
+
+      {pending && <TypingIndicator />}
     </>
   );
 }
