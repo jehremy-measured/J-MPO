@@ -1,14 +1,15 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import logoMark from "../assets/brand/measured-logo-mark.svg";
-import { ChevronDownIcon } from "./icons/BuildPlanIcons";
+import { ChevronDownIcon, UpDownChevronIcon, WrenchIcon } from "./icons/BuildPlanIcons";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./TopNavigation.module.css";
 
 const navItems = [
-  { label: "Home", active: false },
+  { label: "Analyze", active: false },
   { label: "Experiment", active: false },
-  { label: "Optimize", active: true, badge: true },
+  { label: "Optimize", active: true },
   { label: "Benchmarks", active: false },
+  { label: "MIM", active: false },
 ];
 
 type Props = {
@@ -42,10 +43,9 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
       <div className={styles.inner}>
         <div className={styles.brand}>
           <img src={logoMark} alt="Measured" className={styles.logo} />
-          <span className={styles.divider} aria-hidden />
           <button type="button" className={styles.workspace}>
-            <span className={styles.workspaceLabel}>Measured Demo</span>
-            <ChevronDownIcon size={16} />
+            <span className={styles.workspaceLabel}>Lulus</span>
+            <UpDownChevronIcon size={16} />
           </button>
         </div>
 
@@ -62,9 +62,12 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
                 }
               >
                 {item.label}
-                {item.badge && <span className={styles.newBadge}>NEW</span>}
               </a>
             ))}
+            <span className={styles.menuMore}>
+              More
+              <ChevronDownIcon size={15} />
+            </span>
           </nav>
 
           <div className={styles.tabSwitcher} ref={tabMenuRef}>
@@ -76,7 +79,6 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
               aria-haspopup="menu"
             >
               <span className={styles.tabSwitcherLabel}>{activeItem.label}</span>
-              {activeItem.badge && <span className={styles.newBadge}>NEW</span>}
               <ChevronDownIcon size={16} />
             </button>
             {tabMenuOpen && (
@@ -90,7 +92,6 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
                     onClick={() => setTabMenuOpen(false)}
                   >
                     {item.label}
-                    {item.badge && <span className={styles.newBadge}>NEW</span>}
                   </a>
                 ))}
               </div>
@@ -99,6 +100,18 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
         </div>
 
         <div className={styles.rightGroup}>
+          <IconButton label="Notifications" dot>
+            🔔
+          </IconButton>
+          <IconButton label="Tools">
+            <WrenchIcon size={17} />
+          </IconButton>
+          <IconButton label="Help">?</IconButton>
+
+          <div className={styles.avatar} aria-label="User JH">
+            JH
+          </div>
+
           <button
             type="button"
             className={miaOpen ? `${styles.miaBtn} ${styles.miaBtnActive}` : styles.miaBtn}
@@ -107,18 +120,8 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
             aria-controls="mia-side-panel"
           >
             <SparkleIcon size={14} />
-            Mia
+            Ask Mia
           </button>
-
-          <IconButton label="Notifications" dot>
-            🔔
-          </IconButton>
-          <IconButton label="Settings">⚙</IconButton>
-          <IconButton label="Theme">☀</IconButton>
-
-          <div className={styles.avatar} aria-label="User AR">
-            AR
-          </div>
         </div>
       </div>
     </header>

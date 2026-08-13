@@ -1,4 +1,4 @@
-import { assets } from "../assets/figma";
+import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
 import styles from "./BudgetTable.module.css";
 
 type TacticRow = {
@@ -147,7 +147,9 @@ export function BudgetTable() {
                 </td>
                 <td>{row.marginal}</td>
                 <td>
-                  <img src={assets.sparkline} alt="" className={styles.sparkline} />
+                  <span className={styles.sparkline} aria-hidden>
+                    <ReturnCurveIcon size={20} />
+                  </span>
                 </td>
               </tr>
             ))}

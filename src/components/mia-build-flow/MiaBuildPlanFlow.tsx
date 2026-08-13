@@ -142,7 +142,7 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
               className={`${styles.btn} ${styles.btnPrimary}`}
               onClick={() => commit("What period are you planning for?", periodAnswer(), flow.continueFromPeriod)}
             >
-              Continue
+              Next
             </button>
           </div>
         </MiaTurn>
@@ -189,7 +189,7 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
                 commit("What is your target for this period?", targetLabel(state), flow.continueFromTarget)
               }
             >
-              Continue
+              Next
             </button>
           </div>
         </MiaTurn>
@@ -234,7 +234,7 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
               disabled={!state.singleCT && state.attrs.length === 0}
               onClick={() => commit("Select conversion type", ctAnswer(), flow.continueFromCT)}
             >
-              Continue
+              Next
             </button>
           </div>
         </MiaTurn>

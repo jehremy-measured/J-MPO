@@ -80,6 +80,10 @@
   gap: 8px;
 }
 
+.turnActions > *:only-child {
+  margin-left: auto;
+}
+
 /* Compact chat bubbles for completed steps */
 .bubbleUser {
   display: flex;

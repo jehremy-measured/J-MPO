@@ -47,6 +47,32 @@ export function MenuIcon({ size = 20 }: IconProps) {
   );
 }
 
+export function UpDownChevronIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
+      <path d="M8 10l4-4 4 4" />
+      <path d="M8 14l4 4 4-4" />
+    </svg>
+  );
+}
+
+export function WrenchIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
+      <path d="M14.7 6.3a4 4 0 0 0-5.4 4.6L3 17.2V21h3.8l6.3-6.3a4 4 0 0 0 4.6-5.4l-2.6 2.6-2.6-.6-.6-2.6 2.6-2.6z" />
+    </svg>
+  );
+}
+
+export function ReturnCurveIcon({ size = 20 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
+      <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+      <polyline points="16 7 22 7 22 13" />
+    </svg>
+  );
+}
+
 
 export function FileIcon({ size = 20 }: IconProps) {
   return (
