@@ -162,3 +162,12 @@ export function ChevronDownIcon({ size = 16 }: IconProps) {
   );
 }
 
+export function ThinkingSpinnerIcon({ size = 16 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
+      <path d="M20 11A8 8 0 1 1 18.5 6" />
+      <path d="M20 4v6h-6" />
+    </svg>
+  );
+}
+

@@ -17,6 +17,7 @@ import {
   ExpandIcon,
   FileIcon,
   MenuIcon,
+  ThinkingSpinnerIcon,
 } from "./icons/BuildPlanIcons";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
@@ -500,15 +501,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         )}
 
         {isTyping && (
-          <div className={styles.bubbleMia}>
-            <span className={styles.bubbleAvatar} aria-hidden>
-              <SparkleIcon size={12} />
+          <div className={styles.thinkingRow}>
+            <span className={styles.thinkingIcon} aria-hidden>
+              <ThinkingSpinnerIcon size={14} />
             </span>
-            <p className={styles.typingBubble}>
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-              <span className={styles.typingDot} />
-            </p>
+            <span className={styles.thinkingText}>Thinking...</span>
+            <span className={styles.thinkingChevron} aria-hidden>
+              <ChevronRightIcon size={14} />
+            </span>
           </div>
         )}
       </div>
