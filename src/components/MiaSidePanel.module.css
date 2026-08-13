@@ -55,20 +55,6 @@
   flex-shrink: 0;
 }
 
-.cancelFlowBtn {
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gray-800);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-}
-
-.cancelFlowBtn:hover {
-  color: var(--gray-1000);
-  background: rgba(13, 45, 66, 0.08);
-}
-
 .expandBtn,
 .closeBtn {
   display: flex;

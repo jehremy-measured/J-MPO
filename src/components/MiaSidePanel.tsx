@@ -81,7 +81,6 @@ type Props = {
 export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileAttachRef = useRef<HTMLInputElement>(null);
   const chatsMenuRef = useRef<HTMLDivElement>(null);
@@ -228,7 +227,9 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   }, [chatsMenuOpen]);
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const container = messagesContainerRef.current;
+    if (!container) return;
+    container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
   }, [messages, flowActive, draft, isTyping]);
 
   // The embedded build-plan flow changes screen/content internally without
@@ -236,6 +237,11 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   // fixed by flex layout (only its scrollHeight changes), so ResizeObserver
   // on the container itself won't fire — watch DOM mutations instead and
   // keep the scroll pinned to the bottom whenever content changes.
+  //
+  // Scrolling is done by setting scrollTop directly on the container rather
+  // than element.scrollIntoView(), which can also scroll ancestor scroll
+  // containers (including the main page behind the panel) to bring the
+  // target into view.
   useEffect(() => {
     // `open` gates an early return below, so the container only exists in the
     // DOM (and this ref is populated) while the panel is open — re-run this
@@ -243,7 +249,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     const container = messagesContainerRef.current;
     if (!container || typeof MutationObserver === "undefined") return;
     const observer = new MutationObserver(() => {
-      messagesEndRef.current?.scrollIntoView({ block: "end" });
+      container.scrollTop = container.scrollHeight;
     });
     observer.observe(container, { childList: true, subtree: true, characterData: true });
     return () => observer.disconnect();
@@ -258,7 +264,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       {
         role: "mia",
         kind: "download-card",
-        text: "Attach the completed file here, or drop it anywhere in this panel.",
+        text: "Download and fill the budget for tactics you want to plan for. Once done, drop the completed template here.",
       },
     ]);
   };
@@ -356,15 +362,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
           Mia
         </h2>
         <div className={styles.headerActions}>
-          {flowActive && (
-            <button
-              type="button"
-              className={styles.cancelFlowBtn}
-              onClick={cancelCreateFlow}
-            >
-              Cancel setup
-            </button>
-          )}
           <button type="button" className={styles.expandBtn} aria-label="Expand">
             <ExpandIcon size={15} />
           </button>
@@ -514,7 +511,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
             </p>
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       <form
