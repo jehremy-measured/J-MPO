@@ -674,7 +674,9 @@
 .tbl {
   border: 1px solid var(--gray-300);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
+  max-height: 60vh;
 }
 
 .tblHead,
@@ -836,6 +838,9 @@
 }
 
 .tblFoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
   display: grid;
   grid-template-columns: 1fr 160px;
   align-items: center;
