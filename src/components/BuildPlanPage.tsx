@@ -1,6 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput, PlanTarget } from "../mpo/types";
-import { BUILD_TACTICS, CT_GROUPS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
+import { BUILD_TACTICS, CT_GROUPS, PLAN_TYPE_OPTIONS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import {
   activeWindow,
@@ -185,6 +185,29 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
         </button>
       </div>
 
+      {state.screen === "plan-type" && (
+        <Card
+          eyebrow="Plan type"
+          title="What would you like to do?"
+          desc="Choose how you want to approach this plan."
+          footer={<span />}
+        >
+          <div className={styles.methods}>
+            {PLAN_TYPE_OPTIONS.map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                className={styles.methodCard}
+                onClick={() => flow.choosePlanType(opt.id)}
+              >
+                <h3>{opt.label}</h3>
+                <p>{opt.desc}</p>
+              </button>
+            ))}
+          </div>
+        </Card>
+      )}
+
       {state.screen === "period" && (
         <Card
           eyebrow="Planning period"
@@ -192,6 +215,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
           desc="Set the plan's date range first. We'll match its length when pulling past spend."
           footer={
             <>
+              <BackLink onClick={flow.back} />
               <span className={styles.dayCount}>{periodLabel(state)} · {planDaysFor(state)} days</span>
               <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={flow.continueFromPeriod}>
                 Continue
@@ -206,7 +230,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
       {state.screen === "target" && (
         <Card
           eyebrow="Target"
-          title="What is your target for this period?"
+          title="Do you have a target outcome?"
           desc="This helps us show how your simulated plan compares to your goal once it's created."
           footer={
             <>

@@ -26,7 +26,9 @@ export type BuildTactic = {
 
 export type BuildMethod = "upload" | "fetch" | null;
 
-export type BuildScreen = "period" | "target" | "ct" | "method" | "upload" | "review";
+export type PlanTypeChoice = "outcomes" | "spend" | null;
+
+export type BuildScreen = "plan-type" | "period" | "target" | "ct" | "method" | "upload" | "review";
 
 export type SourceWindow = {
   start: Date;
@@ -36,6 +38,7 @@ export type SourceWindow = {
 
 export type BuildPlanState = {
   screen: BuildScreen;
+  planType: PlanTypeChoice;
   planStart: Date;
   planEnd: Date;
   target: PlanTarget | null;

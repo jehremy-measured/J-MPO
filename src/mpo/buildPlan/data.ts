@@ -1,6 +1,6 @@
 import { addDays, formatShortDate } from "./dateUtils";
 import type { PlanTarget } from "../types";
-import type { BuildTactic, ConversionTypeGroup, SourceWindow } from "./types";
+import type { BuildTactic, ConversionTypeGroup, PlanTypeChoice, SourceWindow } from "./types";
 
 export { formatShortDate };
 
@@ -8,9 +8,22 @@ export { formatShortDate };
 export const DEFAULT_PLAN_START = new Date(2026, 7, 11); // Aug 11, 2026
 export const DEFAULT_PLAN_END = new Date(2026, 8, 11); // Sep 11, 2026
 
+export const PLAN_TYPE_OPTIONS: { id: Exclude<PlanTypeChoice, null>; label: string; desc: string }[] = [
+  {
+    id: "outcomes",
+    label: "Project outcomes",
+    desc: "Start from a budget you already have in mind and see the results it's likely to produce.",
+  },
+  {
+    id: "spend",
+    label: "Optimize spend",
+    desc: "Start from a target outcome and get a recommended budget allocation to reach it.",
+  },
+];
+
 export const TARGET_OPTIONS: { id: PlanTarget; label: string }[] = [
-  { id: "incremental-sales", label: "Incremental Sales" },
-  { id: "incremental-roas", label: "Incremental ROAS" },
+  { id: "incremental-sales", label: "Incremental Sales target" },
+  { id: "incremental-roas", label: "Incremental ROAS target" },
   { id: "not-sure", label: "Not sure" },
 ];
 

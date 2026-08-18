@@ -3,11 +3,12 @@ import type { PlanTarget } from "../types";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
 import { applyMethodChoice, applyUploadedBudget, budgetFromWindow, channelsPresent } from "./logic";
-import type { BuildPlanState, BuildScreen } from "./types";
+import type { BuildPlanState, BuildScreen, PlanTypeChoice } from "./types";
 
 function initialState(): BuildPlanState {
   return {
-    screen: "period",
+    screen: "plan-type",
+    planType: null,
     planStart: DEFAULT_PLAN_START,
     planEnd: DEFAULT_PLAN_END,
     target: null,
@@ -30,6 +31,16 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
 
   const goTo = useCallback((screen: BuildScreen) => {
     setState((s) => ({ ...s, screen }));
+  }, []);
+
+  const setPlanType = useCallback((planType: PlanTypeChoice) => {
+    setState((s) => ({ ...s, planType }));
+  }, []);
+
+  const continueFromPlanType = useCallback(() => goTo("period"), [goTo]);
+
+  const choosePlanType = useCallback((planType: PlanTypeChoice) => {
+    setState((s) => ({ ...s, planType, screen: "period" }));
   }, []);
 
   const setPeriod = useCallback((planStart: Date, planEnd: Date) => {
@@ -118,6 +129,8 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   const back = useCallback(() => {
     setState((s) => {
       switch (s.screen) {
+        case "period":
+          return { ...s, screen: "plan-type" };
         case "target":
           return { ...s, screen: "period" };
         case "ct":
@@ -137,6 +150,9 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   const actions = useMemo(
     () => ({
       goTo,
+      setPlanType,
+      continueFromPlanType,
+      choosePlanType,
       setPeriod,
       continueFromPeriod,
       setTarget,
@@ -158,6 +174,9 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }),
     [
       goTo,
+      setPlanType,
+      continueFromPlanType,
+      choosePlanType,
       setPeriod,
       continueFromPeriod,
       setTarget,

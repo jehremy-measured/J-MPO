@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { CT_GROUPS, TARGET_OPTIONS } from "../../mpo/buildPlan/data";
+import { CT_GROUPS, PLAN_TYPE_OPTIONS, TARGET_OPTIONS } from "../../mpo/buildPlan/data";
 import {
   applyMethodChoice,
   ctSummary,
@@ -10,7 +10,7 @@ import {
   targetNeedsValue,
 } from "../../mpo/buildPlan/logic";
 import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
-import type { BuildPlanState } from "../../mpo/buildPlan/types";
+import type { BuildPlanState, PlanTypeChoice } from "../../mpo/buildPlan/types";
 import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
@@ -94,6 +94,7 @@ function TargetValueInput({
 export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Props) {
   const flow = useBuildPlanFlow();
   const { state } = flow;
+  const [planTypeChoice, setPlanTypeChoice] = useState<PlanTypeChoice>(null);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
   const [pending, setPending] = useState(false);
   const timeoutRef = useRef<number | null>(null);
@@ -129,6 +130,44 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
 
   return (
     <>
+      {!pending && state.screen === "plan-type" && (
+        <MiaTurn>
+          <p className={styles.q}>What would you like to do?</p>
+          <div className={styles.turnContent}>
+            <div className={styles.methods}>
+              {PLAN_TYPE_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`${styles.methodCard} ${planTypeChoice === opt.id ? styles.methodCardSelected : ""}`}
+                  onClick={() => setPlanTypeChoice(opt.id)}
+                >
+                  <div>
+                    <h4>{opt.label}</h4>
+                    <p>{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className={styles.turnActions}>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={!planTypeChoice}
+              onClick={() => {
+                if (!planTypeChoice) return;
+                const choice = planTypeChoice;
+                const label = PLAN_TYPE_OPTIONS.find((o) => o.id === choice)!.label;
+                commit("What would you like to do?", label, () => flow.choosePlanType(choice));
+              }}
+            >
+              Next
+            </button>
+          </div>
+        </MiaTurn>
+      )}
+
       {!pending && state.screen === "period" && (
         <MiaTurn>
           <p className={styles.q}>What period are you planning for?</p>
@@ -150,7 +189,7 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
 
       {!pending && state.screen === "target" && (
         <MiaTurn>
-          <p className={styles.q}>What is your target for this period?</p>
+          <p className={styles.q}>Do you have a target outcome?</p>
           <div className={styles.turnContent}>
             {TARGET_OPTIONS.map((opt) => (
               <div key={opt.id}>
@@ -186,7 +225,7 @@ export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Pr
               className={`${styles.btn} ${styles.btnPrimary}`}
               disabled={!state.target || (targetNeedsValue(state.target) && !(state.targetValue! > 0))}
               onClick={() =>
-                commit("What is your target for this period?", targetLabel(state), flow.continueFromTarget)
+                commit("Do you have a target outcome?", targetLabel(state), flow.continueFromTarget)
               }
             >
               Next
