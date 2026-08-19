@@ -47,6 +47,8 @@
   font-size: 13.5px;
   color: var(--gray-1000);
   background: transparent;
+  border: none;
+  outline: none;
 }
 
 .filterDropdown {

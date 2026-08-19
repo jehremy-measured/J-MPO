@@ -1,4 +1,5 @@
 import { assets } from "../assets/figma";
+import { PlayIcon } from "./icons/BuildPlanIcons";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./HeroBanner.module.css";
 
@@ -13,9 +14,10 @@ export function HeroBanner({ onSimulate, onOptimize }: Props) {
       <img src={assets.heroVectorLeft} alt="" className={styles.waveLeft} aria-hidden />
       <img src={assets.heroVectorRight} alt="" className={styles.waveRight} aria-hidden />
 
-      <a href="#" className={styles.link}>
+      <button type="button" className={styles.tutorialBtn}>
+        <PlayIcon size={13} />
         Watch tutorial
-      </a>
+      </button>
 
       <div className={styles.content}>
         <h1 className={styles.title}>Welcome to Media Plan Optimizer</h1>
@@ -25,12 +27,12 @@ export function HeroBanner({ onSimulate, onOptimize }: Props) {
         </p>
         <div className={styles.actions}>
           <button type="button" className={styles.primaryBtn} onClick={onSimulate}>
-            <SparkleIcon size={14} />
             Simulate
+            <SparkleIcon size={14} />
           </button>
           <button type="button" className={styles.primaryBtn} onClick={onOptimize}>
-            <SparkleIcon size={14} />
             Optimize
+            <SparkleIcon size={14} />
           </button>
         </div>
       </div>

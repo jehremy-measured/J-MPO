@@ -71,7 +71,7 @@ function parseCurrency(value: string): number {
 
 function formatPercentOfTotal(value: string, total: number): string {
   if (total <= 0) return "—";
-  return `${((parseCurrency(value) / total) * 100).toFixed(1)}% of total`;
+  return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
 }
 
 export function BudgetTable() {

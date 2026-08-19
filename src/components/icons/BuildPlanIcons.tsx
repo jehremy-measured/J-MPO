@@ -94,6 +94,14 @@ export function DownloadIcon({ size = 20 }: IconProps) {
   );
 }
 
+export function PlayIcon({ size = 16 }: IconProps) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <path d="M7 4.5v15l13-7.5-13-7.5z" />
+    </svg>
+  );
+}
+
 export function DuplicateIcon({ size = 16 }: IconProps) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>

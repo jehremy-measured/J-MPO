@@ -77,15 +77,26 @@
   line-height: 22px;
 }
 
-.link {
+.tutorialBtn {
   position: absolute;
   z-index: 2;
   top: 20px;
   right: 24px;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: var(--blue-800);
+  font-size: 13px;
   font-weight: 500;
-  line-height: 22px;
-  color: var(--blue-700);
-  text-decoration: none;
+  line-height: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.tutorialBtn:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 
