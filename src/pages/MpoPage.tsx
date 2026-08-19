@@ -4,6 +4,7 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
+import { PlanSalesChart } from "../components/PlanSalesChart";
 import { PlanSummaryCards } from "../components/PlanSummaryCards";
 import { PlanTabs } from "../components/PlanTabs";
 import { PrototypeBar } from "../components/PrototypeBar";
@@ -76,6 +77,12 @@ export function MpoPage() {
                         conversionType={state.newPlanSummary.conversionType}
                         tacticsCount={state.newPlanSummary.tacticsCount}
                         totalBudget={state.newPlanSummary.totalBudget}
+                      />
+                      <PlanSalesChart
+                        planStart={state.newPlanSummary.planStart}
+                        planEnd={state.newPlanSummary.planEnd}
+                        totalSales={state.totals.sales}
+                        totalBudget={state.totals.budget}
                       />
                     </>
                   ) : (

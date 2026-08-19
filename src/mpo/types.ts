@@ -49,6 +49,8 @@ export type CreatePlanInput = {
   name: string;
   segment: string;
   planningWindow: string;
+  planStart: Date;
+  planEnd: Date;
   referencePeriod: string;
   targetBudget: number;
   optimizationMode: OptimizationMode;

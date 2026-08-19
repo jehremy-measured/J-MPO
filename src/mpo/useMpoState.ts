@@ -102,6 +102,8 @@ export function useMpoState() {
   const [newPlanSummary, setNewPlanSummary] = useState<{
     planId: string;
     planningWindow: string;
+    planStart: Date;
+    planEnd: Date;
     conversionType: string;
     tacticsCount: number;
     totalBudget: number;
@@ -202,6 +204,8 @@ export function useMpoState() {
       setNewPlanSummary({
         planId: id,
         planningWindow: input.planningWindow,
+        planStart: input.planStart,
+        planEnd: input.planEnd,
         conversionType: input.conversionType,
         tacticsCount: input.tactics.length,
         totalBudget: input.targetBudget,

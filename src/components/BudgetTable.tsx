@@ -65,7 +65,20 @@ const rows: TacticRow[] = [
   },
 ];
 
+function parseCurrency(value: string): number {
+  return Number(value.replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function formatPercentOfTotal(value: string, total: number): string {
+  if (total <= 0) return "—";
+  return `${((parseCurrency(value) / total) * 100).toFixed(1)}% of total`;
+}
+
 export function BudgetTable() {
+  const totalBudgetValue = rows.reduce((sum, row) => sum + parseCurrency(row.budget), 0);
+  const totalSalesValue = rows.reduce((sum, row) => sum + parseCurrency(row.sales), 0);
+
+
   return (
     <section className={styles.section} data-node-id="1:34016">
       <div className={styles.header}>
@@ -133,12 +146,18 @@ export function BudgetTable() {
                   </div>
                 </td>
                 <td>
-                  <span className={styles.valueTeal}>{row.budget}</span>
+                  <div className={styles.cellStack}>
+                    <span className={styles.valueTeal}>{row.budget}</span>
+                    <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                  </div>
                 </td>
                 <td>
-                  <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
-                    {row.sales}
-                  </span>
+                  <div className={styles.cellStack}>
+                    <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
+                      {row.sales}
+                    </span>
+                    <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.sales, totalSalesValue)}</span>
+                  </div>
                 </td>
                 <td>
                   <span className={row.roasUp ? styles.valueTeal : styles.valueRed}>

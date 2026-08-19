@@ -155,6 +155,18 @@
   color: var(--gray-800);
 }
 
+.cellStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pctOfTotal {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--gray-800);
+}
+
 .valueTeal {
   color: var(--green-700);
   font-weight: 500;

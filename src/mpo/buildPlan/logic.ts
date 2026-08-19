@@ -240,6 +240,8 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
     name: `${label} plan`,
     segment: conversionType || "All Orders",
     planningWindow: label,
+    planStart: state.planStart,
+    planEnd: state.planEnd,
     referencePeriod,
     targetBudget,
     optimizationMode: "balanced",

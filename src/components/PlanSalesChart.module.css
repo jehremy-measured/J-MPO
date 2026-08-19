@@ -1,0 +1,175 @@
+.section {
+  padding: 0 24px 24px;
+}
+
+.card {
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: var(--gray-000);
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 24px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.headerText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--gray-900);
+}
+
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.swatchSales {
+  background: var(--blue-700);
+}
+
+.swatchBudget {
+  background: var(--green-800);
+}
+
+.chartWrap {
+  position: relative;
+  padding: 20px 24px 8px;
+}
+
+.svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+}
+
+.gridline {
+  stroke: var(--gray-200);
+  stroke-width: 1;
+}
+
+.yTick,
+.xTick {
+  font-size: 10.5px;
+  fill: var(--gray-800);
+  font-family: var(--font-inter);
+}
+
+.salesLine {
+  stroke: var(--blue-700);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.budgetLine {
+  stroke: var(--green-800);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.salesDot {
+  fill: var(--gray-000);
+  stroke: var(--blue-700);
+  stroke-width: 2;
+  transition: r 0.1s ease;
+}
+
+.budgetDot {
+  fill: var(--gray-000);
+  stroke: var(--green-800);
+  stroke-width: 2;
+  transition: r 0.1s ease;
+}
+
+.crosshair {
+  stroke: var(--gray-400);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.tooltip {
+  position: absolute;
+  top: 8px;
+  transform: translateX(-50%);
+  min-width: 168px;
+  padding: 10px 12px;
+  background: var(--gray-1000);
+  color: var(--gray-000);
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  pointer-events: none;
+  box-shadow: 0 8px 20px rgba(13, 45, 66, 0.25);
+  z-index: 2;
+}
+
+.tooltipLabel {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--gray-000);
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--gray-300);
+  padding: 2px 0;
+}
+
+.tooltipRow strong {
+  margin-left: auto;
+  color: var(--gray-000);
+  font-weight: 600;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
