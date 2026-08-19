@@ -2,14 +2,13 @@ import { assets } from "../assets/figma";
 import type { Plan, Tactic } from "./types";
 
 export const PLANS: Plan[] = [
-  { id: "default", label: "Default Plan" },
-  { id: "q1-2025", label: "Optimized budget Q1 2025" },
-  { id: "quick", label: "Quick calc" },
-  { id: "trevor", label: "Trevor's plan" },
-  { id: "quarterly", label: "Quarterly Expense Tracker" },
-  { id: "q3-2024", label: "Q3 2024 scenario" },
-  { id: "pacing", label: "My Plan & Pacing" },
-  { id: "test-2026", label: "Test Plan 2026" },
+  {
+    id: "default",
+    label: "Default Plan",
+    kind: "optimization",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 1),
+  },
 ];
 
 export const INITIAL_TACTICS: Tactic[] = [

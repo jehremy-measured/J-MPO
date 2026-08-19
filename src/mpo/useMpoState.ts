@@ -195,7 +195,10 @@ export function useMpoState() {
       const label = input.name.trim() || `Mia Plan ${plans.length + 1}`;
       const snapshot = snapshotFromInput(input);
 
-      setPlans((prev) => [...prev, { id, label }]);
+      setPlans((prev) => [
+        ...prev,
+        { id, label, kind: input.planKind, createdBy: "JH", lastEdited: new Date() },
+      ]);
       setPlanData((prev) => ({ ...prev, [id]: snapshot }));
       applySnapshot(snapshot);
       setActivePlanId(id);

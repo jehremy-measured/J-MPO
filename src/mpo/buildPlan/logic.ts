@@ -1,5 +1,5 @@
 import { assets } from "../../assets/figma";
-import type { CreatePlanInput, PlanTarget, Tactic } from "../types";
+import type { CreatePlanInput, PlanKind, PlanTarget, Tactic } from "../types";
 import { formatBudget } from "../types";
 import { BUDGET_TEMPLATE_BASE64, BUDGET_TEMPLATE_FILENAME, BUDGET_TEMPLATE_MIME } from "./budgetTemplateData";
 import {
@@ -211,6 +211,10 @@ function tacticLogo(tactic: BuildTactic): string {
   return initialsIconDataUri(tactic);
 }
 
+function planKindFor(state: BuildPlanState): PlanKind {
+  return state.planType === "spend" ? "optimization" : "simulation";
+}
+
 export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInput {
   const included = BUILD_TACTICS.filter((t) => state.included[t.id]);
   const { label: ctLabel, attrLabels } = ctSummary(state);
@@ -239,6 +243,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
   return {
     name: `${label} plan`,
     segment: conversionType || "All Orders",
+    planKind: planKindFor(state),
     planningWindow: label,
     planStart: state.planStart,
     planEnd: state.planEnd,

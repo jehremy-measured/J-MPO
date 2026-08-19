@@ -4,9 +4,10 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
+import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
 import { PlanSalesChart } from "../components/PlanSalesChart";
 import { PlanSummaryCards } from "../components/PlanSummaryCards";
-import { PlanTabs } from "../components/PlanTabs";
+import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
@@ -22,6 +23,7 @@ export function MpoPage() {
   const [buildPlanOpen, setBuildPlanOpen] = useState(false);
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
+  const [viewMode, setViewMode] = useState<"list" | "detail">("list");
 
   const openBuildPlanPage = (seed?: BuildPlanState) => {
     setBuildPlanSeed(seed ?? null);
@@ -29,9 +31,15 @@ export function MpoPage() {
     setBuildPlanOpen(true);
   };
 
+  const openPlan = (id: string) => {
+    state.selectPlan(id);
+    setViewMode("detail");
+  };
+
   const handleCreatePlan = (input: CreatePlanInput) => {
     const result = state.createPlan(input);
     setBuildPlanOpen(false);
+    setViewMode("detail");
     return result;
   };
 
@@ -48,7 +56,7 @@ export function MpoPage() {
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
               />
-            ) : (
+            ) : viewMode === "list" ? (
               <>
                 {!state.heroDismissed && (
                   <HeroBanner
@@ -58,11 +66,17 @@ export function MpoPage() {
                     }}
                   />
                 )}
-                <PlanTabs
-                  plans={state.plans}
-                  activePlanId={state.activePlanId}
-                  onSelectPlan={(id) => state.selectPlan(id)}
-                />
+                <PlansTable plans={state.plans} onOpenPlan={openPlan} />
+              </>
+            ) : (
+              <>
+                <div className={styles.detailHeader}>
+                  <button type="button" className={styles.backLink} onClick={() => setViewMode("list")}>
+                    <BackArrowIcon size={14} />
+                    Back to plans
+                  </button>
+                  <span className={styles.detailPlanLabel}>{state.activePlanLabel}</span>
+                </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
                     <>

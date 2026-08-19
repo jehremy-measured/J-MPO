@@ -29,6 +29,41 @@
   gap: 0;
 }
 
+.detailHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.backLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.backLink:hover {
+  color: var(--gray-1000);
+  background: var(--gray-200);
+}
+
+.detailPlanLabel {
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.detailPlanLabel::before {
+  content: "/";
+  margin-right: 12px;
+  color: var(--gray-400);
+}
+
 .footer {
   display: flex;
   align-items: center;

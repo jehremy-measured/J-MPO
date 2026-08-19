@@ -23,9 +23,14 @@ export type Tactic = {
   marginalRoas: number;
 };
 
+export type PlanKind = "optimization" | "simulation";
+
 export type Plan = {
   id: string;
   label: string;
+  kind: PlanKind;
+  createdBy: string;
+  lastEdited: Date;
 };
 
 export type PlanSnapshot = {
@@ -48,6 +53,7 @@ export type PlanSnapshot = {
 export type CreatePlanInput = {
   name: string;
   segment: string;
+  planKind: PlanKind;
   planningWindow: string;
   planStart: Date;
   planEnd: Date;
