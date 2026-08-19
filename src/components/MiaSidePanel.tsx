@@ -9,6 +9,7 @@ import {
   periodLabel,
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
+import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
 import {
@@ -73,13 +74,21 @@ function shouldStartCreatePlanFlow(text: string): boolean {
   );
 }
 
+type StartSignal = { token: number; planType: "outcomes" | "spend" };
+
 type Props = {
   open: boolean;
   onClose: () => void;
   onEditInMainFlow: (state: BuildPlanState) => void;
+  startSignal?: StartSignal | null;
 };
 
-export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
+const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
+  outcomes: "Simulate a plan",
+  spend: "Optimize a plan",
+};
+
+export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -91,6 +100,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
   const [isTyping, setIsTyping] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
+  const [presetPlanType, setPresetPlanType] = useState<StartSignal["planType"] | null>(null);
+  const lastStartTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -128,6 +139,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
 
   const cancelCreateFlow = useCallback(() => {
     setFlowActive(false);
+    setPresetPlanType(null);
     appendMessages([
       {
         role: "mia",
@@ -145,18 +157,27 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
     setIsTyping(false);
     setSettingUp(false);
     setChatsMenuOpen(false);
+    setPresetPlanType(null);
   }, []);
 
   const startCreateFlow = useCallback(
-    (userText?: string) => {
+    (userText?: string, planType?: StartSignal["planType"]) => {
       if (userText) appendMessages([{ role: "user", text: userText }]);
       setUploadState(null);
       setLoadingReviewState(null);
       setDraft("");
+      setPresetPlanType(planType ?? null);
       setSettingUp(true);
     },
     [appendMessages]
   );
+
+  useEffect(() => {
+    if (!open || !startSignal || startSignal.token === lastStartTokenRef.current) return;
+    lastStartTokenRef.current = startSignal.token;
+    setMessages([]);
+    startCreateFlow(PLAN_TYPE_START_LABEL[startSignal.planType], startSignal.planType);
+  }, [open, startSignal, startCreateFlow]);
 
   useEffect(() => {
     if (!settingUp) return;
@@ -200,6 +221,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
       setIsTyping(false);
       setSettingUp(false);
       setChatsMenuOpen(false);
+      setPresetPlanType(null);
       return;
     }
 
@@ -482,6 +504,9 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow }: Props) {
         {flowActive && (
           <MiaBuildPlanFlow
             key={flowKey}
+            initialState={
+              presetPlanType ? { ...defaultBuildPlanState(), planType: presetPlanType, screen: "period" } : undefined
+            }
             onAwaitUpload={handleAwaitUpload}
             onFetchReady={handleFetchReady}
             onExchange={(question, answer) =>

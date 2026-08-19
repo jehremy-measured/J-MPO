@@ -93,7 +93,6 @@ export function useMpoState() {
   const [pacingEnabled, setPacingEnabled] = useState(false);
   const [conversionType, setConversionType] = useState("All Orders");
   const [channelCount, setChannelCount] = useState(3);
-  const [heroDismissed, setHeroDismissed] = useState(false);
   const [csBannerDismissed, setCsBannerDismissed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [budgetView, setBudgetView] = useState<BudgetView>("tactics");
@@ -197,13 +196,12 @@ export function useMpoState() {
 
       setPlans((prev) => [
         ...prev,
-        { id, label, kind: input.planKind, createdBy: "JH", lastEdited: new Date() },
+        { id, label, kind: input.planKind, createdBy: "JH", lastEdited: new Date(), target: input.target },
       ]);
       setPlanData((prev) => ({ ...prev, [id]: snapshot }));
       applySnapshot(snapshot);
       setActivePlanId(id);
       setSelectedTacticId(null);
-      setHeroDismissed(true);
       setNewPlanSummary({
         planId: id,
         planningWindow: input.planningWindow,
@@ -221,6 +219,44 @@ export function useMpoState() {
     },
     [activePlanId, applySnapshot, currentSnapshot, notify, plans]
   );
+
+  const duplicatePlan = useCallback(
+    (id: string) => {
+      const source = plans.find((p) => p.id === id);
+      if (!source) return;
+
+      const sourceSnapshot = id === activePlanId ? currentSnapshot() : planData[id] ?? freshSnapshot();
+      const newId = `copy-${Date.now()}`;
+      const copy: Plan = {
+        ...source,
+        id: newId,
+        label: `${source.label} (copy)`,
+        createdBy: "JH",
+        lastEdited: new Date(),
+      };
+
+      setPlans((prev) => [...prev, copy]);
+      setPlanData((prev) => ({
+        ...prev,
+        [newId]: {
+          ...sourceSnapshot,
+          tactics: cloneTactics(sourceSnapshot.tactics),
+          baseline: cloneTactics(sourceSnapshot.baseline),
+        },
+      }));
+      notify(`Duplicated "${source.label}"`);
+    },
+    [plans, planData, activePlanId, currentSnapshot, notify]
+  );
+
+  const deletePlan = useCallback((id: string) => {
+    setPlans((prev) => prev.filter((p) => p.id !== id));
+    setPlanData((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
 
   const totals = useMemo(
     () => ({
@@ -313,6 +349,8 @@ export function useMpoState() {
     activePlanLabel,
     selectPlan,
     createPlan,
+    duplicatePlan,
+    deletePlan,
     tactics,
     filteredTactics,
     groupedRows,
@@ -332,8 +370,6 @@ export function useMpoState() {
     conversionType,
     channelCount,
     referenceBudgetTotal,
-    heroDismissed,
-    setHeroDismissed,
     csBannerDismissed,
     setCsBannerDismissed,
     searchQuery,

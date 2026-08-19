@@ -31,6 +31,7 @@ export type Plan = {
   kind: PlanKind;
   createdBy: string;
   lastEdited: Date;
+  target: PlanTarget;
 };
 
 export type PlanSnapshot = {

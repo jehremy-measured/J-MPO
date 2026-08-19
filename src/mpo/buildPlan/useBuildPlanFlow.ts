@@ -5,7 +5,7 @@ import { daysBetweenInclusive } from "./dateUtils";
 import { applyMethodChoice, applyUploadedBudget, budgetFromWindow, channelsPresent } from "./logic";
 import type { BuildPlanState, BuildScreen, PlanTypeChoice } from "./types";
 
-function initialState(): BuildPlanState {
+export function defaultBuildPlanState(): BuildPlanState {
   return {
     screen: "plan-type",
     planType: null,
@@ -27,7 +27,7 @@ function initialState(): BuildPlanState {
 }
 
 export function useBuildPlanFlow(seed?: BuildPlanState) {
-  const [state, setState] = useState<BuildPlanState>(() => seed ?? initialState());
+  const [state, setState] = useState<BuildPlanState>(() => seed ?? defaultBuildPlanState());
 
   const goTo = useCallback((screen: BuildScreen) => {
     setState((s) => ({ ...s, screen }));

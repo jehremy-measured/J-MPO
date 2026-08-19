@@ -17,6 +17,7 @@ import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
+  initialState?: BuildPlanState;
   onAwaitUpload: (state: BuildPlanState) => void;
   onFetchReady: (state: BuildPlanState) => void;
   onExchange: (question: string, answer: string) => void;
@@ -91,8 +92,8 @@ function TargetValueInput({
   );
 }
 
-export function MiaBuildPlanFlow({ onAwaitUpload, onFetchReady, onExchange }: Props) {
-  const flow = useBuildPlanFlow();
+export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, onExchange }: Props) {
+  const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [planTypeChoice, setPlanTypeChoice] = useState<PlanTypeChoice>(null);
   const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);

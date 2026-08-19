@@ -1,18 +1,35 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatShortDate } from "../mpo/buildPlan/dateUtils";
-import type { Plan } from "../mpo/types";
-import { ReturnCurveIcon, WrenchIcon } from "./icons/BuildPlanIcons";
+import type { Plan, PlanTarget } from "../mpo/types";
+import { ChevronDownIcon, DuplicateIcon, MoreIcon, ReturnCurveIcon, SearchIcon, TrashIcon, WrenchIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlansTable.module.css";
 
 type Props = {
   plans: Plan[];
   onOpenPlan: (id: string) => void;
+  onDuplicatePlan: (id: string) => void;
+  onDeletePlan: (id: string) => void;
+};
+
+type DateFilter = "90d" | "all";
+
+const DATE_FILTER_LABEL: Record<DateFilter, string> = {
+  "90d": "Last 90 days",
+  all: "All time",
 };
 
 const KIND_LABEL: Record<Plan["kind"], string> = {
   optimization: "Optimization",
   simulation: "Simulation",
 };
+
+const TARGET_LABEL: Record<PlanTarget, string> = {
+  "incremental-sales": "Incremental Sales",
+  "incremental-roas": "Incremental ROAS",
+  "not-sure": "No target",
+};
+
+const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 function KindIcon({ kind }: { kind: Plan["kind"] }) {
   return (
@@ -22,13 +39,51 @@ function KindIcon({ kind }: { kind: Plan["kind"] }) {
   );
 }
 
-export function PlansTable({ plans, onOpenPlan }: Props) {
+export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [query, setQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
-  const allSelected = plans.length > 0 && selected.size === plans.length;
+  useEffect(() => {
+    if (!filterOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (filterRef.current && !filterRef.current.contains(e.target as Node)) setFilterOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [filterOpen]);
+
+  useEffect(() => {
+    if (!openMenuId) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setOpenMenuId(null);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [openMenuId]);
+
+  const now = Date.now();
+  const visiblePlans = plans.filter((plan) => {
+    const matchesQuery = plan.label.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesDate = dateFilter === "all" || now - plan.lastEdited.getTime() <= NINETY_DAYS_MS;
+    return matchesQuery && matchesDate;
+  });
+
+  const allSelected = visiblePlans.length > 0 && visiblePlans.every((p) => selected.has(p.id));
 
   const toggleAll = () => {
-    setSelected(allSelected ? new Set() : new Set(plans.map((p) => p.id)));
+    setSelected((prev) => {
+      if (allSelected) {
+        const next = new Set(prev);
+        visiblePlans.forEach((p) => next.delete(p.id));
+        return next;
+      }
+      return new Set([...prev, ...visiblePlans.map((p) => p.id)]);
+    });
   };
 
   const toggleOne = (id: string) => {
@@ -40,11 +95,57 @@ export function PlansTable({ plans, onOpenPlan }: Props) {
     });
   };
 
+  const handleDelete = (plan: Plan) => {
+    setOpenMenuId(null);
+    if (window.confirm(`Delete "${plan.label}"? This can't be undone.`)) {
+      onDeletePlan(plan.id);
+      setSelected((prev) => {
+        const next = new Set(prev);
+        next.delete(plan.id);
+        return next;
+      });
+    }
+  };
+
   return (
     <section className={styles.section}>
       <div className={styles.header}>
         <h2>Plans</h2>
         {selected.size > 0 && <span className={styles.selectedCount}>{selected.size} selected</span>}
+        <div className={styles.headerControls}>
+          <div className={styles.search}>
+            <SearchIcon size={16} />
+            <input
+              type="search"
+              placeholder="Search plans"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <div className={styles.filterDropdown} ref={filterRef}>
+            <button type="button" className={styles.filterBtn} onClick={() => setFilterOpen((v) => !v)}>
+              {DATE_FILTER_LABEL[dateFilter]}
+              <ChevronDownIcon size={14} />
+            </button>
+            {filterOpen && (
+              <div className={styles.filterPanel}>
+                {(Object.keys(DATE_FILTER_LABEL) as DateFilter[]).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className={key === dateFilter ? styles.filterOptionActive : styles.filterOption}
+                    onClick={() => {
+                      setDateFilter(key);
+                      setFilterOpen(false);
+                    }}
+                  >
+                    {DATE_FILTER_LABEL[key]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       <div className={styles.tableWrap}>
@@ -63,10 +164,12 @@ export function PlansTable({ plans, onOpenPlan }: Props) {
               <th>Created by</th>
               <th>Last edited</th>
               <th>Type</th>
+              <th>Target</th>
+              <th className={styles.menuCol} />
             </tr>
           </thead>
           <tbody>
-            {plans.map((plan) => (
+            {visiblePlans.map((plan) => (
               <tr key={plan.id} className={styles.row}>
                 <td className={styles.checkboxCol}>
                   <input
@@ -89,8 +192,55 @@ export function PlansTable({ plans, onOpenPlan }: Props) {
                     {KIND_LABEL[plan.kind]}
                   </span>
                 </td>
+                <td className={styles.targetCell}>{TARGET_LABEL[plan.target]}</td>
+                <td className={styles.menuCol}>
+                  <div className={styles.moreWrap} ref={plan.id === openMenuId ? menuRef : undefined}>
+                    <button
+                      type="button"
+                      className={styles.iconBtn}
+                      aria-label={`More options for ${plan.label}`}
+                      onClick={() => setOpenMenuId(openMenuId === plan.id ? null : plan.id)}
+                    >
+                      <MoreIcon size={16} />
+                    </button>
+                    {openMenuId === plan.id && (
+                      <div className={styles.moreMenu}>
+                        {plan.kind === "simulation" && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              onOpenPlan(plan.id);
+                            }}
+                          >
+                            <WrenchIcon size={15} /> Optimize
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            onDuplicatePlan(plan.id);
+                          }}
+                        >
+                          <DuplicateIcon size={15} /> Duplicate
+                        </button>
+                        <button type="button" className={styles.dangerItem} onClick={() => handleDelete(plan)}>
+                          <TrashIcon size={15} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </td>
               </tr>
             ))}
+            {visiblePlans.length === 0 && (
+              <tr>
+                <td colSpan={7} className={styles.emptyRow}>
+                  No plans match your search or filter.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

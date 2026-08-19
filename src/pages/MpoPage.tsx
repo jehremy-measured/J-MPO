@@ -24,6 +24,7 @@ export function MpoPage() {
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
+  const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
 
   const openBuildPlanPage = (seed?: BuildPlanState) => {
     setBuildPlanSeed(seed ?? null);
@@ -34,6 +35,11 @@ export function MpoPage() {
   const openPlan = (id: string) => {
     state.selectPlan(id);
     setViewMode("detail");
+  };
+
+  const startMiaFlow = (planType: "outcomes" | "spend") => {
+    setMiaOpen(true);
+    setMiaStart({ token: Date.now(), planType });
   };
 
   const handleCreatePlan = (input: CreatePlanInput) => {
@@ -58,15 +64,16 @@ export function MpoPage() {
               />
             ) : viewMode === "list" ? (
               <>
-                {!state.heroDismissed && (
-                  <HeroBanner
-                    onCreatePlan={() => {
-                      state.setHeroDismissed(true);
-                      openBuildPlanPage();
-                    }}
-                  />
-                )}
-                <PlansTable plans={state.plans} onOpenPlan={openPlan} />
+                <HeroBanner
+                  onSimulate={() => startMiaFlow("outcomes")}
+                  onOptimize={() => startMiaFlow("spend")}
+                />
+                <PlansTable
+                  plans={state.plans}
+                  onOpenPlan={openPlan}
+                  onDuplicatePlan={state.duplicatePlan}
+                  onDeletePlan={state.deletePlan}
+                />
               </>
             ) : (
               <>
@@ -117,6 +124,7 @@ export function MpoPage() {
           open={miaOpen}
           onClose={() => setMiaOpen(false)}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
+          startSignal={miaStart}
         />
       </div>
       <PrototypeBar
