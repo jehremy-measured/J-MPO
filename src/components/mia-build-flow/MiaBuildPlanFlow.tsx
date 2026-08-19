@@ -22,7 +22,7 @@ type Props = {
   onExchange: (question: string, answer: string) => void;
 };
 
-const STEP_DELAY_MS = 1600;
+const STEP_DELAY_MS = 800;
 
 function MiaTurn({ children }: { children: ReactNode }) {
   return <div className={styles.turn}>{children}</div>;
