@@ -11,11 +11,35 @@
 
 .header {
   display: flex;
-  flex-direction: column;
-  gap: 3px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
   padding: 16px 24px;
   background: var(--gray-100);
   border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.headerCopy {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.editLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--blue-700);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.editLink:hover {
+  background: var(--gray-200);
 }
 
 .title {

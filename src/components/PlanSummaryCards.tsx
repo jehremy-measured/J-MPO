@@ -1,4 +1,5 @@
 import { formatBudget } from "../mpo/types";
+import { EditIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlanSummaryCards.module.css";
 
 type Props = {
@@ -18,10 +19,16 @@ export function PlanSummaryCards({
     <section className={styles.section}>
       <div className={styles.card}>
         <header className={styles.header}>
-          <span className={styles.title}>Plan created</span>
-          <span className={styles.subtitle}>
-            Adjust included tactics and budgets in the table below.
-          </span>
+          <div className={styles.headerCopy}>
+            <span className={styles.title}>Plan created</span>
+            <span className={styles.subtitle}>
+              Adjust included tactics and budgets in the table below.
+            </span>
+          </div>
+          <button type="button" className={styles.editLink}>
+            <EditIcon size={13} />
+            Edit plan
+          </button>
         </header>
         <div className={styles.grid}>
           <div className={styles.scard}>
