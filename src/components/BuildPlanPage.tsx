@@ -581,7 +581,7 @@ function ReviewScreen({
               {state.source}
             </strong>
             <button type="button" className={styles.linkBtn} onClick={flow.reupload}>
-              <UploadIcon size={20} /> Reupload
+              Reupload
             </button>
             <div className={styles.moreWrap}>
               <button
@@ -601,7 +601,7 @@ function ReviewScreen({
                       setMoreOpen(false);
                     }}
                   >
-                    <DownloadIcon size={20} /> Download template
+                    Download template
                   </button>
                 </div>
               )}
@@ -740,7 +740,7 @@ function ReviewScreen({
         )}
         <div className={styles.tblFoot}>
           <span className={styles.flabel}>
-            Total budget <span className={styles.finc}>· {includedCount(state)} of {BUILD_TACTICS.length} included</span>
+            {includedCount(state)} of {BUILD_TACTICS.length} tactics included
           </span>
           <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
         </div>
