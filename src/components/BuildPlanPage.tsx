@@ -54,18 +54,18 @@ function Card({
   children,
   footer,
 }: {
-  eyebrow: string;
+  eyebrow?: string;
   title: string;
-  desc: string;
+  desc?: string;
   children: ReactNode;
   footer: ReactNode;
 }) {
   return (
     <div className={styles.card}>
       <div className={styles.cardHead}>
-        <p className={styles.eyebrow}>{eyebrow}</p>
+        {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
         <h1>{title}</h1>
-        <p>{desc}</p>
+        {desc && <p>{desc}</p>}
       </div>
       <div className={styles.cardBody}>{children}</div>
       <div className={styles.cardFoot}>{footer}</div>
@@ -518,21 +518,7 @@ function ReviewScreen({
         <span className={styles.summaryItem}>
           Conversion type <strong>{conversionTypeLabel}</strong>
         </span>
-      </div>
-      <Card
-      eyebrow="Review budget"
-      title="Review plan budget"
-      desc="Include the tactics you want, adjust budgets, then create the plan."
-      footer={
-        <>
-          <BackLink onClick={flow.back} />
-          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
-            Create plan
-          </button>
-        </>
-      }
-    >
-      <div className={styles.reviewToolbar}>
+        <span className={styles.summaryDivider} aria-hidden />
         {state.method === "fetch" ? (
           <div className={styles.dateDropdown}>
             <button
@@ -604,7 +590,19 @@ function ReviewScreen({
             </div>
           </div>
         )}
-
+      </div>
+      <Card
+      title="Review plan"
+      footer={
+        <>
+          <BackLink onClick={flow.back} />
+          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
+            Create plan
+          </button>
+        </>
+      }
+    >
+      <div className={styles.reviewToolbar}>
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
