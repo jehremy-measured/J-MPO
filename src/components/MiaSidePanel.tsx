@@ -386,7 +386,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
         </h2>
         <div className={styles.headerActions}>
           <button type="button" className={styles.expandBtn} aria-label="Expand">
-            <ExpandIcon size={15} />
+            <ExpandIcon size={20} />
           </button>
           <button
             type="button"
@@ -394,14 +394,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
             onClick={onClose}
             aria-label="Close"
           >
-            <CloseIcon size={16} />
+            <CloseIcon size={20} />
           </button>
         </div>
       </header>
 
       <div className={styles.subNav}>
         <button type="button" className={styles.subNavItemActive} onClick={resetToHome}>
-          <PlusIcon size={14} /> New chat
+          <PlusIcon size={20} /> New chat
         </button>
         <div className={styles.subNavChats} ref={chatsMenuRef}>
           <button
@@ -410,7 +410,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
             onClick={() => setChatsMenuOpen((v) => !v)}
             aria-expanded={chatsMenuOpen}
           >
-            <MenuIcon size={14} /> My chats
+            <MenuIcon size={20} /> My chats
           </button>
           {chatsMenuOpen && (
             <div className={styles.chatsMenu} role="menu">
@@ -460,7 +460,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
                   aria-label="Download template"
                   onClick={downloadBudgetTemplate}
                 >
-                  <DownloadIcon size={16} />
+                  <DownloadIcon size={20} />
                 </button>
               </div>
               <p className={styles.miaText}>{msg.text}</p>
@@ -473,14 +473,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
               onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
             >
               <span className={styles.planCardIcon} aria-hidden>
-                <FileIcon size={16} />
+                <FileIcon size={20} />
               </span>
               <span className={styles.planCardBody}>
                 <span className={styles.planCardTitle}>{msg.text}</span>
                 <span className={styles.planCardSub}>{msg.subtext}</span>
               </span>
               <span className={styles.planCardChevron} aria-hidden>
-                <ChevronRightIcon size={16} />
+                <ChevronRightIcon size={20} />
               </span>
             </button>
           ) : msg.role === "mia" ? (
@@ -554,7 +554,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
                 aria-label="Attach file"
                 onClick={() => fileAttachRef.current?.click()}
               >
-                <PlusIcon size={18} />
+                <PlusIcon size={20} />
               </button>
               <input
                 ref={fileAttachRef}
@@ -584,7 +584,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
             disabled={!canSend}
             aria-label="Send message"
           >
-            <SendIcon size={18} />
+            <SendIcon size={20} />
           </button>
         </div>
       </form>

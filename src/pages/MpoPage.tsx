@@ -103,7 +103,7 @@ export function MpoPage() {
               <>
                 <div className={styles.detailHeader}>
                   <button type="button" className={styles.backLink} onClick={() => setViewMode("list")}>
-                    <BackArrowIcon size={14} />
+                    <BackArrowIcon size={20} />
                     Back to plans
                   </button>
                   <span className={styles.detailPlanLabel}>{state.activePlanLabel}</span>

@@ -291,7 +291,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                 onClick={() => setMethodChoice("upload")}
               >
                 <div className={styles.methodIcon}>
-                  <UploadIcon size={18} />
+                  <UploadIcon size={20} />
                 </div>
                 <div>
                   <h4>Upload budget</h4>
@@ -304,7 +304,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                 onClick={() => setMethodChoice("fetch")}
               >
                 <div className={styles.methodIcon}>
-                  <HistoryIcon size={18} />
+                  <HistoryIcon size={20} />
                 </div>
                 <div>
                   <h4>Fetch from past period</h4>

@@ -54,7 +54,7 @@ export function CurveAndGoal() {
             </span>
             <ToolbarDivider />
             <button type="button" className={styles.settingsLink}>
-              <EditIcon size={13} /> Plan settings
+              <EditIcon size={20} /> Plan settings
             </button>
           </div>
           <div className={styles.toggle}>

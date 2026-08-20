@@ -28,7 +28,7 @@ export function PlanSummaryCards({
             </span>
           </div>
           <button type="button" className={styles.editLink} onClick={onEditPlan}>
-            <EditIcon size={13} />
+            <EditIcon size={20} />
             Edit plan
           </button>
         </header>

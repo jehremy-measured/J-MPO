@@ -82,10 +82,10 @@ export function BudgetTable() {
           </div>
           <input className={styles.search} type="search" placeholder="Search" />
           <button type="button" className={styles.iconBtn} aria-label="Layout">
-            <MaterialIcon name="grid_view" size={17} />
+            <MaterialIcon name="grid_view" size={20} />
           </button>
           <button type="button" className={styles.iconBtn} aria-label="Export">
-            <MaterialIcon name="file_upload" size={17} />
+            <MaterialIcon name="file_upload" size={20} />
           </button>
         </div>
       </div>

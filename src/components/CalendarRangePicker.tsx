@@ -59,7 +59,7 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "
               aria-label="Previous month"
               onClick={() => navigate(panelIndex, -1)}
             >
-              <ChevronLeftIcon size={16} />
+              <ChevronLeftIcon size={20} />
             </button>
             <span className={styles.monthLabel}>
               {monthName(cursor)} {cursor.getFullYear()}
@@ -70,7 +70,7 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "
               aria-label="Next month"
               onClick={() => navigate(panelIndex, 1)}
             >
-              <ChevronRightIcon size={16} />
+              <ChevronRightIcon size={20} />
             </button>
           </div>
           <div className={styles.weekRow}>

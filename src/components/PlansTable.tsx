@@ -125,7 +125,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
           <div className={styles.filterDropdown} ref={filterRef}>
             <button type="button" className={styles.filterBtn} onClick={() => setFilterOpen((v) => !v)}>
               {DATE_FILTER_LABEL[dateFilter]}
-              <ChevronDownIcon size={14} />
+              <ChevronDownIcon size={20} />
             </button>
             {filterOpen && (
               <div className={styles.filterPanel}>
@@ -210,7 +210,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                       aria-label={`More options for ${plan.label}`}
                       onClick={() => setOpenMenuId(openMenuId === plan.id ? null : plan.id)}
                     >
-                      <MoreIcon size={16} />
+                      <MoreIcon size={20} />
                     </button>
                     {openMenuId === plan.id && (
                       <div className={styles.moreMenu}>
@@ -222,7 +222,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                               onOpenPlan(plan.id);
                             }}
                           >
-                            <WrenchIcon size={15} /> Optimize
+                            <WrenchIcon size={20} /> Optimize
                           </button>
                         )}
                         <button
@@ -232,10 +232,10 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                             onDuplicatePlan(plan.id);
                           }}
                         >
-                          <DuplicateIcon size={15} /> Duplicate
+                          <DuplicateIcon size={20} /> Duplicate
                         </button>
                         <button type="button" className={styles.dangerItem} onClick={() => handleDelete(plan)}>
-                          <TrashIcon size={15} /> Delete
+                          <TrashIcon size={20} /> Delete
                         </button>
                       </div>
                     )}

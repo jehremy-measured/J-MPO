@@ -15,7 +15,7 @@ export function HeroBanner({ onSimulate, onOptimize }: Props) {
       <img src={assets.heroVectorRight} alt="" className={styles.waveRight} aria-hidden />
 
       <button type="button" className={styles.tutorialBtn}>
-        <PlayIcon size={13} />
+        <PlayIcon size={20} />
         Watch tutorial
       </button>
 
@@ -28,11 +28,11 @@ export function HeroBanner({ onSimulate, onOptimize }: Props) {
         <div className={styles.actions}>
           <button type="button" className={styles.primaryBtn} onClick={onSimulate}>
             Simulate
-            <SparkleIcon size={14} />
+            <SparkleIcon size={20} />
           </button>
           <button type="button" className={styles.primaryBtn} onClick={onOptimize}>
             Optimize
-            <SparkleIcon size={14} />
+            <SparkleIcon size={20} />
           </button>
         </div>
       </div>

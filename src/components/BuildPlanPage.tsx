@@ -79,7 +79,7 @@ function Card({
 function BackLink({ onClick }: { onClick: () => void }) {
   return (
     <button type="button" className={styles.backLink} onClick={onClick}>
-      <BackArrowIcon size={14} />
+      <BackArrowIcon size={20} />
       Back
     </button>
   );
@@ -117,7 +117,7 @@ function BudgetInput({
       >
         <span className={styles.bvalueText}>{text ? `$${text}` : "Add budget"}</span>
         <span className={styles.bvalueEditIcon}>
-          <EditIcon size={13} />
+          <EditIcon size={20} />
         </span>
       </button>
     );
@@ -155,7 +155,7 @@ function BudgetInput({
           setIsEditing(false);
         }}
       >
-        <ResetIcon size={14} />
+        <ResetIcon size={20} />
       </button>
     </div>
   );
@@ -241,12 +241,12 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
           <>
             <h1 className={styles.reviewPageTitle}>Review plan</h1>
             <button type="button" className={styles.plainCloseBtn} onClick={onExit} aria-label="Exit setup">
-              <CloseIcon size={16} />
+              <CloseIcon size={20} />
             </button>
           </>
         ) : (
           <button type="button" className={styles.exitBtn} onClick={onExit}>
-            <CloseIcon size={14} />
+            <CloseIcon size={20} />
             Exit setup
           </button>
         )}
@@ -411,14 +411,14 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
           <div className={styles.methods}>
             <button type="button" className={styles.methodCard} onClick={() => flow.chooseMethod("upload")}>
               <div className={styles.methodIcon}>
-                <UploadIcon size={22} />
+                <UploadIcon size={20} />
               </div>
               <h3>Upload budget</h3>
               <p>Download the template, fill in spend per tactic, and upload it back.</p>
             </button>
             <button type="button" className={styles.methodCard} onClick={() => flow.chooseMethod("fetch")}>
               <div className={styles.methodIcon}>
-                <HistoryIcon size={22} />
+                <HistoryIcon size={20} />
               </div>
               <h3>Fetch from past period</h3>
               <p>Use a prior period's actual spend as your starting budget.</p>
@@ -455,7 +455,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               <span>{BUILD_TACTICS.length} tactics · Tactic, Channel, Budget columns</span>
             </div>
             <button type="button" className={styles.btn} onClick={downloadBudgetTemplate}>
-              <DownloadIcon size={16} /> Download
+              <DownloadIcon size={20} /> Download
             </button>
           </div>
           <div
@@ -472,7 +472,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               onChange={() => flow.markUploadFilled()}
             />
             <div className={styles.dzIcon}>
-              {state.source === "upload-ready" ? <CheckIcon size={24} /> : <UploadIcon size={24} />}
+              {state.source === "upload-ready" ? <CheckIcon size={20} /> : <UploadIcon size={20} />}
             </div>
             <div className={styles.dzTitle}>
               {state.source === "upload-ready" ? "budget_plan.xlsx uploaded" : "Drop your completed .xlsx here"}
@@ -544,11 +544,11 @@ function ReviewScreen({
               className={styles.dateDropdownBtn}
               onClick={() => setDateOpen((v) => !v)}
             >
-              <HistoryIcon size={16} />
+              <HistoryIcon size={20} />
               <span>
                 {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
               </span>
-              <ChevronDownIcon size={14} />
+              <ChevronDownIcon size={20} />
             </button>
             {dateOpen && (
               <div className={styles.dateDropdownPanel}>
@@ -581,7 +581,7 @@ function ReviewScreen({
               {state.source}
             </strong>
             <button type="button" className={styles.linkBtn} onClick={flow.reupload}>
-              <UploadIcon size={16} /> Reupload
+              <UploadIcon size={20} /> Reupload
             </button>
             <div className={styles.moreWrap}>
               <button
@@ -590,7 +590,7 @@ function ReviewScreen({
                 aria-label="More options"
                 onClick={() => setMoreOpen(!moreOpen)}
               >
-                <MoreIcon size={18} />
+                <MoreIcon size={20} />
               </button>
               {moreOpen && (
                 <div className={styles.moreMenu}>
@@ -601,7 +601,7 @@ function ReviewScreen({
                       setMoreOpen(false);
                     }}
                   >
-                    <DownloadIcon size={16} /> Download template
+                    <DownloadIcon size={20} /> Download template
                   </button>
                 </div>
               )}
@@ -638,7 +638,7 @@ function ReviewScreen({
             onClick={() => setChannelOpen((v) => !v)}
           >
             <span>{channelFilterLabel(state)}</span>
-            <ChevronDownIcon size={14} />
+            <ChevronDownIcon size={20} />
           </button>
           {channelOpen && (
             <div className={styles.channelDropdownPanel}>
@@ -680,7 +680,7 @@ function ReviewScreen({
                 aria-label="Budget column options"
                 onClick={() => setBudgetMenuOpen((v) => !v)}
               >
-                <MoreIcon size={15} />
+                <MoreIcon size={20} />
               </button>
               {budgetMenuOpen && (
                 <div className={styles.moreMenu}>
@@ -691,7 +691,7 @@ function ReviewScreen({
                       setBudgetMenuOpen(false);
                     }}
                   >
-                    <ResetIcon size={15} /> Reset all budgets
+                    <ResetIcon size={20} /> Reset all budgets
                   </button>
                 </div>
               )}
