@@ -32,6 +32,8 @@ export type Plan = {
   createdBy: string;
   lastEdited: Date;
   target: PlanTarget;
+  planStart: Date;
+  planEnd: Date;
 };
 
 export type PlanSnapshot = {

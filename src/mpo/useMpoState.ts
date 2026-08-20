@@ -196,7 +196,16 @@ export function useMpoState() {
 
       setPlans((prev) => [
         ...prev,
-        { id, label, kind: input.planKind, createdBy: "JH", lastEdited: new Date(), target: input.target },
+        {
+          id,
+          label,
+          kind: input.planKind,
+          createdBy: "JH",
+          lastEdited: new Date(),
+          target: input.target,
+          planStart: input.planStart,
+          planEnd: input.planEnd,
+        },
       ]);
       setPlanData((prev) => ({ ...prev, [id]: snapshot }));
       applySnapshot(snapshot);

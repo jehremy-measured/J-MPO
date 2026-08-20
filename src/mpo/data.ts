@@ -9,6 +9,8 @@ export const PLANS: Plan[] = [
     createdBy: "JH",
     lastEdited: new Date(2026, 7, 1),
     target: "not-sure",
+    planStart: new Date(2026, 6, 2),
+    planEnd: new Date(2026, 7, 1),
   },
   {
     id: "sim-default",
@@ -17,6 +19,8 @@ export const PLANS: Plan[] = [
     createdBy: "JH",
     lastEdited: new Date(2026, 7, 10),
     target: "incremental-sales",
+    planStart: new Date(2026, 6, 12),
+    planEnd: new Date(2026, 7, 10),
   },
 ];
 

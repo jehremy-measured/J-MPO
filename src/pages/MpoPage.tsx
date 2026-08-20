@@ -12,6 +12,7 @@ import { PrototypeBar } from "../components/PrototypeBar";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
+import { formatRangeLabel } from "../mpo/buildPlan/dateUtils";
 import type { CreatePlanInput } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -48,6 +49,8 @@ export function MpoPage() {
     setViewMode("detail");
     return result;
   };
+
+  const activePlan = state.plans.find((p) => p.id === state.activePlanId);
 
   return (
     <div className={styles.page} data-node-id="1:33651">
@@ -102,6 +105,27 @@ export function MpoPage() {
                       <PlanSalesChart
                         planStart={state.newPlanSummary.planStart}
                         planEnd={state.newPlanSummary.planEnd}
+                        totalSales={state.totals.sales}
+                        totalBudget={state.totals.budget}
+                      />
+                    </>
+                  ) : activePlan?.kind === "simulation" ? (
+                    <>
+                      <TargetBanner
+                        target={activePlan.target}
+                        targetValue={null}
+                        incrementalSales={state.totals.sales}
+                        roas={state.totals.roas}
+                      />
+                      <PlanSummaryCards
+                        planningWindow={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
+                        conversionType="All Orders"
+                        tacticsCount={state.tactics.length}
+                        totalBudget={state.totals.budget}
+                      />
+                      <PlanSalesChart
+                        planStart={activePlan.planStart}
+                        planEnd={activePlan.planEnd}
                         totalSales={state.totals.sales}
                         totalBudget={state.totals.budget}
                       />

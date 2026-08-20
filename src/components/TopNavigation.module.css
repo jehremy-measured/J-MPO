@@ -94,7 +94,6 @@
 
 .menuItemActive {
   color: var(--gray-1000);
-  background: var(--gray-100);
 }
 
 .menuItemActive::after {
