@@ -8,8 +8,9 @@ export type PlanGoalType =
   | "target-budget";
 
 /** What the user said they're aiming for when building a plan — drives the
- * post-creation "how does this compare to your target" banner. */
-export type PlanTarget = "incremental-sales" | "incremental-roas" | "not-sure";
+ * post-creation "how does this compare to your target" banner and which
+ * output metrics (sales/ROAS vs. orders/CPO) the budget table shows. */
+export type PlanTarget = "incremental-sales" | "incremental-orders" | "incremental-roas" | "incremental-cpo";
 
 export type Tactic = {
   id: string;
@@ -88,3 +89,7 @@ export function goalTypeLabel(type: PlanGoalType): string {
 export function formatBudget(amount: number): string {
   return `$${Math.round(amount).toLocaleString()}`;
 }
+
+/** Assumed average order value, used to derive an order count and CPO from sales/spend
+ * figures wherever no direct order-count data exists. */
+export const AVERAGE_ORDER_VALUE = 150;

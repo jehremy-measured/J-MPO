@@ -25,8 +25,9 @@ const KIND_LABEL: Record<Plan["kind"], string> = {
 
 const TARGET_LABEL: Record<PlanTarget, string> = {
   "incremental-sales": "Incremental Sales",
+  "incremental-orders": "Incremental Orders",
   "incremental-roas": "Incremental ROAS",
-  "not-sure": "No target",
+  "incremental-cpo": "Incremental CPO",
 };
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;

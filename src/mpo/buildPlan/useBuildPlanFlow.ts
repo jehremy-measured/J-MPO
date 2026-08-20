@@ -54,7 +54,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, planStart, planEnd }));
   }, []);
 
-  const continueFromPeriod = useCallback(() => goTo("target"), [goTo]);
+  const continueFromPeriod = useCallback(() => goTo("ct"), [goTo]);
 
   const setTarget = useCallback((target: PlanTarget) => {
     setState((s) => ({ ...s, target, targetValue: null }));
@@ -64,7 +64,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, targetValue }));
   }, []);
 
-  const continueFromTarget = useCallback(() => goTo("ct"), [goTo]);
+  const continueFromTarget = useCallback(() => goTo("method"), [goTo]);
 
   const toggleSingleCT = useCallback((id: string) => {
     setState((s) => ({
@@ -82,7 +82,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }));
   }, []);
 
-  const continueFromCT = useCallback(() => goTo("method"), [goTo]);
+  const continueFromCT = useCallback(() => goTo("target"), [goTo]);
 
   const chooseMethod = useCallback((method: "upload" | "fetch") => {
     setState((s) => applyMethodChoice(s, method));
@@ -163,12 +163,12 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       switch (s.screen) {
         case "period":
           return { ...s, screen: "plan-type" };
-        case "target":
-          return { ...s, screen: "period" };
         case "ct":
-          return { ...s, screen: "target" };
-        case "method":
+          return { ...s, screen: "period" };
+        case "target":
           return { ...s, screen: "ct" };
+        case "method":
+          return { ...s, screen: "target" };
         case "upload":
           return { ...s, screen: "method" };
         case "review":

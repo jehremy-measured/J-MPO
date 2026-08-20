@@ -72,8 +72,12 @@
 }
 
 .pageReview .cardFoot {
-  padding: 16px 0;
+  margin-left: -20px;
+  margin-right: -20px;
+  width: calc(100% + 40px);
+  padding: 16px 20px;
   border-radius: 0;
+  background: var(--gray-000);
 }
 
 .pageReview .tbl {
@@ -83,11 +87,6 @@
 }
 
 .pageReview .tblFoot {
-  margin-left: -20px;
-  margin-right: -20px;
-  width: calc(100% + 40px);
-  padding-left: 20px;
-  padding-right: 20px;
   box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
 }
 
@@ -224,6 +223,13 @@
   background: var(--gray-100);
   border-top: 1px solid var(--gray-300-stroke);
   border-radius: 0 0 14px 14px;
+}
+
+.footerActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-left: auto;
 }
 
 .backLink {

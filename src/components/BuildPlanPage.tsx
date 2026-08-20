@@ -48,6 +48,13 @@ type Props = {
   onScreenChange?: (screen: BuildScreen) => void;
 };
 
+const TARGET_FIELD_LABEL: Record<Exclude<PlanTarget, null>, string> = {
+  "incremental-sales": "Target incremental sales",
+  "incremental-orders": "Target incremental orders",
+  "incremental-roas": "Target incremental ROAS",
+  "incremental-cpo": "Target incremental CPO",
+};
+
 function Card({
   eyebrow,
   title,
@@ -166,48 +173,42 @@ function TargetValueInput({
   value,
   onChange,
 }: {
-  target: "incremental-sales" | "incremental-roas";
+  target: Exclude<PlanTarget, null>;
   value: number | null;
   onChange: (value: number | null) => void;
 }) {
-  const [text, setText] = useState(
-    value == null ? "" : target === "incremental-sales" ? value.toLocaleString("en-US") : String(value)
-  );
+  const isDollar = target === "incremental-sales" || target === "incremental-cpo";
+  const isInteger = target === "incremental-sales" || target === "incremental-orders";
+  const placeholder =
+    target === "incremental-sales"
+      ? "e.g. 250,000"
+      : target === "incremental-orders"
+      ? "e.g. 1,200"
+      : target === "incremental-roas"
+      ? "e.g. 4.50"
+      : "e.g. 45.00";
 
-  if (target === "incremental-sales") {
-    return (
-      <div className={styles.targetInputWrap}>
-        <span className={styles.dol}>$</span>
-        <input
-          className={`${styles.targetInput} ${styles.targetInputPrefixed}`}
-          inputMode="numeric"
-          placeholder="e.g. 250,000"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
-            onChange(isNaN(n) ? null : n);
-          }}
-          onBlur={() => {
-            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
-            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
-          }}
-        />
-      </div>
-    );
-  }
+  const [text, setText] = useState(value == null ? "" : isInteger ? value.toLocaleString("en-US") : String(value));
 
   return (
     <div className={styles.targetInputWrap}>
+      {isDollar && <span className={styles.dol}>$</span>}
       <input
-        className={styles.targetInput}
-        inputMode="decimal"
-        placeholder="e.g. 4.50"
+        className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""}`}
+        inputMode={isInteger ? "numeric" : "decimal"}
+        placeholder={placeholder}
         value={text}
         onChange={(e) => {
           setText(e.target.value);
-          const n = parseFloat(e.target.value);
+          const n = isInteger
+            ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
+            : parseFloat(e.target.value);
           onChange(isNaN(n) ? null : n);
+        }}
+        onBlur={() => {
+          if (!isInteger) return;
+          const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+          setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
         }}
       />
     </div>
@@ -226,9 +227,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
 
   const selectTarget = (id: PlanTarget) => {
     flow.setTarget(id);
-    if (id === "incremental-sales" || id === "incremental-roas") {
-      flow.setTargetValue(referenceTargetDefault(state, id));
-    }
+    flow.setTargetValue(referenceTargetDefault(state, id));
   };
 
   return (
@@ -297,8 +296,8 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
       {state.screen === "target" && (
         <Card
           eyebrow="Target"
-          title="Do you have a target outcome?"
-          desc="This helps us show how your simulated plan compares to your goal once it's created."
+          title="Enter a target outcome"
+          desc="You can always change this later."
           footer={
             <>
               <BackLink onClick={flow.back} />
@@ -328,12 +327,10 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
                 </label>
                 {state.target === opt.id && targetNeedsValue(state.target) && (
                   <div className={styles.targetField}>
-                    <label className={styles.targetLabel}>
-                      {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
-                    </label>
+                    <label className={styles.targetLabel}>{TARGET_FIELD_LABEL[state.target]}</label>
                     <TargetValueInput
                       key={state.target}
-                      target={state.target as "incremental-sales" | "incremental-roas"}
+                      target={state.target}
                       value={state.targetValue}
                       onChange={flow.setTargetValue}
                     />
@@ -491,6 +488,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
           moreOpen={moreOpen}
           setMoreOpen={setMoreOpen}
           onComplete={() => onComplete(buildPlanToCreatePlanInput(state), state)}
+          onExit={onExit}
         />
       )}
     </div>
@@ -503,12 +501,14 @@ function ReviewScreen({
   moreOpen,
   setMoreOpen,
   onComplete,
+  onExit,
 }: {
   state: ReturnType<typeof useBuildPlanFlow>["state"];
   flow: ReturnType<typeof useBuildPlanFlow>;
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
   onComplete: () => void;
+  onExit: () => void;
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
@@ -610,12 +610,14 @@ function ReviewScreen({
       </div>
       <Card
       footer={
-        <>
-          <BackLink onClick={flow.back} />
+        <div className={styles.footerActions}>
+          <button type="button" className={styles.btn} onClick={onExit}>
+            Cancel
+          </button>
           <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
             Create plan
           </button>
-        </>
+        </div>
       }
     >
       <div className={styles.reviewToolbar}>

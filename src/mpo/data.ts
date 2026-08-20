@@ -8,7 +8,7 @@ export const PLANS: Plan[] = [
     kind: "optimization",
     createdBy: "JH",
     lastEdited: new Date(2026, 7, 1),
-    target: "not-sure",
+    target: "incremental-roas",
     planStart: new Date(2026, 6, 2),
     planEnd: new Date(2026, 7, 1),
   },

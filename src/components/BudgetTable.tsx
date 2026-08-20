@@ -1,6 +1,11 @@
+import type { PlanTarget } from "../mpo/types";
 import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./BudgetTable.module.css";
+
+type Props = {
+  target: PlanTarget;
+};
 
 type TacticRow = {
   name: string;
@@ -8,6 +13,8 @@ type TacticRow = {
   budget: string;
   sales: string;
   roas: string;
+  orders: string;
+  cpo: string;
   marginal: string;
 };
 
@@ -18,6 +25,8 @@ const rows: TacticRow[] = [
     budget: "$318,638",
     sales: "$1,234,567",
     roas: "$4.12",
+    orders: "8,230",
+    cpo: "$38.72",
     marginal: "$5.21",
   },
   {
@@ -26,6 +35,8 @@ const rows: TacticRow[] = [
     budget: "$124,995",
     sales: "$890,000",
     roas: "$3.45",
+    orders: "5,933",
+    cpo: "$21.07",
     marginal: "$4.80",
   },
   {
@@ -34,6 +45,8 @@ const rows: TacticRow[] = [
     budget: "$98,500",
     sales: "$450,000",
     roas: "$2.90",
+    orders: "3,000",
+    cpo: "$32.83",
     marginal: "$3.10",
   },
   {
@@ -42,6 +55,8 @@ const rows: TacticRow[] = [
     budget: "$45,200",
     sales: "$5,333,463",
     roas: "$2.10",
+    orders: "1,205",
+    cpo: "$37.51",
     marginal: "$1.95",
   },
   {
@@ -50,9 +65,20 @@ const rows: TacticRow[] = [
     budget: "$32,000",
     sales: "$120,000",
     roas: "$1.80",
+    orders: "800",
+    cpo: "$40.00",
     marginal: "$2.00",
   },
 ];
+
+const TOTALS = {
+  budget: "$9,394,384",
+  sales: "$12.34",
+  roas: "$9.11",
+  orders: "209,875",
+  cpo: "$44.76",
+  marginal: "$10,999,283",
+};
 
 function parseCurrency(value: string): number {
   return Number(value.replace(/[^0-9.-]/g, "")) || 0;
@@ -63,10 +89,15 @@ function formatPercentOfTotal(value: string, total: number): string {
   return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
 }
 
-export function BudgetTable() {
+export function BudgetTable({ target }: Props) {
+  const showOrders = target === "incremental-orders" || target === "incremental-cpo";
+  const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
+  const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
   const totalBudgetValue = rows.reduce((sum, row) => sum + parseCurrency(row.budget), 0);
-  const totalSalesValue = rows.reduce((sum, row) => sum + parseCurrency(row.sales), 0);
-
+  const totalPrimaryValue = rows.reduce(
+    (sum, row) => sum + parseCurrency(showOrders ? row.orders : row.sales),
+    0
+  );
 
   return (
     <section className={styles.section} data-node-id="1:34016">
@@ -96,8 +127,8 @@ export function BudgetTable() {
             <tr>
               <th>Tactic</th>
               <th>Budget</th>
-              <th>Incremental Sales</th>
-              <th>Incremental ROAS</th>
+              <th>{primaryLabel}</th>
+              <th>{secondaryLabel}</th>
               <th>Marginal ROAS</th>
               <th>Return Curve</th>
             </tr>
@@ -108,16 +139,16 @@ export function BudgetTable() {
                 <strong>Total</strong>
               </td>
               <td>
-                <strong>$9,394,384</strong>
+                <strong>{TOTALS.budget}</strong>
               </td>
               <td>
-                <strong>$12.34</strong>
+                <strong>{showOrders ? TOTALS.orders : TOTALS.sales}</strong>
               </td>
               <td>
-                <strong>$9.11</strong>
+                <strong>{showOrders ? TOTALS.cpo : TOTALS.roas}</strong>
               </td>
               <td>
-                <strong>$10,999,283</strong>
+                <strong>{TOTALS.marginal}</strong>
               </td>
               <td />
             </tr>
@@ -142,12 +173,14 @@ export function BudgetTable() {
                 </td>
                 <td>
                   <div className={styles.cellStack}>
-                    <span className={styles.value}>{row.sales}</span>
-                    <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.sales, totalSalesValue)}</span>
+                    <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
+                    <span className={styles.pctOfTotal}>
+                      {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+                    </span>
                   </div>
                 </td>
                 <td>
-                  <span className={styles.value}>{row.roas}</span>
+                  <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
                 </td>
                 <td>{row.marginal}</td>
                 <td>

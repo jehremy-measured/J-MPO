@@ -66,11 +66,15 @@ export function MpoPage() {
     const seed = defaultBuildPlanState();
     seed.planStart = plan.planStart;
     seed.planEnd = plan.planEnd;
-    seed.target = plan.target === "not-sure" ? null : plan.target;
+    seed.target = plan.target;
     openBuildPlanPage(applyMethodChoice(seed, "fetch"));
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
+  const currentTarget =
+    state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
+      ? state.newPlanSummary.target
+      : activePlan?.target ?? "incremental-sales";
 
   return (
     <div className={styles.page} data-node-id="1:33651">
@@ -116,6 +120,8 @@ export function MpoPage() {
                         targetValue={state.newPlanSummary.targetValue}
                         incrementalSales={state.totals.sales}
                         roas={state.totals.roas}
+                        incrementalOrders={state.totals.orders}
+                        cpo={state.totals.cpo}
                       />
                       <PlanInfoBar
                         periodLabel={state.newPlanSummary.planningWindow}
@@ -139,6 +145,8 @@ export function MpoPage() {
                         targetValue={null}
                         incrementalSales={state.totals.sales}
                         roas={state.totals.roas}
+                        incrementalOrders={state.totals.orders}
+                        cpo={state.totals.cpo}
                       />
                       <PlanInfoBar
                         periodLabel={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
@@ -158,7 +166,7 @@ export function MpoPage() {
                   ) : (
                     <CurveAndGoal />
                   )}
-                  <BudgetTable />
+                  <BudgetTable target={currentTarget} />
                 </div>
               </>
             )}

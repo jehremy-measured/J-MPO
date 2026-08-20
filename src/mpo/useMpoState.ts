@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   applyTargetBudget,
+  blendedCpo,
   blendedRoas,
   clampTargetBudget,
   setTacticAdjustment,
   tacticAdjustment,
   totalBudget,
+  totalOrders,
   totalSales,
 } from "./calc";
 import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLANS } from "./data";
@@ -272,6 +274,8 @@ export function useMpoState() {
       budget: totalBudget(tactics),
       sales: totalSales(tactics, optimizationMode),
       roas: blendedRoas(tactics, optimizationMode),
+      orders: totalOrders(tactics, optimizationMode),
+      cpo: blendedCpo(tactics, optimizationMode),
     }),
     [tactics, optimizationMode]
   );

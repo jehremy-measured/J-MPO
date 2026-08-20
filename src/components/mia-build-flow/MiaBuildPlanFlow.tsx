@@ -39,53 +39,54 @@ function TypingIndicator() {
   );
 }
 
+const TARGET_FIELD_LABEL: Record<Exclude<PlanTarget, null>, string> = {
+  "incremental-sales": "Target incremental sales",
+  "incremental-orders": "Target incremental orders",
+  "incremental-roas": "Target incremental ROAS",
+  "incremental-cpo": "Target incremental CPO",
+};
+
 function TargetValueInput({
   target,
   value,
   onChange,
 }: {
-  target: "incremental-sales" | "incremental-roas";
+  target: Exclude<PlanTarget, null>;
   value: number | null;
   onChange: (value: number | null) => void;
 }) {
-  const [text, setText] = useState(
-    value == null ? "" : target === "incremental-sales" ? value.toLocaleString("en-US") : String(value)
-  );
+  const isDollar = target === "incremental-sales" || target === "incremental-cpo";
+  const isInteger = target === "incremental-sales" || target === "incremental-orders";
+  const placeholder =
+    target === "incremental-sales"
+      ? "e.g. 250,000"
+      : target === "incremental-orders"
+      ? "e.g. 1,200"
+      : target === "incremental-roas"
+      ? "e.g. 4.50"
+      : "e.g. 45.00";
 
-  if (target === "incremental-sales") {
-    return (
-      <div className={styles.targetInputWrap}>
-        <span className={styles.dol}>$</span>
-        <input
-          className={`${styles.targetInput} ${styles.targetInputPrefixed}`}
-          inputMode="numeric"
-          placeholder="e.g. 250,000"
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
-            onChange(isNaN(n) ? null : n);
-          }}
-          onBlur={() => {
-            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
-            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
-          }}
-        />
-      </div>
-    );
-  }
+  const [text, setText] = useState(value == null ? "" : isInteger ? value.toLocaleString("en-US") : String(value));
 
   return (
     <div className={styles.targetInputWrap}>
+      {isDollar && <span className={styles.dol}>$</span>}
       <input
-        className={styles.targetInput}
-        inputMode="decimal"
-        placeholder="e.g. 4.50"
+        className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""}`}
+        inputMode={isInteger ? "numeric" : "decimal"}
+        placeholder={placeholder}
         value={text}
         onChange={(e) => {
           setText(e.target.value);
-          const n = parseFloat(e.target.value);
+          const n = isInteger
+            ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
+            : parseFloat(e.target.value);
           onChange(isNaN(n) ? null : n);
+        }}
+        onBlur={() => {
+          if (!isInteger) return;
+          const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+          setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
         }}
       />
     </div>
@@ -117,9 +118,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
 
   const selectTarget = (id: PlanTarget) => {
     flow.setTarget(id);
-    if (id === "incremental-sales" || id === "incremental-roas") {
-      flow.setTargetValue(referenceTargetDefault(state, id));
-    }
+    flow.setTargetValue(referenceTargetDefault(state, id));
   };
 
   const periodAnswer = () => `${periodLabel(state)} · ${planDaysFor(state)} days`;
@@ -190,7 +189,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
 
       {!pending && state.screen === "target" && (
         <MiaTurn>
-          <p className={styles.q}>Do you have a target outcome?</p>
+          <p className={styles.q}>Enter a target outcome</p>
           <div className={styles.turnContent}>
             {TARGET_OPTIONS.map((opt) => (
               <div key={opt.id}>
@@ -206,12 +205,10 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                 </label>
                 {state.target === opt.id && targetNeedsValue(state.target) && (
                   <div className={styles.targetField}>
-                    <label className={styles.targetLabel}>
-                      {state.target === "incremental-roas" ? "Target incremental ROAS" : "Target incremental sales"}
-                    </label>
+                    <label className={styles.targetLabel}>{TARGET_FIELD_LABEL[state.target]}</label>
                     <TargetValueInput
                       key={state.target}
-                      target={state.target as "incremental-sales" | "incremental-roas"}
+                      target={state.target}
                       value={state.targetValue}
                       onChange={flow.setTargetValue}
                     />
@@ -226,7 +223,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
               className={`${styles.btn} ${styles.btnPrimary}`}
               disabled={!state.target || (targetNeedsValue(state.target) && !(state.targetValue! > 0))}
               onClick={() =>
-                commit("Do you have a target outcome?", targetLabel(state), flow.continueFromTarget)
+                commit("Enter a target outcome", targetLabel(state), flow.continueFromTarget)
               }
             >
               Next

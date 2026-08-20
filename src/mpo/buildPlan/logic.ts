@@ -7,7 +7,10 @@ import {
   CHANNEL_COLORS,
   CT_LOOKUP,
   DAILY_RATE,
+  REFERENCE_CPO,
+  REFERENCE_DAILY_INCREMENTAL_ORDERS,
   REFERENCE_DAILY_INCREMENTAL_SALES,
+  REFERENCE_INCREMENTAL_ORDERS,
   REFERENCE_INCREMENTAL_SALES,
   REFERENCE_ROAS,
   REFERENCE_WINDOW_END,
@@ -175,16 +178,21 @@ export function periodLabel(state: BuildPlanState): string {
 }
 
 export function targetNeedsValue(target: PlanTarget | null): boolean {
-  return target === "incremental-sales" || target === "incremental-roas";
+  return target !== null;
 }
 
 /** Formats a target + optional value as a display label, e.g. "Incremental Sales · $250,000".
  * Works from bare target/value fields so it can describe a saved Plan, not just build-flow state. */
 export function formatTargetLabel(target: PlanTarget | null, targetValue: number | null): string {
-  const label = TARGET_OPTIONS.find((o) => o.id === target)?.label ?? "Not sure";
+  const label = TARGET_OPTIONS.find((o) => o.id === target)?.label ?? "No target";
   const clean = label.replace(/\s*target$/i, "");
   if (targetValue == null || !targetNeedsValue(target)) return clean;
-  const value = target === "incremental-roas" ? `$${targetValue.toFixed(2)}` : formatBudget(targetValue);
+  const value =
+    target === "incremental-roas" || target === "incremental-cpo"
+      ? `$${targetValue.toFixed(2)}`
+      : target === "incremental-orders"
+      ? targetValue.toLocaleString("en-US")
+      : formatBudget(targetValue);
   return `${clean} · ${value}`;
 }
 
@@ -194,17 +202,21 @@ export function targetLabel(state: BuildPlanState): string {
 
 /** Default value for the target field: last year's actuals for this exact period, or the latest
  * comparable period when last year isn't covered by the data we have. */
-export function referenceTargetDefault(
-  state: BuildPlanState,
-  target: "incremental-sales" | "incremental-roas"
-): number {
+export function referenceTargetDefault(state: BuildPlanState, target: Exclude<PlanTarget, null>): number {
   if (target === "incremental-roas") return REFERENCE_ROAS;
+  if (target === "incremental-cpo") return Math.round(REFERENCE_CPO * 100) / 100;
 
   const planDays = planDaysFor(state);
   const priorYearStart = subtractYears(state.planStart, 1);
   const priorYearEnd = subtractYears(state.planEnd, 1);
   const priorYearCovered =
     isSameDay(priorYearStart, REFERENCE_WINDOW_START) && isSameDay(priorYearEnd, REFERENCE_WINDOW_END);
+
+  if (target === "incremental-orders") {
+    return priorYearCovered
+      ? REFERENCE_INCREMENTAL_ORDERS
+      : Math.round(REFERENCE_DAILY_INCREMENTAL_ORDERS * planDays);
+  }
 
   return priorYearCovered
     ? REFERENCE_INCREMENTAL_SALES
@@ -273,7 +285,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
     conversionType: conversionType || "All Orders",
     channelCount: channelsPresent().length,
     tactics,
-    target: state.target ?? "not-sure",
+    target: state.target ?? "incremental-sales",
     targetValue: state.targetValue,
   };
 }

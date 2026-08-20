@@ -1,4 +1,5 @@
 import { addDays, formatShortDate } from "./dateUtils";
+import { AVERAGE_ORDER_VALUE } from "../types";
 import type { PlanTarget } from "../types";
 import type { BuildTactic, ConversionTypeGroup, PlanTypeChoice, SourceWindow } from "./types";
 
@@ -23,8 +24,9 @@ export const PLAN_TYPE_OPTIONS: { id: Exclude<PlanTypeChoice, null>; label: stri
 
 export const TARGET_OPTIONS: { id: PlanTarget; label: string }[] = [
   { id: "incremental-sales", label: "Incremental Sales target" },
+  { id: "incremental-orders", label: "Incremental Orders target" },
   { id: "incremental-roas", label: "Incremental ROAS target" },
-  { id: "not-sure", label: "Not sure" },
+  { id: "incremental-cpo", label: "Incremental CPO target" },
 ];
 
 export const CT_GROUPS: ConversionTypeGroup[] = [
@@ -220,6 +222,12 @@ export const REFERENCE_ROAS = 4.32;
 /** Reference incremental sales for that same window, and its per-day rate for scaling to other lengths. */
 export const REFERENCE_INCREMENTAL_SALES = Math.round(REFERENCE_TOTAL_SPEND * REFERENCE_ROAS);
 export const REFERENCE_DAILY_INCREMENTAL_SALES = REFERENCE_INCREMENTAL_SALES / LULUS_REF_DAYS;
+
+/** Reference incremental orders, derived from the sales reference figure above via the shared
+ * average-order-value assumption (no direct order-count reference data exists). */
+export const REFERENCE_INCREMENTAL_ORDERS = Math.round(REFERENCE_INCREMENTAL_SALES / AVERAGE_ORDER_VALUE);
+export const REFERENCE_DAILY_INCREMENTAL_ORDERS = REFERENCE_INCREMENTAL_ORDERS / LULUS_REF_DAYS;
+export const REFERENCE_CPO = REFERENCE_TOTAL_SPEND / REFERENCE_INCREMENTAL_ORDERS;
 
 export const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
