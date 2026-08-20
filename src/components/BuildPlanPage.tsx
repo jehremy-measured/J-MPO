@@ -1,4 +1,4 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput, PlanTarget } from "../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS, PLAN_TYPE_OPTIONS, TARGET_OPTIONS } from "../mpo/buildPlan/data";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
@@ -22,7 +22,7 @@ import {
 } from "../mpo/buildPlan/logic";
 import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
 import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
-import type { BuildPlanState } from "../mpo/buildPlan/types";
+import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import {
   BackArrowIcon,
@@ -42,9 +42,10 @@ import { CloseIcon } from "./icons/CloseIcon";
 import styles from "./BuildPlanPage.module.css";
 
 type Props = {
-  onComplete: (input: CreatePlanInput) => void;
+  onComplete: (input: CreatePlanInput, rawState: BuildPlanState) => void;
   onExit: () => void;
   initialState?: BuildPlanState;
+  onScreenChange?: (screen: BuildScreen) => void;
 };
 
 function Card({
@@ -213,11 +214,15 @@ function TargetValueInput({
   );
 }
 
-export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
+export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange }: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [moreOpen, setMoreOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    onScreenChange?.(state.screen);
+  }, [state.screen, onScreenChange]);
 
   const selectTarget = (id: PlanTarget) => {
     flow.setTarget(id);
@@ -227,7 +232,10 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
   };
 
   return (
-    <div className={styles.page} data-node-id="build-plan-page">
+    <div
+      className={`${styles.page} ${state.screen === "review" ? styles.pageReview : ""}`}
+      data-node-id="build-plan-page"
+    >
       <div className={styles.topBar}>
         <button type="button" className={styles.exitBtn} onClick={onExit}>
           <CloseIcon size={14} />
@@ -473,7 +481,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
           flow={flow}
           moreOpen={moreOpen}
           setMoreOpen={setMoreOpen}
-          onComplete={() => onComplete(buildPlanToCreatePlanInput(state))}
+          onComplete={() => onComplete(buildPlanToCreatePlanInput(state), state)}
         />
       )}
     </div>

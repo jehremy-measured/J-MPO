@@ -11,8 +11,10 @@ import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
-import type { BuildPlanState } from "../mpo/buildPlan/types";
+import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { formatRangeLabel } from "../mpo/buildPlan/dateUtils";
+import { applyMethodChoice } from "../mpo/buildPlan/logic";
+import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { CreatePlanInput } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -24,6 +26,8 @@ export function MpoPage() {
   const [buildPlanOpen, setBuildPlanOpen] = useState(false);
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
+  const [buildPlanScreen, setBuildPlanScreen] = useState<BuildScreen | null>(null);
+  const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
 
@@ -43,11 +47,27 @@ export function MpoPage() {
     setMiaStart({ token: Date.now(), planType });
   };
 
-  const handleCreatePlan = (input: CreatePlanInput) => {
+  const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState) => {
     const result = state.createPlan(input);
+    setPlanBuildStates((prev) => ({ ...prev, [result.id]: { ...rawState, screen: "review" } }));
     setBuildPlanOpen(false);
     setViewMode("detail");
     return result;
+  };
+
+  const openPlanForEdit = (planId: string) => {
+    const stored = planBuildStates[planId];
+    if (stored) {
+      openBuildPlanPage(stored);
+      return;
+    }
+    const plan = state.plans.find((p) => p.id === planId);
+    if (!plan) return;
+    const seed = defaultBuildPlanState();
+    seed.planStart = plan.planStart;
+    seed.planEnd = plan.planEnd;
+    seed.target = plan.target === "not-sure" ? null : plan.target;
+    openBuildPlanPage(applyMethodChoice(seed, "fetch"));
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
@@ -64,6 +84,7 @@ export function MpoPage() {
                 onComplete={handleCreatePlan}
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
+                onScreenChange={setBuildPlanScreen}
               />
             ) : viewMode === "list" ? (
               <>
@@ -101,6 +122,7 @@ export function MpoPage() {
                         conversionType={state.newPlanSummary.conversionType}
                         tacticsCount={state.newPlanSummary.tacticsCount}
                         totalBudget={state.newPlanSummary.totalBudget}
+                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                       <PlanSalesChart
                         planStart={state.newPlanSummary.planStart}
@@ -122,6 +144,7 @@ export function MpoPage() {
                         conversionType="All Orders"
                         tacticsCount={state.tactics.length}
                         totalBudget={state.totals.budget}
+                        onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                       <PlanSalesChart
                         planStart={activePlan.planStart}
@@ -138,11 +161,13 @@ export function MpoPage() {
               </>
             )}
           </main>
-          <footer className={styles.footer}>
-            <span>© 2020-2024 Measured All Rights Reserved</span>
-            <span className={styles.footerDivider} aria-hidden />
-            <a href="#">Privacy Policy</a>
-          </footer>
+          {!(buildPlanOpen && buildPlanScreen === "review") && (
+            <footer className={styles.footer}>
+              <span>© 2020-2024 Measured All Rights Reserved</span>
+              <span className={styles.footerDivider} aria-hidden />
+              <a href="#">Privacy Policy</a>
+            </footer>
+          )}
         </div>
         <MiaSidePanel
           open={miaOpen}

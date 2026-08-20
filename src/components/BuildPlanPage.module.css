@@ -16,6 +16,47 @@
   margin-bottom: 12px;
 }
 
+/* Review plan screen — full-width, chromeless layout with a viewport-sticky table footer */
+.pageReview {
+  align-items: stretch;
+  padding: 24px 20px 0;
+}
+
+.pageReview .topBar,
+.pageReview .summaryBar,
+.pageReview .card {
+  max-width: none;
+}
+
+.pageReview .card {
+  height: auto;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: visible;
+}
+
+.pageReview .cardBody {
+  padding: 0;
+  overflow: visible;
+}
+
+.pageReview .cardFoot {
+  padding: 16px 0;
+  border-radius: 0;
+}
+
+.pageReview .tbl {
+  border: none;
+  border-radius: 0;
+  overflow: visible;
+}
+
+.pageReview .tblFoot {
+  box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
+}
+
 .summaryBar {
   display: flex;
   align-items: center;

@@ -7,6 +7,7 @@ type Props = {
   conversionType: string;
   tacticsCount: number;
   totalBudget: number;
+  onEditPlan?: () => void;
 };
 
 export function PlanSummaryCards({
@@ -14,6 +15,7 @@ export function PlanSummaryCards({
   conversionType,
   tacticsCount,
   totalBudget,
+  onEditPlan,
 }: Props) {
   return (
     <section className={styles.section}>
@@ -25,7 +27,7 @@ export function PlanSummaryCards({
               Adjust included tactics and budgets in the table below.
             </span>
           </div>
-          <button type="button" className={styles.editLink}>
+          <button type="button" className={styles.editLink} onClick={onEditPlan}>
             <EditIcon size={13} />
             Edit plan
           </button>
