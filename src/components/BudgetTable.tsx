@@ -1,4 +1,5 @@
 import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./BudgetTable.module.css";
 
 type TacticRow = {
@@ -81,10 +82,10 @@ export function BudgetTable() {
           </div>
           <input className={styles.search} type="search" placeholder="Search" />
           <button type="button" className={styles.iconBtn} aria-label="Layout">
-            ⊞
+            <MaterialIcon name="grid_view" size={17} />
           </button>
           <button type="button" className={styles.iconBtn} aria-label="Export">
-            ↑
+            <MaterialIcon name="file_upload" size={17} />
           </button>
         </div>
       </div>

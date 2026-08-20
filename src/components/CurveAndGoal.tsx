@@ -1,4 +1,6 @@
 import { assets } from "../assets/figma";
+import { EditIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./CurveAndGoal.module.css";
 
 type SliderRow = {
@@ -52,7 +54,7 @@ export function CurveAndGoal() {
             </span>
             <ToolbarDivider />
             <button type="button" className={styles.settingsLink}>
-              ✎ Plan settings
+              <EditIcon size={13} /> Plan settings
             </button>
           </div>
           <div className={styles.toggle}>
@@ -92,7 +94,11 @@ export function CurveAndGoal() {
                     <span className={styles.sliderKnob} />
                   </div>
                   <span className={styles.sliderValue}>{slider.value}</span>
-                  {slider.marker && <span className={styles.sliderMarker}>▼</span>}
+                  {slider.marker && (
+                    <span className={styles.sliderMarker}>
+                      <MaterialIcon name="arrow_drop_down" size={16} />
+                    </span>
+                  )}
                 </div>
                 <span className={styles.rowLabel}>{slider.label}</span>
               </div>

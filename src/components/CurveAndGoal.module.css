@@ -48,6 +48,9 @@
 }
 
 .settingsLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 14px;
   font-weight: 500;
   color: var(--blue-700);

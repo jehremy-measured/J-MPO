@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import logoMark from "../assets/brand/measured-logo-mark.svg";
 import { ChevronDownIcon, UpDownChevronIcon, WrenchIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./TopNavigation.module.css";
 
@@ -101,12 +102,14 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
 
         <div className={styles.rightGroup}>
           <IconButton label="Notifications" dot>
-            🔔
+            <MaterialIcon name="notifications" size={18} />
           </IconButton>
           <IconButton label="Tools">
             <WrenchIcon size={17} />
           </IconButton>
-          <IconButton label="Help">?</IconButton>
+          <IconButton label="Help">
+            <MaterialIcon name="help" size={18} />
+          </IconButton>
 
           <div className={styles.avatar} aria-label="User JH">
             JH
