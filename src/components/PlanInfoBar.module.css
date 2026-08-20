@@ -1,0 +1,29 @@
+.bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin: 0 24px 16px;
+  padding: 12px 20px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: 12px;
+}
+
+.item {
+  font-size: 13px;
+  color: var(--gray-800);
+  white-space: nowrap;
+}
+
+.item strong {
+  color: var(--gray-1000);
+  font-weight: 600;
+}
+
+.divider {
+  width: 1px;
+  height: 14px;
+  background: var(--gray-300);
+  flex-shrink: 0;
+}

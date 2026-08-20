@@ -5,8 +5,8 @@ import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
-import { PlanSalesChart } from "../components/PlanSalesChart";
-import { PlanSummaryCards } from "../components/PlanSummaryCards";
+import { PlanInfoBar } from "../components/PlanInfoBar";
+import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { TargetBanner } from "../components/TargetBanner";
@@ -117,18 +117,19 @@ export function MpoPage() {
                         incrementalSales={state.totals.sales}
                         roas={state.totals.roas}
                       />
-                      <PlanSummaryCards
-                        planningWindow={state.newPlanSummary.planningWindow}
+                      <PlanInfoBar
+                        periodLabel={state.newPlanSummary.planningWindow}
+                        target={state.newPlanSummary.target}
+                        targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
-                        tacticsCount={state.newPlanSummary.tacticsCount}
-                        totalBudget={state.newPlanSummary.totalBudget}
-                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
-                      <PlanSalesChart
+                      <PlanOverviewCard
                         planStart={state.newPlanSummary.planStart}
                         planEnd={state.newPlanSummary.planEnd}
-                        totalSales={state.totals.sales}
                         totalBudget={state.totals.budget}
+                        incrementalSales={state.totals.sales}
+                        incrementalRoas={state.totals.roas}
+                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                     </>
                   ) : activePlan?.kind === "simulation" ? (
@@ -139,18 +140,19 @@ export function MpoPage() {
                         incrementalSales={state.totals.sales}
                         roas={state.totals.roas}
                       />
-                      <PlanSummaryCards
-                        planningWindow={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
+                      <PlanInfoBar
+                        periodLabel={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
+                        target={activePlan.target}
+                        targetValue={null}
                         conversionType="All Orders"
-                        tacticsCount={state.tactics.length}
-                        totalBudget={state.totals.budget}
-                        onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
-                      <PlanSalesChart
+                      <PlanOverviewCard
                         planStart={activePlan.planStart}
                         planEnd={activePlan.planEnd}
-                        totalSales={state.totals.sales}
                         totalBudget={state.totals.budget}
+                        incrementalSales={state.totals.sales}
+                        incrementalRoas={state.totals.roas}
+                        onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                     </>
                   ) : (

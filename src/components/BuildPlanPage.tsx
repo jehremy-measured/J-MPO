@@ -519,7 +519,6 @@ function ReviewScreen({
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
   const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
-  const targetSummaryLabel = targetLabel(state).replace(/\s*target(?=\s·|$)/i, "");
   const allVisibleIncluded = rows.length > 0 && rows.every((t) => state.included[t.id]);
 
   return (
@@ -530,7 +529,7 @@ function ReviewScreen({
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
-          Target <strong>{targetSummaryLabel}</strong>
+          Target <strong>{targetLabel(state)}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>

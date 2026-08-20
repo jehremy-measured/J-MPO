@@ -178,12 +178,18 @@ export function targetNeedsValue(target: PlanTarget | null): boolean {
   return target === "incremental-sales" || target === "incremental-roas";
 }
 
+/** Formats a target + optional value as a display label, e.g. "Incremental Sales · $250,000".
+ * Works from bare target/value fields so it can describe a saved Plan, not just build-flow state. */
+export function formatTargetLabel(target: PlanTarget | null, targetValue: number | null): string {
+  const label = TARGET_OPTIONS.find((o) => o.id === target)?.label ?? "Not sure";
+  const clean = label.replace(/\s*target$/i, "");
+  if (targetValue == null || !targetNeedsValue(target)) return clean;
+  const value = target === "incremental-roas" ? `$${targetValue.toFixed(2)}` : formatBudget(targetValue);
+  return `${clean} · ${value}`;
+}
+
 export function targetLabel(state: BuildPlanState): string {
-  const label = TARGET_OPTIONS.find((o) => o.id === state.target)?.label ?? "Not sure";
-  if (state.targetValue == null || !targetNeedsValue(state.target)) return label;
-  const value =
-    state.target === "incremental-roas" ? `$${state.targetValue.toFixed(2)}` : formatBudget(state.targetValue);
-  return `${label} · ${value}`;
+  return formatTargetLabel(state.target, state.targetValue);
 }
 
 /** Default value for the target field: last year's actuals for this exact period, or the latest
