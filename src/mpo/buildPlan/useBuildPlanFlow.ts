@@ -125,6 +125,16 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, included: { ...s.included, [id]: !s.included[id] } }));
   }, []);
 
+  const setIncludedForIds = useCallback((ids: string[], value: boolean) => {
+    setState((s) => {
+      const included = { ...s.included };
+      ids.forEach((id) => {
+        included[id] = value;
+      });
+      return { ...s, included };
+    });
+  }, []);
+
   const setBudget = useCallback((id: string, value: number | null) => {
     setState((s) => ({
       ...s,
@@ -191,6 +201,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setQuery,
       toggleChannel,
       toggleInclude,
+      setIncludedForIds,
       setBudget,
       resetBudget,
       resetAllBudgets,
@@ -217,6 +228,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       setQuery,
       toggleChannel,
       toggleInclude,
+      setIncludedForIds,
       setBudget,
       resetBudget,
       resetAllBudgets,

@@ -20,12 +20,41 @@
 .pageReview {
   align-items: stretch;
   padding: 24px 20px 0;
+  background: var(--gray-000);
 }
 
 .pageReview .topBar,
 .pageReview .summaryBar,
 .pageReview .card {
   max-width: none;
+}
+
+.topBarReview {
+  align-items: center;
+  justify-content: space-between;
+}
+
+.reviewPageTitle {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.plainCloseBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.plainCloseBtn:hover {
+  color: var(--gray-1000);
+  background: var(--gray-200);
 }
 
 .pageReview .card {
@@ -54,6 +83,11 @@
 }
 
 .pageReview .tblFoot {
+  margin-left: -20px;
+  margin-right: -20px;
+  width: calc(100% + 40px);
+  padding-left: 20px;
+  padding-right: 20px;
   box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
 }
 
@@ -554,6 +588,41 @@
   border-color: var(--gray-500);
 }
 
+.linkBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-700);
+  background: none;
+  border: none;
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.linkBtn:hover {
+  background: var(--gray-200);
+}
+
+.plainIconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.plainIconBtn:hover {
+  color: var(--gray-1000);
+  background: var(--gray-200);
+}
+
 .moreWrap {
   position: relative;
 }
@@ -599,7 +668,7 @@
 
 .reviewTitle {
   margin: 0;
-  font-size: 22px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.3;
   color: var(--gray-1000);
@@ -817,6 +886,12 @@
 
 .tblHead span:last-child {
   text-align: right;
+}
+
+.tblHeadTactic {
+  display: flex;
+  align-items: center;
+  gap: 13px;
 }
 
 .tblHeadBudget {

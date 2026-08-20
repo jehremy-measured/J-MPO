@@ -236,11 +236,20 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
       className={`${styles.page} ${state.screen === "review" ? styles.pageReview : ""}`}
       data-node-id="build-plan-page"
     >
-      <div className={styles.topBar}>
-        <button type="button" className={styles.exitBtn} onClick={onExit}>
-          <CloseIcon size={14} />
-          Exit setup
-        </button>
+      <div className={`${styles.topBar} ${state.screen === "review" ? styles.topBarReview : ""}`}>
+        {state.screen === "review" ? (
+          <>
+            <h1 className={styles.reviewPageTitle}>Review plan</h1>
+            <button type="button" className={styles.plainCloseBtn} onClick={onExit} aria-label="Exit setup">
+              <CloseIcon size={16} />
+            </button>
+          </>
+        ) : (
+          <button type="button" className={styles.exitBtn} onClick={onExit}>
+            <CloseIcon size={14} />
+            Exit setup
+          </button>
+        )}
       </div>
 
       {state.screen === "plan-type" && (
@@ -508,21 +517,20 @@ function ReviewScreen({
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
-  const planTypeLabel = PLAN_TYPE_OPTIONS.find((o) => o.id === state.planType)?.label ?? "Plan";
   const { label: ctLabel, attrLabels } = ctSummary(state);
   const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
+  const targetSummaryLabel = targetLabel(state).replace(/\s*target(?=\s·|$)/i, "");
+  const allVisibleIncluded = rows.length > 0 && rows.every((t) => state.included[t.id]);
 
   return (
     <>
       <div className={styles.summaryBar}>
-        <span className={styles.summaryChip}>{planTypeLabel}</span>
-        <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
           Planning for <strong>{periodLabel(state)}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
-          Target <strong>{targetLabel(state)}</strong>
+          Target <strong>{targetSummaryLabel}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
@@ -572,13 +580,13 @@ function ReviewScreen({
             <strong className={styles.fileInlineName} title={state.source}>
               {state.source}
             </strong>
-            <button type="button" className={styles.btn} onClick={flow.reupload}>
+            <button type="button" className={styles.linkBtn} onClick={flow.reupload}>
               <UploadIcon size={16} /> Reupload
             </button>
             <div className={styles.moreWrap}>
               <button
                 type="button"
-                className={styles.iconBtn}
+                className={styles.plainIconBtn}
                 aria-label="More options"
                 onClick={() => setMoreOpen(!moreOpen)}
               >
@@ -612,7 +620,7 @@ function ReviewScreen({
       }
     >
       <div className={styles.reviewToolbar}>
-        <h1 className={styles.reviewTitle}>Review plan</h1>
+        <h2 className={styles.reviewTitle}>Confirm tactics and budget</h2>
         <div className={styles.reviewToolbarControls}>
         <div className={styles.search}>
           <SearchIcon size={17} />
@@ -652,7 +660,17 @@ function ReviewScreen({
 
       <div className={styles.tbl}>
         <div className={styles.tblHead}>
-          <span>Tactic</span>
+          <div className={styles.tblHeadTactic}>
+            <label className={styles.inc}>
+              <input
+                type="checkbox"
+                checked={allVisibleIncluded}
+                onChange={() => flow.setIncludedForIds(rows.map((t) => t.id), !allVisibleIncluded)}
+              />
+              <span className={styles.incBox}>{allVisibleIncluded && <CheckIcon size={12} />}</span>
+            </label>
+            <span>Tactic</span>
+          </div>
           <div className={styles.tblHeadBudget}>
             <span>Budget</span>
             <div className={styles.moreWrap}>
