@@ -7,6 +7,7 @@ import {
   buildPlanToCreatePlanInput,
   channelFilterLabel,
   channelsPresent,
+  ctSummary,
   defaultBudgetFor,
   downloadBudgetTemplate,
   excludeReason,
@@ -15,6 +16,7 @@ import {
   periodLabel,
   planDaysFor,
   referenceTargetDefault,
+  targetLabel,
   targetNeedsValue,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
@@ -496,9 +498,28 @@ function ReviewScreen({
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
+  const planTypeLabel = PLAN_TYPE_OPTIONS.find((o) => o.id === state.planType)?.label ?? "Plan";
+  const { label: ctLabel, attrLabels } = ctSummary(state);
+  const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
 
   return (
-    <Card
+    <>
+      <div className={styles.summaryBar}>
+        <span className={styles.summaryChip}>{planTypeLabel}</span>
+        <span className={styles.summaryDivider} aria-hidden />
+        <span className={styles.summaryItem}>
+          Planning for <strong>{periodLabel(state)}</strong>
+        </span>
+        <span className={styles.summaryDivider} aria-hidden />
+        <span className={styles.summaryItem}>
+          Target <strong>{targetLabel(state)}</strong>
+        </span>
+        <span className={styles.summaryDivider} aria-hidden />
+        <span className={styles.summaryItem}>
+          Conversion type <strong>{conversionTypeLabel}</strong>
+        </span>
+      </div>
+      <Card
       eyebrow="Review budget"
       title="Review plan budget"
       desc="Include the tactics you want, adjust budgets, then create the plan."
@@ -696,7 +717,8 @@ function ReviewScreen({
           <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
         </div>
       </div>
-    </Card>
+      </Card>
+    </>
   );
 }
 

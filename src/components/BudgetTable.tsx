@@ -6,9 +6,7 @@ type TacticRow = {
   channel: string;
   budget: string;
   sales: string;
-  salesUp: boolean;
   roas: string;
-  roasUp: boolean;
   marginal: string;
 };
 
@@ -18,9 +16,7 @@ const rows: TacticRow[] = [
     channel: "Search",
     budget: "$318,638",
     sales: "$1,234,567",
-    salesUp: true,
     roas: "$4.12",
-    roasUp: true,
     marginal: "$5.21",
   },
   {
@@ -28,9 +24,7 @@ const rows: TacticRow[] = [
     channel: "Social",
     budget: "$124,995",
     sales: "$890,000",
-    salesUp: true,
     roas: "$3.45",
-    roasUp: true,
     marginal: "$4.80",
   },
   {
@@ -38,9 +32,7 @@ const rows: TacticRow[] = [
     channel: "Social",
     budget: "$98,500",
     sales: "$450,000",
-    salesUp: true,
     roas: "$2.90",
-    roasUp: true,
     marginal: "$3.10",
   },
   {
@@ -48,9 +40,7 @@ const rows: TacticRow[] = [
     channel: "Search",
     budget: "$45,200",
     sales: "$5,333,463",
-    salesUp: false,
     roas: "$2.10",
-    roasUp: false,
     marginal: "$1.95",
   },
   {
@@ -58,9 +48,7 @@ const rows: TacticRow[] = [
     channel: "Social",
     budget: "$32,000",
     sales: "$120,000",
-    salesUp: true,
     roas: "$1.80",
-    roasUp: true,
     marginal: "$2.00",
   },
 ];
@@ -147,22 +135,18 @@ export function BudgetTable() {
                 </td>
                 <td>
                   <div className={styles.cellStack}>
-                    <span className={styles.valueTeal}>{row.budget}</span>
+                    <span className={styles.value}>{row.budget}</span>
                     <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
                   </div>
                 </td>
                 <td>
                   <div className={styles.cellStack}>
-                    <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
-                      {row.sales}
-                    </span>
+                    <span className={styles.value}>{row.sales}</span>
                     <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.sales, totalSalesValue)}</span>
                   </div>
                 </td>
                 <td>
-                  <span className={row.roasUp ? styles.valueTeal : styles.valueRed}>
-                    {row.roas}
-                  </span>
+                  <span className={styles.value}>{row.roas}</span>
                 </td>
                 <td>{row.marginal}</td>
                 <td>

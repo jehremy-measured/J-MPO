@@ -167,13 +167,8 @@
   color: var(--gray-800);
 }
 
-.valueTeal {
-  color: var(--green-700);
-  font-weight: 500;
-}
-
-.valueRed {
-  color: #e01e5a;
+.value {
+  color: var(--gray-1000);
   font-weight: 500;
 }
 

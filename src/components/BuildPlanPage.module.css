@@ -16,6 +16,50 @@
   margin-bottom: 12px;
 }
 
+.summaryBar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  width: 100%;
+  max-width: 760px;
+  padding: 12px 20px;
+  margin-bottom: 12px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: 12px;
+}
+
+.summaryChip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+  font-size: 12.5px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.summaryItem {
+  font-size: 13px;
+  color: var(--gray-800);
+  white-space: nowrap;
+}
+
+.summaryItem strong {
+  color: var(--gray-1000);
+  font-weight: 600;
+}
+
+.summaryDivider {
+  width: 1px;
+  height: 14px;
+  background: var(--gray-300);
+  flex-shrink: 0;
+}
+
 .exitBtn {
   display: inline-flex;
   align-items: center;
@@ -840,7 +884,8 @@
   gap: 6px;
   justify-self: end;
   width: 150px;
-  padding: 9px 10px;
+  height: 38px;
+  padding: 0 10px;
   border-radius: var(--radius-sm);
 }
 
@@ -887,6 +932,7 @@
   gap: 4px;
   justify-self: end;
   width: 178px;
+  height: 38px;
 }
 
 .binputWrap .dol {
@@ -902,9 +948,10 @@
 .binput {
   flex: 1;
   min-width: 0;
+  height: 38px;
   font-size: 15px;
   text-align: right;
-  padding: 10px 12px 10px 22px;
+  padding: 0 12px 0 22px;
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-sm);
   background: var(--gray-000);
