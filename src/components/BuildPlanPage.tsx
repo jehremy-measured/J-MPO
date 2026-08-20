@@ -55,18 +55,20 @@ function Card({
   footer,
 }: {
   eyebrow?: string;
-  title: string;
+  title?: string;
   desc?: string;
   children: ReactNode;
   footer: ReactNode;
 }) {
   return (
     <div className={styles.card}>
-      <div className={styles.cardHead}>
-        {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
-        <h1>{title}</h1>
-        {desc && <p>{desc}</p>}
-      </div>
+      {(eyebrow || title || desc) && (
+        <div className={styles.cardHead}>
+          {eyebrow && <p className={styles.eyebrow}>{eyebrow}</p>}
+          {title && <h1>{title}</h1>}
+          {desc && <p>{desc}</p>}
+        </div>
+      )}
       <div className={styles.cardBody}>{children}</div>
       <div className={styles.cardFoot}>{footer}</div>
     </div>
@@ -592,7 +594,6 @@ function ReviewScreen({
         )}
       </div>
       <Card
-      title="Review plan"
       footer={
         <>
           <BackLink onClick={flow.back} />
@@ -603,6 +604,8 @@ function ReviewScreen({
       }
     >
       <div className={styles.reviewToolbar}>
+        <h1 className={styles.reviewTitle}>Review plan</h1>
+        <div className={styles.reviewToolbarControls}>
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
@@ -635,6 +638,7 @@ function ReviewScreen({
               ))}
             </div>
           )}
+        </div>
         </div>
       </div>
 

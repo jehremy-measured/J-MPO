@@ -148,6 +148,15 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
         </div>
       </div>
 
+      {plans.length === 0 ? (
+        <div className={styles.emptyState}>
+          <span className={styles.emptyIcon}>
+            <ReturnCurveIcon size={22} />
+          </span>
+          <p className={styles.emptyTitle}>No plans yet</p>
+          <p className={styles.emptyDesc}>Click Simulate or Optimize above to create your first plan.</p>
+        </div>
+      ) : (
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
@@ -244,6 +253,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
           </tbody>
         </table>
       </div>
+      )}
     </section>
   );
 }

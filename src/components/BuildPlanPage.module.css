@@ -550,9 +550,26 @@
 .reviewToolbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.reviewTitle {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--gray-1000);
+  flex-shrink: 0;
+}
+
+.reviewToolbarControls {
+  display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  margin-bottom: 14px;
   flex-wrap: nowrap;
 }
 

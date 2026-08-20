@@ -285,3 +285,39 @@
   color: var(--gray-800);
   font-size: 13.5px;
 }
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 56px 24px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-md);
+  background: var(--gray-100);
+}
+
+.emptyIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 6px;
+  border-radius: 999px;
+  background: var(--blue-100);
+  color: var(--blue-700);
+}
+
+.emptyTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.emptyDesc {
+  margin: 0;
+  font-size: 13px;
+  color: var(--gray-800);
+}

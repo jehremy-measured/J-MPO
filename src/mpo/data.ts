@@ -10,6 +10,14 @@ export const PLANS: Plan[] = [
     lastEdited: new Date(2026, 7, 1),
     target: "not-sure",
   },
+  {
+    id: "sim-default",
+    label: "Q3 2026 media simulation",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 10),
+    target: "incremental-sales",
+  },
 ];
 
 export const INITIAL_TACTICS: Tactic[] = [
