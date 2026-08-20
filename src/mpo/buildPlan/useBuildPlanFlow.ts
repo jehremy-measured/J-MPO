@@ -2,7 +2,14 @@ import { useCallback, useMemo, useState } from "react";
 import type { PlanTarget } from "../types";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
 import { daysBetweenInclusive } from "./dateUtils";
-import { applyMethodChoice, applyUploadedBudget, budgetFromWindow, channelsPresent } from "./logic";
+import {
+  applyMethodChoice,
+  applyUploadedBudget,
+  budgetFromUpload,
+  budgetFromWindow,
+  channelsPresent,
+  defaultBudgetFor,
+} from "./logic";
 import type { BuildPlanState, BuildScreen, PlanTypeChoice } from "./types";
 
 export function defaultBuildPlanState(): BuildPlanState {
@@ -126,6 +133,21 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }));
   }, []);
 
+  const resetBudget = useCallback((id: string) => {
+    setState((s) => {
+      const overridden = { ...s.overridden };
+      delete overridden[id];
+      return { ...s, overridden, budget: { ...s.budget, [id]: defaultBudgetFor(s, id) } };
+    });
+  }, []);
+
+  const resetAllBudgets = useCallback(() => {
+    setState((s) => {
+      const budget = s.method === "upload" ? budgetFromUpload() : budgetFromWindow({ ...s, overridden: {} }).budget;
+      return { ...s, overridden: {}, budget };
+    });
+  }, []);
+
   const back = useCallback(() => {
     setState((s) => {
       switch (s.screen) {
@@ -170,6 +192,8 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       toggleChannel,
       toggleInclude,
       setBudget,
+      resetBudget,
+      resetAllBudgets,
       back,
     }),
     [
@@ -194,6 +218,8 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       toggleChannel,
       toggleInclude,
       setBudget,
+      resetBudget,
+      resetAllBudgets,
       back,
     ]
   );

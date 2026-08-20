@@ -7,6 +7,7 @@ import {
   buildPlanToCreatePlanInput,
   channelFilterLabel,
   channelsPresent,
+  defaultBudgetFor,
   downloadBudgetTemplate,
   excludeReason,
   includedCount,
@@ -26,10 +27,12 @@ import {
   CheckIcon,
   ChevronDownIcon,
   DownloadIcon,
+  EditIcon,
   FileIcon,
   HistoryIcon,
   InfoIcon,
   MoreIcon,
+  ResetIcon,
   SearchIcon,
   UploadIcon,
 } from "./icons/BuildPlanIcons";
@@ -79,19 +82,47 @@ function BackLink({ onClick }: { onClick: () => void }) {
 
 function BudgetInput({
   value,
+  defaultValue,
   disabled,
+  edited,
   onChange,
+  onReset,
 }: {
   value: number | null;
+  defaultValue: number | null;
   disabled: boolean;
+  edited: boolean;
   onChange: (value: number | null) => void;
+  onReset: () => void;
 }) {
   const [text, setText] = useState(value != null ? value.toLocaleString("en-US") : "");
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        className={styles.bvalue}
+        disabled={disabled}
+        onClick={() => {
+          setIsEditing(true);
+          requestAnimationFrame(() => inputRef.current?.focus());
+        }}
+      >
+        <span className={styles.bvalueText}>{text ? `$${text}` : "Add budget"}</span>
+        <span className={styles.bvalueEditIcon}>
+          <EditIcon size={13} />
+        </span>
+      </button>
+    );
+  }
 
   return (
     <div className={styles.binputWrap}>
       <span className={styles.dol}>$</span>
       <input
+        ref={inputRef}
         className={styles.binput}
         inputMode="numeric"
         disabled={disabled}
@@ -104,8 +135,23 @@ function BudgetInput({
         onBlur={() => {
           const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
           setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+          setIsEditing(false);
         }}
       />
+      <button
+        type="button"
+        className={styles.resetBtn}
+        disabled={!edited}
+        aria-label="Reset to default budget"
+        onMouseDown={(e) => e.preventDefault()}
+        onClick={() => {
+          onReset();
+          setText(defaultValue != null ? defaultValue.toLocaleString("en-US") : "");
+          setIsEditing(false);
+        }}
+      >
+        <ResetIcon size={14} />
+      </button>
     </div>
   );
 }
@@ -447,6 +493,7 @@ function ReviewScreen({
   const n = planDaysFor(state);
   const [dateOpen, setDateOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
+  const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
 
@@ -575,7 +622,32 @@ function ReviewScreen({
       <div className={styles.tbl}>
         <div className={styles.tblHead}>
           <span>Tactic</span>
-          <span>Budget</span>
+          <div className={styles.tblHeadBudget}>
+            <span>Budget</span>
+            <div className={styles.moreWrap}>
+              <button
+                type="button"
+                className={styles.tblHeadMenuBtn}
+                aria-label="Budget column options"
+                onClick={() => setBudgetMenuOpen((v) => !v)}
+              >
+                <MoreIcon size={15} />
+              </button>
+              {budgetMenuOpen && (
+                <div className={styles.moreMenu}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      flow.resetAllBudgets();
+                      setBudgetMenuOpen(false);
+                    }}
+                  >
+                    <ResetIcon size={15} /> Reset all budgets
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
         {rows.length === 0 ? (
           <div className={styles.emptyRow}>No tactics match your search or filter.</div>
@@ -607,8 +679,11 @@ function ReviewScreen({
                 </div>
                 <BudgetInput
                   value={state.budget[t.id] ?? null}
+                  defaultValue={defaultBudgetFor(state, t.id)}
                   disabled={!included}
+                  edited={Boolean(edited)}
                   onChange={(v) => flow.setBudget(t.id, v)}
+                  onReset={() => flow.resetBudget(t.id)}
                 />
               </div>
             );

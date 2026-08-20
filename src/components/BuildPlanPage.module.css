@@ -694,7 +694,7 @@
 .tblHead,
 .trow {
   display: grid;
-  grid-template-columns: 1fr 160px;
+  grid-template-columns: 1fr 188px;
   align-items: center;
 }
 
@@ -714,6 +714,28 @@
 
 .tblHead span:last-child {
   text-align: right;
+}
+
+.tblHeadBudget {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.tblHeadMenuBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--gray-800);
+}
+
+.tblHeadMenuBtn:hover {
+  background: var(--gray-300);
+  color: var(--gray-1000);
 }
 
 .trow {
@@ -811,10 +833,60 @@
   color: var(--blue-700);
 }
 
-.binputWrap {
-  position: relative;
+.bvalue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
   justify-self: end;
   width: 150px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.bvalueText {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--blue-700);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--blue-700);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bvalueEditIcon {
+  display: none;
+  flex-shrink: 0;
+  color: var(--gray-600);
+}
+
+.bvalue:hover {
+  background: var(--gray-100);
+}
+
+.bvalue:hover .bvalueEditIcon {
+  display: inline-flex;
+}
+
+.bvalue:disabled .bvalueText {
+  color: var(--gray-500);
+  text-decoration: none;
+}
+
+.bvalue:disabled:hover {
+  background: transparent;
+}
+
+.binputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: end;
+  width: 178px;
 }
 
 .binputWrap .dol {
@@ -828,7 +900,8 @@
 }
 
 .binput {
-  width: 100%;
+  flex: 1;
+  min-width: 0;
   font-size: 15px;
   text-align: right;
   padding: 10px 12px 10px 22px;
@@ -849,12 +922,32 @@
   border-color: var(--gray-200);
 }
 
+.resetBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  color: var(--blue-700);
+}
+
+.resetBtn:hover:not(:disabled) {
+  background: var(--blue-100);
+}
+
+.resetBtn:disabled {
+  color: var(--gray-400);
+  cursor: default;
+}
+
 .tblFoot {
   position: sticky;
   bottom: 0;
   z-index: 1;
   display: grid;
-  grid-template-columns: 1fr 160px;
+  grid-template-columns: 1fr 188px;
   align-items: center;
   padding: 15px 20px;
   background: var(--gray-100);

@@ -50,6 +50,15 @@ export function budgetFromUpload(): Record<string, number | null> {
   return budget;
 }
 
+/** The un-overridden budget for a single tactic, given the current source (upload or fetch window). */
+export function defaultBudgetFor(state: BuildPlanState, id: string): number | null {
+  if (state.method === "upload") return XLS_BUDGET[id] ?? null;
+  const tactic = BUILD_TACTICS.find((t) => t.id === id);
+  if (!tactic) return null;
+  if (tactic.dormant) return 0;
+  return Math.round(DAILY_RATE[tactic.id] * planDaysFor(state));
+}
+
 export function defaultIncludes(
   method: BuildPlanState["method"],
   budget: Record<string, number | null>
