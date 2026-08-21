@@ -126,24 +126,12 @@ export function PlanOverviewCard({
             <span className={styles.title}>Plan created</span>
             <span className={styles.subtitle}>Adjust included tactics and budgets in the table below.</span>
           </div>
-          <div className={styles.headerRight}>
-            <div className={styles.legend}>
-              <span className={styles.legendItem}>
-                <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-                Incremental Sales
-              </span>
-              <span className={styles.legendItem}>
-                <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-                Budget
-              </span>
-            </div>
-            {onEditPlan && (
-              <button type="button" className={styles.editLink} onClick={onEditPlan}>
-                <EditIcon size={20} />
-                Edit plan
-              </button>
-            )}
-          </div>
+          {onEditPlan && (
+            <button type="button" className={styles.editLink} onClick={onEditPlan}>
+              <EditIcon size={20} />
+              Edit plan
+            </button>
+          )}
         </header>
 
         <div className={styles.body}>
@@ -163,6 +151,16 @@ export function PlanOverviewCard({
           </div>
 
           <div className={styles.chartCol}>
+            <div className={styles.legend}>
+              <span className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
+                Incremental Sales
+              </span>
+              <span className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
+                Budget
+              </span>
+            </div>
             <div className={styles.chartWrap}>
               <svg
                 className={styles.svg}
