@@ -519,7 +519,16 @@ function ReviewScreen({
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
   const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
-  const allVisibleIncluded = rows.length > 0 && rows.every((t) => state.included[t.id]);
+  const includedVisibleCount = rows.filter((t) => state.included[t.id]).length;
+  const allVisibleIncluded = rows.length > 0 && includedVisibleCount === rows.length;
+  const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;
+  const headerCheckboxRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (headerCheckboxRef.current) {
+      headerCheckboxRef.current.indeterminate = someVisibleIncluded;
+    }
+  }, [someVisibleIncluded]);
 
   return (
     <>
@@ -536,75 +545,67 @@ function ReviewScreen({
           Conversion type <strong>{conversionTypeLabel}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
-        {state.method === "fetch" ? (
-          <div className={styles.dateDropdown}>
-            <button
-              type="button"
-              className={styles.dateDropdownBtn}
-              onClick={() => setDateOpen((v) => !v)}
-            >
-              <HistoryIcon size={20} />
-              <span>
-                {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
-              </span>
-              <ChevronDownIcon size={20} />
-            </button>
-            {dateOpen && (
-              <div className={styles.dateDropdownPanel}>
-                <CalendarRangePicker
-                  start={srcWindow.start}
-                  end={srcWindow.end}
-                  onChange={(start) => {
-                    flow.setSourceStart(start);
-                    setDateOpen(false);
-                  }}
-                  panels={1}
-                  mode="fixed-length"
-                  fixedLengthDays={n}
-                />
-                <div className={styles.periodNote}>
-                  <InfoIcon size={16} />
-                  <span>
-                    Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
-                  </span>
+        <span className={styles.summaryItem}>
+          Budget{" "}
+          {state.method === "fetch" ? (
+            <span className={styles.dateDropdown}>
+              <button type="button" className={styles.dateDropdownBtn} onClick={() => setDateOpen((v) => !v)}>
+                <strong>
+                  {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+                </strong>
+                <ChevronDownIcon size={14} />
+              </button>
+              {dateOpen && (
+                <div className={styles.dateDropdownPanel}>
+                  <CalendarRangePicker
+                    start={srcWindow.start}
+                    end={srcWindow.end}
+                    onChange={(start) => {
+                      flow.setSourceStart(start);
+                      setDateOpen(false);
+                    }}
+                    panels={1}
+                    mode="fixed-length"
+                    fixedLengthDays={n}
+                  />
+                  <div className={styles.periodNote}>
+                    <InfoIcon size={16} />
+                    <span>
+                      Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
+                    </span>
+                  </div>
                 </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className={styles.fileInline}>
-            <span className={styles.fileInlineIcon}>
-              <CheckIcon size={14} />
+              )}
             </span>
+          ) : (
             <strong className={styles.fileInlineName} title={state.source}>
               {state.source}
             </strong>
-            <button type="button" className={styles.linkBtn} onClick={flow.reupload}>
-              Reupload
+          )}
+        </span>
+        {state.method === "upload" && (
+          <div className={styles.moreWrap}>
+            <button
+              type="button"
+              className={styles.plainIconBtn}
+              aria-label="More options"
+              onClick={() => setMoreOpen(!moreOpen)}
+            >
+              <MoreIcon size={20} />
             </button>
-            <div className={styles.moreWrap}>
-              <button
-                type="button"
-                className={styles.plainIconBtn}
-                aria-label="More options"
-                onClick={() => setMoreOpen(!moreOpen)}
-              >
-                <MoreIcon size={20} />
-              </button>
-              {moreOpen && (
-                <div className={styles.moreMenu}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      downloadBudgetTemplate();
-                      setMoreOpen(false);
-                    }}
-                  >
-                    Download template
-                  </button>
-                </div>
-              )}
-            </div>
+            {moreOpen && (
+              <div className={styles.moreMenu}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadBudgetTemplate();
+                    setMoreOpen(false);
+                  }}
+                >
+                  Download template
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -664,11 +665,18 @@ function ReviewScreen({
           <div className={styles.tblHeadTactic}>
             <label className={styles.inc}>
               <input
+                ref={headerCheckboxRef}
                 type="checkbox"
                 checked={allVisibleIncluded}
                 onChange={() => flow.setIncludedForIds(rows.map((t) => t.id), !allVisibleIncluded)}
               />
-              <span className={styles.incBox}>{allVisibleIncluded && <CheckIcon size={12} />}</span>
+              <span className={styles.incBox}>
+                {allVisibleIncluded ? (
+                  <CheckIcon size={12} />
+                ) : someVisibleIncluded ? (
+                  <span className={styles.incBoxDash} />
+                ) : null}
+              </span>
             </label>
             <span>Tactic</span>
           </div>

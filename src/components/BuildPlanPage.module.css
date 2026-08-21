@@ -72,12 +72,16 @@
 }
 
 .pageReview .cardFoot {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
   margin-left: -20px;
   margin-right: -20px;
   width: calc(100% + 40px);
   padding: 16px 20px;
   border-radius: 0;
   background: var(--gray-000);
+  box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
 }
 
 .pageReview .tbl {
@@ -87,6 +91,7 @@
 }
 
 .pageReview .tblFoot {
+  bottom: 92px;
   box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
 }
 
@@ -695,28 +700,28 @@
 }
 
 .dateDropdownBtn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 32px;
-  padding: 0 14px;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-sm);
-  background: var(--gray-000);
-  color: var(--gray-900);
-  font-size: 14px;
-  font-weight: 500;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--gray-1000);
+  font-size: 13px;
   white-space: nowrap;
 }
 
 .dateDropdownBtn:hover {
-  border-color: var(--gray-500);
-  background: var(--gray-100);
+  color: var(--blue-700);
 }
 
-.dateDropdownBtn svg:first-child {
+.dateDropdownBtn svg {
   color: var(--gray-600);
   flex-shrink: 0;
+}
+
+.dateDropdownBtn:hover svg {
+  color: var(--blue-700);
 }
 
 .dateDropdownPanel {
@@ -758,13 +763,14 @@
 }
 
 .fileInlineName {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--gray-1000);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 130px;
+  max-width: 200px;
+  vertical-align: middle;
 }
 
 .channelDropdown {
@@ -979,9 +985,17 @@
   color: #fff;
 }
 
-.inc input:checked + .incBox {
+.inc input:checked + .incBox,
+.inc input:indeterminate + .incBox {
   background: var(--blue-700);
   border-color: var(--blue-700);
+}
+
+.incBoxDash {
+  width: 10px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--gray-000);
 }
 
 .tinfo {

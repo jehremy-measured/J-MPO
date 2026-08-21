@@ -67,6 +67,7 @@ export function MpoPage() {
     seed.planStart = plan.planStart;
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
+    seed.singleCT = "total";
     openBuildPlanPage(applyMethodChoice(seed, "fetch"));
   };
 
