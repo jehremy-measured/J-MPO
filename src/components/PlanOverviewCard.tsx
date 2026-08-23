@@ -1,7 +1,6 @@
 import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget } from "../mpo/types";
-import { EditIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlanOverviewCard.module.css";
 
 type Props = {
@@ -10,7 +9,6 @@ type Props = {
   totalBudget: number;
   incrementalSales: number;
   incrementalRoas: number;
-  onEditPlan?: () => void;
 };
 
 type WeekPoint = {
@@ -92,7 +90,6 @@ export function PlanOverviewCard({
   totalBudget,
   incrementalSales,
   incrementalRoas,
-  onEditPlan,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -121,19 +118,6 @@ export function PlanOverviewCard({
   return (
     <section className={styles.section}>
       <div className={styles.card}>
-        <header className={styles.header}>
-          <div className={styles.headerText}>
-            <span className={styles.title}>Plan created</span>
-            <span className={styles.subtitle}>Adjust included tactics and budgets in the table below.</span>
-          </div>
-          {onEditPlan && (
-            <button type="button" className={styles.editLink} onClick={onEditPlan}>
-              <EditIcon size={20} />
-              Edit plan
-            </button>
-          )}
-        </header>
-
         <div className={styles.body}>
           <div className={styles.statsCol}>
             <div className={styles.stat}>

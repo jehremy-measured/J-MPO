@@ -129,6 +129,7 @@ export function MpoPage() {
                         target={state.newPlanSummary.target}
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
+                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                       <PlanOverviewCard
                         planStart={state.newPlanSummary.planStart}
@@ -136,7 +137,6 @@ export function MpoPage() {
                         totalBudget={state.totals.budget}
                         incrementalSales={state.totals.sales}
                         incrementalRoas={state.totals.roas}
-                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                     </>
                   ) : activePlan?.kind === "simulation" ? (
@@ -154,6 +154,7 @@ export function MpoPage() {
                         target={activePlan.target}
                         targetValue={null}
                         conversionType="All Orders"
+                        onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                       <PlanOverviewCard
                         planStart={activePlan.planStart}
@@ -161,7 +162,6 @@ export function MpoPage() {
                         totalBudget={state.totals.budget}
                         incrementalSales={state.totals.sales}
                         incrementalRoas={state.totals.roas}
-                        onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                     </>
                   ) : (

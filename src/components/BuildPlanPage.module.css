@@ -142,7 +142,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  height: 36px;
+  height: 32px;
   padding: 0 12px;
   font-size: 13px;
   font-weight: 500;
@@ -254,7 +254,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: 36px;
+  height: 32px;
   padding: 0 18px;
   font-size: 14px;
   font-weight: 600;

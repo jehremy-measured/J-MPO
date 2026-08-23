@@ -9,34 +9,6 @@
   background: var(--gray-000);
 }
 
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding: 16px 24px;
-  background: var(--gray-100);
-  border-bottom: 1px solid var(--gray-300-stroke);
-}
-
-.headerText {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.title {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--gray-1000);
-}
-
-.subtitle {
-  font-size: 13px;
-  color: var(--gray-800);
-}
-
 .legend {
   display: flex;
   align-items: center;
@@ -67,22 +39,6 @@
 
 .swatchBudget {
   background: var(--green-800);
-}
-
-.editLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 10px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--blue-700);
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.editLink:hover {
-  background: var(--gray-200);
 }
 
 .body {
