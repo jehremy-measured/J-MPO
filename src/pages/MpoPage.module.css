@@ -66,7 +66,7 @@
 .syncDivider {
   width: 1px;
   height: 18px;
-  margin: 0 12px;
+  margin-left: 12px;
   flex-shrink: 0;
   background: var(--gray-400);
 }
