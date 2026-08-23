@@ -85,8 +85,10 @@
 .subNavItem {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 7px 12px;
+  height: 36px;
+  padding: 0 12px;
   font-size: 13px;
   font-weight: 500;
   border-radius: var(--radius-md);

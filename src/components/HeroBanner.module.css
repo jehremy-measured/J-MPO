@@ -67,14 +67,15 @@
 .primaryBtn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  padding: 8px 16px;
+  height: 36px;
+  padding: 0 16px;
   border-radius: var(--radius-sm);
   background: var(--gray-1000);
   color: var(--gray-000);
   font-size: 14px;
   font-weight: 500;
-  line-height: 22px;
 }
 
 .tutorialBtn {
@@ -84,8 +85,10 @@
   right: 24px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 7px;
-  padding: 7px 14px;
+  height: 36px;
+  padding: 0 14px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.55);

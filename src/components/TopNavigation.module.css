@@ -140,7 +140,7 @@
   align-items: center;
   gap: 8px;
   padding: 0 12px;
-  height: 32px;
+  height: 36px;
   align-self: center;
   font-size: 14px;
   font-weight: 500;
@@ -210,9 +210,11 @@
 .miaBtn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
+  height: 36px;
   margin-left: 6px;
-  padding: 6px 10px;
+  padding: 0 10px;
   font-size: 14px;
   font-weight: 600;
   color: #6a4fe0;

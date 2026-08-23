@@ -66,10 +66,13 @@
 
 .toggle button,
 .toggle span {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 12px;
   font-size: 14px;
   font-weight: 500;
-  line-height: 22px;
   border-radius: var(--radius-sm);
   color: var(--gray-1000);
 }

@@ -122,10 +122,10 @@ function BudgetInput({
           requestAnimationFrame(() => inputRef.current?.focus());
         }}
       >
-        <span className={styles.bvalueText}>{text ? `$${text}` : "Add budget"}</span>
         <span className={styles.bvalueEditIcon}>
           <EditIcon size={20} />
         </span>
+        <span className={styles.bvalueText}>{text ? `$${text}` : "Add budget"}</span>
       </button>
     );
   }
