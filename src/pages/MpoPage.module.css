@@ -35,6 +35,58 @@
   padding: 16px 24px;
 }
 
+.syncPill {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  height: 32px;
+  margin-left: auto;
+  padding-left: 14px;
+  background: var(--gray-200);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.syncDot {
+  width: 7px;
+  height: 7px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--blue-700);
+}
+
+.syncText {
+  margin-left: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+
+.syncDivider {
+  width: 1px;
+  height: 18px;
+  margin: 0 12px;
+  flex-shrink: 0;
+  background: var(--gray-400);
+}
+
+.syncRefreshBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 100%;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  white-space: nowrap;
+}
+
+.syncRefreshBtn:hover {
+  background: var(--gray-300);
+}
+
 .backLink {
   display: inline-flex;
   align-items: center;

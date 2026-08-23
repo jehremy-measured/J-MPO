@@ -5,6 +5,7 @@ import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
+import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
@@ -112,6 +113,15 @@ export function MpoPage() {
                     Back to plans
                   </button>
                   <span className={styles.detailPlanLabel}>{state.activePlanLabel}</span>
+                  <div className={styles.syncPill}>
+                    <span className={styles.syncDot} aria-hidden />
+                    <span className={styles.syncText}>Updated 2 hours ago</span>
+                    <span className={styles.syncDivider} aria-hidden />
+                    <button type="button" className={styles.syncRefreshBtn}>
+                      <MaterialIcon name="autorenew" size={16} />
+                      Refresh
+                    </button>
+                  </div>
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (

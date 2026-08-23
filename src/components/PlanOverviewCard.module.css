@@ -107,7 +107,7 @@
 
 .yTick,
 .xTick {
-  font-size: 10.5px;
+  font-size: 7px;
   fill: var(--gray-800);
   font-family: var(--font-inter);
 }
