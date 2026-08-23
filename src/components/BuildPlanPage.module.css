@@ -92,7 +92,6 @@
 
 .pageReview .tblFoot {
   bottom: 92px;
-  box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
 }
 
 .summaryBar {
@@ -103,7 +102,7 @@
   width: 100%;
   max-width: 760px;
   padding: 12px 20px;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
   background: var(--gray-100);
   border: 1px solid var(--gray-300-stroke);
   border-radius: 12px;
@@ -983,6 +982,10 @@
   align-items: center;
   justify-content: center;
   color: #fff;
+}
+
+.incBox svg {
+  fill: #fff;
 }
 
 .inc input:checked + .incBox,
