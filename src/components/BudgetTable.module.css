@@ -161,6 +161,10 @@
   gap: 12px;
 }
 
+.tacticCell .sparkline {
+  margin-left: auto;
+}
+
 .logoPlaceholder {
   display: flex;
   align-items: center;
@@ -200,13 +204,6 @@
 .value {
   color: var(--gray-1000);
   font-weight: 500;
-}
-
-.marginalCell {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
 }
 
 .sparkline {

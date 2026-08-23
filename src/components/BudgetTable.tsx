@@ -163,6 +163,9 @@ export function BudgetTable({ target }: Props) {
                       <div className={styles.tacticName}>{row.name}</div>
                       <div className={styles.tacticChannel}>{row.channel}</div>
                     </div>
+                    <button type="button" className={styles.sparkline} aria-label={`View return curve for ${row.name}`}>
+                      <ReturnCurveIcon size={20} />
+                    </button>
                   </div>
                 </td>
                 <td>
@@ -182,14 +185,7 @@ export function BudgetTable({ target }: Props) {
                 <td>
                   <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
                 </td>
-                <td>
-                  <div className={styles.marginalCell}>
-                    <span>{row.marginal}</span>
-                    <button type="button" className={styles.sparkline} aria-label={`View return curve for ${row.name}`}>
-                      <ReturnCurveIcon size={20} />
-                    </button>
-                  </div>
-                </td>
+                <td>{row.marginal}</td>
               </tr>
             ))}
           </tbody>
