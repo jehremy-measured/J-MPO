@@ -90,8 +90,12 @@
   overflow: visible;
 }
 
+.pageReview .tblHead {
+  top: 48px;
+}
+
 .pageReview .tblFoot {
-  bottom: 92px;
+  bottom: 65px;
 }
 
 .summaryBar {
@@ -890,6 +894,9 @@
 }
 
 .tblHead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   padding: 12px 20px;
   background: var(--gray-100);
   border-bottom: 1px solid var(--gray-300);
@@ -1194,6 +1201,5 @@
 }
 
 .btnLg {
-  padding: 0 24px;
   font-size: 15px;
 }

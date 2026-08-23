@@ -202,11 +202,24 @@
   font-weight: 500;
 }
 
-.sparkline {
+.marginalCell {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.sparkline {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
   color: var(--blue-700);
+}
+
+.sparkline:hover {
+  background: var(--blue-100);
 }

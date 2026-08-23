@@ -132,7 +132,6 @@ export function BudgetTable({ target }: Props) {
               <th>{primaryLabel}</th>
               <th>{secondaryLabel}</th>
               <th>Marginal ROAS</th>
-              <th>Return Curve</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +151,6 @@ export function BudgetTable({ target }: Props) {
               <td>
                 <strong>{TOTALS.marginal}</strong>
               </td>
-              <td />
             </tr>
             {rows.map((row) => (
               <tr key={row.name}>
@@ -184,11 +182,13 @@ export function BudgetTable({ target }: Props) {
                 <td>
                   <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
                 </td>
-                <td>{row.marginal}</td>
                 <td>
-                  <span className={styles.sparkline} aria-hidden>
-                    <ReturnCurveIcon size={20} />
-                  </span>
+                  <div className={styles.marginalCell}>
+                    <span>{row.marginal}</span>
+                    <button type="button" className={styles.sparkline} aria-label={`View return curve for ${row.name}`}>
+                      <ReturnCurveIcon size={20} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

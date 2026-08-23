@@ -79,7 +79,7 @@ function buildWeeklyProjection(
 }
 
 const VB_WIDTH = 520;
-const VB_HEIGHT = 280;
+const VB_HEIGHT = 200;
 const MARGIN = { top: 20, right: 16, bottom: 32, left: 60 };
 const PLOT_WIDTH = VB_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_HEIGHT = VB_HEIGHT - MARGIN.top - MARGIN.bottom;
@@ -120,6 +120,7 @@ export function PlanOverviewCard({
       <div className={styles.card}>
         <div className={styles.body}>
           <div className={styles.statsCol}>
+            <h2 className={styles.colTitle}>Goals</h2>
             <div className={styles.stat}>
               <div className={styles.statLabel}>Total budget</div>
               <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
@@ -135,6 +136,7 @@ export function PlanOverviewCard({
           </div>
 
           <div className={styles.chartCol}>
+            <h2 className={`${styles.colTitle} ${styles.chartTitle}`}>Forecast</h2>
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />

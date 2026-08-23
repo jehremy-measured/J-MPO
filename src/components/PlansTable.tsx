@@ -172,7 +172,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
               </th>
               <th>Plan name</th>
               <th>Created by</th>
-              <th>Last edited</th>
+              <th>Last updated</th>
               <th>Type</th>
               <th>Target</th>
               <th className={styles.menuCol} />

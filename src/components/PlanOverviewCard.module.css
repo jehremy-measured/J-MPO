@@ -9,12 +9,16 @@
   background: var(--gray-000);
 }
 
+.chartTitle {
+  padding: 20px 24px 0;
+}
+
 .legend {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 20px 24px 0;
+  padding: 12px 24px 0;
 }
 
 .legendItem {
@@ -52,6 +56,13 @@
   gap: 16px;
   padding: 24px;
   border-right: 1px solid var(--gray-300-stroke);
+}
+
+.colTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-1000);
 }
 
 .stat {
