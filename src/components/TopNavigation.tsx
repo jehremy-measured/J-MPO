@@ -46,7 +46,7 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
           <img src={logoMark} alt="Measured" className={styles.logo} />
           <button type="button" className={styles.workspace}>
             <span className={styles.workspaceLabel}>Lulus</span>
-            <UpDownChevronIcon size={20} variant="fill" />
+            <UpDownChevronIcon size={20} />
           </button>
         </div>
 
@@ -67,7 +67,7 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
             ))}
             <span className={styles.menuMore}>
               More
-              <ChevronDownIcon size={15} variant="fill" />
+              <ChevronDownIcon size={15} />
             </span>
           </nav>
 
@@ -80,7 +80,7 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
               aria-haspopup="menu"
             >
               <span className={styles.tabSwitcherLabel}>{activeItem.label}</span>
-              <ChevronDownIcon size={20} variant="fill" />
+              <ChevronDownIcon size={20} />
             </button>
             {tabMenuOpen && (
               <div className={styles.tabMenu} role="menu">
@@ -102,13 +102,13 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
 
         <div className={styles.rightGroup}>
           <IconButton label="Notifications" dot>
-            <MaterialIcon name="notifications" size={20} variant="fill" />
+            <MaterialIcon name="notifications" size={20} />
           </IconButton>
           <IconButton label="Tools">
-            <WrenchIcon size={20} variant="fill" />
+            <WrenchIcon size={20} />
           </IconButton>
           <IconButton label="Help">
-            <MaterialIcon name="help" size={20} variant="fill" />
+            <MaterialIcon name="help" size={20} />
           </IconButton>
 
           <div className={styles.avatar} aria-label="User JH">
