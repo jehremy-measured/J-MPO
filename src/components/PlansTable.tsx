@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { formatShortDate } from "../mpo/buildPlan/dateUtils";
 import type { Plan, PlanTarget } from "../mpo/types";
+import { Checkbox } from "./Checkbox";
 import { ChevronDownIcon, DuplicateIcon, MoreIcon, ReturnCurveIcon, SearchIcon, TrashIcon, WrenchIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlansTable.module.css";
 
@@ -75,6 +76,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
   });
 
   const allSelected = visiblePlans.length > 0 && visiblePlans.every((p) => selected.has(p.id));
+  const someSelected = !allSelected && visiblePlans.some((p) => selected.has(p.id));
 
   const toggleAll = () => {
     setSelected((prev) => {
@@ -163,11 +165,11 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
           <thead>
             <tr>
               <th className={styles.checkboxCol}>
-                <input
-                  type="checkbox"
+                <Checkbox
                   checked={allSelected}
+                  indeterminate={someSelected}
                   onChange={toggleAll}
-                  aria-label="Select all plans"
+                  ariaLabel="Select all plans"
                 />
               </th>
               <th>Plan name</th>
@@ -182,11 +184,10 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
             {visiblePlans.map((plan) => (
               <tr key={plan.id} className={styles.row}>
                 <td className={styles.checkboxCol}>
-                  <input
-                    type="checkbox"
+                  <Checkbox
                     checked={selected.has(plan.id)}
                     onChange={() => toggleOne(plan.id)}
-                    aria-label={`Select ${plan.label}`}
+                    ariaLabel={`Select ${plan.label}`}
                   />
                 </td>
                 <td>

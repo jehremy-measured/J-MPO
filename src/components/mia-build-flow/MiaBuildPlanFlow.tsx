@@ -13,6 +13,7 @@ import { useBuildPlanFlow } from "../../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState, PlanTypeChoice } from "../../mpo/buildPlan/types";
 import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
+import { Checkbox } from "../Checkbox";
 import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
@@ -244,19 +245,21 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                     group.selectionType === "single"
                       ? state.singleCT === item.id
                       : state.attrs.includes(item.id);
+                  const onSelect = () =>
+                    group.selectionType === "single" ? flow.toggleSingleCT(item.id) : flow.toggleAttr(item.id);
                   return (
                     <label key={item.id} className={styles.optRow}>
-                      <input
-                        type={group.selectionType === "single" ? "radio" : "checkbox"}
-                        name="mia-ct-group"
-                        className={styles.optInput}
-                        checked={selected}
-                        onChange={() =>
-                          group.selectionType === "single"
-                            ? flow.toggleSingleCT(item.id)
-                            : flow.toggleAttr(item.id)
-                        }
-                      />
+                      {group.selectionType === "single" ? (
+                        <input
+                          type="radio"
+                          name="mia-ct-group"
+                          className={styles.optInput}
+                          checked={selected}
+                          onChange={onSelect}
+                        />
+                      ) : (
+                        <Checkbox checked={selected} onChange={onSelect} />
+                      )}
                       <span className={styles.optTitle}>{item.name}</span>
                     </label>
                   );

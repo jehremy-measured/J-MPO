@@ -155,14 +155,6 @@
   width: 40px;
 }
 
-.checkboxCol input,
-.header input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--blue-700);
-  cursor: pointer;
-}
-
 .nameCell {
   display: inline-flex;
   align-items: center;

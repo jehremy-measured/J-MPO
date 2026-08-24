@@ -24,6 +24,7 @@ import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
 import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { CalendarRangePicker } from "./CalendarRangePicker";
+import { Checkbox } from "./Checkbox";
 import {
   BackArrowIcon,
   CheckIcon,
@@ -92,7 +93,7 @@ function BackLink({ onClick }: { onClick: () => void }) {
   );
 }
 
-function BudgetInput({
+export function BudgetInput({
   value,
   defaultValue,
   disabled,
@@ -371,19 +372,21 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
                   group.selectionType === "single"
                     ? state.singleCT === item.id
                     : state.attrs.includes(item.id);
+                const onSelect = () =>
+                  group.selectionType === "single" ? flow.toggleSingleCT(item.id) : flow.toggleAttr(item.id);
                 return (
                   <label key={item.id} className={styles.optRow}>
-                    <input
-                      type={group.selectionType === "single" ? "radio" : "checkbox"}
-                      name="ct-group"
-                      className={styles.optInput}
-                      checked={selected}
-                      onChange={() =>
-                        group.selectionType === "single"
-                          ? flow.toggleSingleCT(item.id)
-                          : flow.toggleAttr(item.id)
-                      }
-                    />
+                    {group.selectionType === "single" ? (
+                      <input
+                        type="radio"
+                        name="ct-group"
+                        className={styles.optInput}
+                        checked={selected}
+                        onChange={onSelect}
+                      />
+                    ) : (
+                      <Checkbox checked={selected} onChange={onSelect} />
+                    )}
                     <span className={styles.optTitle}>{item.name}</span>
                   </label>
                 );
@@ -522,13 +525,6 @@ function ReviewScreen({
   const includedVisibleCount = rows.filter((t) => state.included[t.id]).length;
   const allVisibleIncluded = rows.length > 0 && includedVisibleCount === rows.length;
   const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;
-  const headerCheckboxRef = useRef<HTMLInputElement>(null);
-
-  useEffect(() => {
-    if (headerCheckboxRef.current) {
-      headerCheckboxRef.current.indeterminate = someVisibleIncluded;
-    }
-  }, [someVisibleIncluded]);
 
   return (
     <>
@@ -646,11 +642,7 @@ function ReviewScreen({
             <div className={styles.channelDropdownPanel}>
               {allChannels.map((c) => (
                 <label key={c} className={styles.channelOption}>
-                  <input
-                    type="checkbox"
-                    checked={state.channels.includes(c)}
-                    onChange={() => flow.toggleChannel(c)}
-                  />
+                  <Checkbox checked={state.channels.includes(c)} onChange={() => flow.toggleChannel(c)} size={17} />
                   <span>{c}</span>
                 </label>
               ))}
@@ -663,21 +655,12 @@ function ReviewScreen({
       <div className={styles.tbl}>
         <div className={styles.tblHead}>
           <div className={styles.tblHeadTactic}>
-            <label className={styles.inc}>
-              <input
-                ref={headerCheckboxRef}
-                type="checkbox"
-                checked={allVisibleIncluded}
-                onChange={() => flow.setIncludedForIds(rows.map((t) => t.id), !allVisibleIncluded)}
-              />
-              <span className={styles.incBox}>
-                {allVisibleIncluded ? (
-                  <CheckIcon size={12} />
-                ) : someVisibleIncluded ? (
-                  <span className={styles.incBoxDash} />
-                ) : null}
-              </span>
-            </label>
+            <Checkbox
+              checked={allVisibleIncluded}
+              indeterminate={someVisibleIncluded}
+              onChange={() => flow.setIncludedForIds(rows.map((t) => t.id), !allVisibleIncluded)}
+              ariaLabel="Select all tactics"
+            />
             <span>Tactic</span>
           </div>
           <div className={styles.tblHeadBudget}>
@@ -717,14 +700,11 @@ function ReviewScreen({
             return (
               <div key={t.id} className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}>
                 <div className={styles.tcell}>
-                  <label className={styles.inc}>
-                    <input
-                      type="checkbox"
-                      checked={Boolean(included)}
-                      onChange={() => flow.toggleInclude(t.id)}
-                    />
-                    <span className={styles.incBox}>{included && <CheckIcon size={12} />}</span>
-                  </label>
+                  <Checkbox
+                    checked={Boolean(included)}
+                    onChange={() => flow.toggleInclude(t.id)}
+                    ariaLabel={`Include ${t.name}`}
+                  />
                   <div className={styles.tinfo}>
                     <div className={styles.tname}>
                       {t.name}

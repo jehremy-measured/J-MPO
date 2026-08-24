@@ -842,10 +842,6 @@
   background: var(--gray-100);
 }
 
-.channelOption input {
-  accent-color: var(--blue-700);
-}
-
 .search {
   position: relative;
   flex: 0 1 260px;
@@ -970,48 +966,6 @@
   min-width: 0;
 }
 
-.inc {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  flex-shrink: 0;
-  position: relative;
-}
-
-.inc input {
-  position: absolute;
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.incBox {
-  width: 20px;
-  height: 20px;
-  border: 1.5px solid var(--gray-400);
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-}
-
-.incBox svg {
-  fill: #fff;
-}
-
-.inc input:checked + .incBox,
-.inc input:indeterminate + .incBox {
-  background: var(--blue-700);
-  border-color: var(--blue-700);
-}
-
-.incBoxDash {
-  width: 10px;
-  height: 2px;
-  border-radius: 1px;
-  background: var(--gray-000);
-}
 
 .tinfo {
   min-width: 0;
