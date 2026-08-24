@@ -161,7 +161,6 @@ export function MpoPage() {
                       ref={titleInputRef}
                       type="text"
                       className={styles.detailPlanTitleInput}
-                      style={{ width: `${Math.max(14, titleRenameValue.length + 2)}ch` }}
                       value={titleRenameValue}
                       onChange={(e) => setTitleRenameValue(e.target.value)}
                       onBlur={commitRenameTitle}

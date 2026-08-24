@@ -1032,13 +1032,13 @@
   gap: 6px;
   justify-self: end;
   width: 150px;
-  height: 38px;
+  height: 32px;
   padding: 0 10px;
   border-radius: var(--radius-sm);
 }
 
 .bvalueText {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--blue-700);
   text-decoration: underline;
@@ -1080,15 +1080,15 @@
   gap: 4px;
   justify-self: end;
   width: 178px;
-  height: 38px;
+  height: 32px;
 }
 
 .binputWrap .dol {
   position: absolute;
-  left: 12px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 14px;
+  font-size: 13px;
   color: var(--gray-500);
   pointer-events: none;
 }
@@ -1096,10 +1096,10 @@
 .binput {
   flex: 1;
   min-width: 0;
-  height: 38px;
-  font-size: 15px;
+  height: 32px;
+  font-size: 14px;
   text-align: right;
-  padding: 0 12px 0 22px;
+  padding: 0 10px 0 20px;
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-sm);
   background: var(--gray-000);
