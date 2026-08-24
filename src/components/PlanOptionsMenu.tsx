@@ -1,17 +1,28 @@
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { DuplicateIcon, EditIcon, MoreIcon, TrashIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./PlanOptionsMenu.module.css";
 
 type Props = {
   planId: string;
   planLabel: string;
+  shared?: boolean;
   onRenameRequest?: () => void;
+  onToggleSharePlan?: (id: string) => void;
   onDuplicatePlan?: (id: string) => void;
   onDeletePlan?: (id: string) => void;
 };
 
-export function PlanOptionsMenu({ planId, planLabel, onRenameRequest, onDuplicatePlan, onDeletePlan }: Props) {
+export function PlanOptionsMenu({
+  planId,
+  planLabel,
+  shared,
+  onRenameRequest,
+  onToggleSharePlan,
+  onDuplicatePlan,
+  onDeletePlan,
+}: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -25,11 +36,16 @@ export function PlanOptionsMenu({ planId, planLabel, onRenameRequest, onDuplicat
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenameRequest && !onDuplicatePlan && !onDeletePlan) return null;
+  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onDeletePlan) return null;
 
   const handleRename = () => {
     setMenuOpen(false);
     onRenameRequest?.();
+  };
+
+  const handleToggleShare = () => {
+    setMenuOpen(false);
+    onToggleSharePlan?.(planId);
   };
 
   const handleDuplicate = () => {
@@ -49,19 +65,20 @@ export function PlanOptionsMenu({ planId, planLabel, onRenameRequest, onDuplicat
 
   return (
     <div className={styles.moreWrap} ref={menuRef}>
-      <button
-        type="button"
-        className={styles.iconBtn}
-        aria-label="More plan options"
-        onClick={() => setMenuOpen((v) => !v)}
-      >
+      <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>
         <MoreIcon size={20} />
+        More
       </button>
       {menuOpen && (
         <div className={styles.moreMenu}>
           {onRenameRequest && (
             <button type="button" onClick={handleRename}>
               <EditIcon size={20} /> Rename
+            </button>
+          )}
+          {onToggleSharePlan && (
+            <button type="button" onClick={handleToggleShare}>
+              <MaterialIcon name={shared ? "group_off" : "group"} size={20} /> {shared ? "Unshare" : "Share"}
             </button>
           )}
           {onDuplicatePlan && (

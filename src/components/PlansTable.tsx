@@ -349,17 +349,6 @@ export function PlansTable({
                     </button>
                     {openMenuId === plan.id && (
                       <div className={styles.moreMenu}>
-                        {plan.kind === "simulation" && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setOpenMenuId(null);
-                              onOpenPlan(plan.id);
-                            }}
-                          >
-                            <WrenchIcon size={20} /> Optimize
-                          </button>
-                        )}
                         <button type="button" onClick={() => startRename(plan)}>
                           <EditIcon size={20} /> Rename
                         </button>

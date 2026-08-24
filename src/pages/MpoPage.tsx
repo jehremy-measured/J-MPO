@@ -187,7 +187,9 @@ export function MpoPage() {
                     <PlanOptionsMenu
                       planId={state.activePlanId}
                       planLabel={state.activePlanLabel}
+                      shared={activePlan?.shared}
                       onRenameRequest={startRenameTitle}
+                      onToggleSharePlan={state.toggleSharePlan}
                       onDuplicatePlan={state.duplicatePlan}
                       onDeletePlan={handleDeleteActivePlan}
                     />
