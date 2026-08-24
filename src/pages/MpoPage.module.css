@@ -84,10 +84,71 @@
   background: var(--gray-200);
 }
 
+.backBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.backBtn:hover {
+  background: var(--gray-200);
+  color: var(--gray-1000);
+}
+
+.detailPlanTitleBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+}
+
+.detailPlanTitleBtn:hover {
+  background: var(--gray-100);
+}
+
 .detailPlanTitle {
   font-size: 20px;
   font-weight: 600;
   color: var(--blue-700);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--blue-700);
+  text-underline-offset: 3px;
+}
+
+.detailPlanTitleEditIcon {
+  display: none;
+  flex-shrink: 0;
+  color: var(--blue-700);
+}
+
+.detailPlanTitleBtn:hover .detailPlanTitleEditIcon {
+  display: inline-flex;
+}
+
+.detailPlanTitleInput {
+  min-width: 240px;
+  height: 34px;
+  padding: 0 10px;
+  font-size: 20px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--blue-700);
+  background: var(--gray-000);
+  border: 1px solid var(--blue-700);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.detailPlanTitleInput:focus {
+  outline: 2px solid var(--blue-200);
 }
 
 .footer {

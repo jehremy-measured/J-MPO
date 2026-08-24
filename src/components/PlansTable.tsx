@@ -217,7 +217,7 @@ export function PlansTable({
         {selected.size > 0 && <span className={styles.selectedCount}>{selected.size} selected</span>}
         <div className={styles.headerControls}>
           <div className={styles.search}>
-            <SearchIcon size={16} />
+            <SearchIcon size={20} />
             <input
               type="search"
               placeholder="Search plans"
@@ -315,7 +315,7 @@ export function PlansTable({
                       </span>
                       {plan.shared && (
                         <span className={styles.sharedIcon} aria-label="Shared plan" title="Shared plan">
-                          <MaterialIcon name="group" size={16} />
+                          <MaterialIcon name="group" size={20} />
                         </span>
                       )}
                     </span>

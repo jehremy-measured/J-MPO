@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
+import { BackArrowIcon, EditIcon } from "../components/icons/BuildPlanIcons";
 import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
@@ -33,6 +34,13 @@ export function MpoPage() {
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
+  const [renamingTitle, setRenamingTitle] = useState(false);
+  const [titleRenameValue, setTitleRenameValue] = useState("");
+  const titleInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (renamingTitle) titleInputRef.current?.select();
+  }, [renamingTitle]);
 
   const openBuildPlanPage = (seed?: BuildPlanState) => {
     setBuildPlanSeed(seed ?? null);
@@ -85,6 +93,16 @@ export function MpoPage() {
     setViewMode("list");
   };
 
+  const startRenameTitle = () => {
+    setTitleRenameValue(state.activePlanLabel);
+    setRenamingTitle(true);
+  };
+
+  const commitRenameTitle = () => {
+    if (state.activePlanId) state.renamePlan(state.activePlanId, titleRenameValue);
+    setRenamingTitle(false);
+  };
+
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
   const currentTarget =
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
@@ -125,13 +143,43 @@ export function MpoPage() {
             ) : (
               <>
                 <div className={styles.detailHeader}>
-                  <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
+                  <button
+                    type="button"
+                    className={styles.backBtn}
+                    aria-label="Back to plans"
+                    onClick={() => setViewMode("list")}
+                  >
+                    <BackArrowIcon size={20} />
+                  </button>
+                  {renamingTitle ? (
+                    <input
+                      ref={titleInputRef}
+                      type="text"
+                      className={styles.detailPlanTitleInput}
+                      style={{ width: `${Math.max(14, titleRenameValue.length + 2)}ch` }}
+                      value={titleRenameValue}
+                      onChange={(e) => setTitleRenameValue(e.target.value)}
+                      onBlur={commitRenameTitle}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") commitRenameTitle();
+                        if (e.key === "Escape") setRenamingTitle(false);
+                      }}
+                      autoFocus
+                    />
+                  ) : (
+                    <button type="button" className={styles.detailPlanTitleBtn} onClick={startRenameTitle}>
+                      <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
+                      <span className={styles.detailPlanTitleEditIcon}>
+                        <EditIcon size={20} />
+                      </span>
+                    </button>
+                  )}
                   <div className={styles.syncPill}>
                     <span className={styles.syncDot} aria-hidden />
                     <span className={styles.syncText}>Updated 2 hours ago</span>
                     <span className={styles.syncDivider} aria-hidden />
                     <button type="button" className={styles.syncRefreshBtn}>
-                      <MaterialIcon name="autorenew" size={16} />
+                      <MaterialIcon name="autorenew" size={20} />
                       Refresh
                     </button>
                   </div>
@@ -139,7 +187,7 @@ export function MpoPage() {
                     <PlanOptionsMenu
                       planId={state.activePlanId}
                       planLabel={state.activePlanLabel}
-                      onRenamePlan={state.renamePlan}
+                      onRenameRequest={startRenameTitle}
                       onDuplicatePlan={state.duplicatePlan}
                       onDeletePlan={handleDeleteActivePlan}
                     />
@@ -161,6 +209,9 @@ export function MpoPage() {
                         target={state.newPlanSummary.target}
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
+                        budget={state.totals.budget}
+                        tacticsIncluded={state.tactics.length}
+                        tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                       <PlanOverviewCard
@@ -186,6 +237,9 @@ export function MpoPage() {
                         target={activePlan.target}
                         targetValue={null}
                         conversionType="All Orders"
+                        budget={state.totals.budget}
+                        tacticsIncluded={state.tactics.length}
+                        tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                       <PlanOverviewCard

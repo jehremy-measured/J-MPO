@@ -565,7 +565,7 @@ function ReviewScreen({
                     fixedLengthDays={n}
                   />
                   <div className={styles.periodNote}>
-                    <InfoIcon size={16} />
+                    <InfoIcon size={20} />
                     <span>
                       Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
                     </span>

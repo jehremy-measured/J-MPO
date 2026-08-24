@@ -1031,7 +1031,7 @@
 .bvalueEditIcon {
   display: none;
   flex-shrink: 0;
-  color: var(--gray-600);
+  color: var(--blue-700);
 }
 
 .bvalue:hover {

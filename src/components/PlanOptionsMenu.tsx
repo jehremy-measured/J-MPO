@@ -6,12 +6,12 @@ import styles from "./PlanOptionsMenu.module.css";
 type Props = {
   planId: string;
   planLabel: string;
-  onRenamePlan?: (id: string, label: string) => void;
+  onRenameRequest?: () => void;
   onDuplicatePlan?: (id: string) => void;
   onDeletePlan?: (id: string) => void;
 };
 
-export function PlanOptionsMenu({ planId, planLabel, onRenamePlan, onDuplicatePlan, onDeletePlan }: Props) {
+export function PlanOptionsMenu({ planId, planLabel, onRenameRequest, onDuplicatePlan, onDeletePlan }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -25,13 +25,11 @@ export function PlanOptionsMenu({ planId, planLabel, onRenamePlan, onDuplicatePl
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenamePlan && !onDuplicatePlan && !onDeletePlan) return null;
+  if (!onRenameRequest && !onDuplicatePlan && !onDeletePlan) return null;
 
   const handleRename = () => {
     setMenuOpen(false);
-    if (!onRenamePlan) return;
-    const next = window.prompt("Rename plan", planLabel);
-    if (next && next.trim()) onRenamePlan(planId, next.trim());
+    onRenameRequest?.();
   };
 
   const handleDuplicate = () => {
@@ -61,7 +59,7 @@ export function PlanOptionsMenu({ planId, planLabel, onRenamePlan, onDuplicatePl
       </button>
       {menuOpen && (
         <div className={styles.moreMenu}>
-          {onRenamePlan && (
+          {onRenameRequest && (
             <button type="button" onClick={handleRename}>
               <EditIcon size={20} /> Rename
             </button>
