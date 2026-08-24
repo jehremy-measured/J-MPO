@@ -168,7 +168,7 @@
   color: var(--gray-1000);
 }
 
-.row:hover .nameText {
+.nameCol:hover .nameText {
   color: var(--blue-700);
   text-decoration: underline;
 }

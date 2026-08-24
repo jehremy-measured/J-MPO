@@ -190,7 +190,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                     ariaLabel={`Select ${plan.label}`}
                   />
                 </td>
-                <td>
+                <td className={styles.nameCol}>
                   <span className={styles.nameCell}>
                     <KindIcon kind={plan.kind} />
                     <span className={styles.nameText}>{plan.label}</span>
