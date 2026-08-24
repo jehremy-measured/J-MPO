@@ -33,11 +33,11 @@ export function PlanInfoBar({
         </span>
         <span className={styles.divider} aria-hidden />
         <span className={styles.item}>
-          Target <strong>{formatTargetLabel(target, targetValue)}</strong>
+          Conversion type <strong>{conversionType}</strong>
         </span>
         <span className={styles.divider} aria-hidden />
         <span className={styles.item}>
-          Conversion type <strong>{conversionType}</strong>
+          Target <strong>{formatTargetLabel(target, targetValue)}</strong>
         </span>
         <span className={styles.divider} aria-hidden />
         <span className={styles.item}>

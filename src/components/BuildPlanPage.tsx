@@ -534,11 +534,11 @@ function ReviewScreen({
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
-          Target <strong>{targetLabel(state)}</strong>
+          Conversion type <strong>{conversionTypeLabel}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>
-          Conversion type <strong>{conversionTypeLabel}</strong>
+          Target <strong>{targetLabel(state)}</strong>
         </span>
         <span className={styles.summaryDivider} aria-hidden />
         <span className={styles.summaryItem}>

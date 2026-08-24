@@ -4,7 +4,7 @@
   gap: 16px;
   margin: 0 24px 16px;
   padding: 14px 20px;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   border: 1px solid var(--gray-300-stroke);
 }
 

@@ -108,23 +108,23 @@
 
 .tableWrap {
   border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
 }
 
 .table thead th:first-child {
-  border-top-left-radius: var(--radius-md);
+  border-top-left-radius: var(--radius-lg);
 }
 
 .table thead th:last-child {
-  border-top-right-radius: var(--radius-md);
+  border-top-right-radius: var(--radius-lg);
 }
 
 .table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: var(--radius-md);
+  border-bottom-left-radius: var(--radius-lg);
 }
 
 .table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: var(--radius-md);
+  border-bottom-right-radius: var(--radius-lg);
 }
 
 .table {
@@ -252,7 +252,7 @@
   flex-shrink: 0;
   width: 26px;
   height: 26px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
 }
 
 .kindOptimization {
@@ -361,7 +361,7 @@
   gap: 6px;
   padding: 56px 24px;
   border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--gray-100);
 }
 

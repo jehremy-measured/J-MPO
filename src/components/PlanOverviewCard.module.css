@@ -4,7 +4,7 @@
 
 .card {
   border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--gray-000);
 }
@@ -67,7 +67,7 @@
 
 .stat {
   background: var(--gray-100);
-  border-radius: 11px;
+  border-radius: var(--radius-sm);
   padding: 18px 20px;
 }
 

@@ -4,7 +4,7 @@
 
 .card {
   border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -18,7 +18,7 @@
   margin-bottom: 16px;
   background: var(--gray-100);
   border: 1px solid var(--gray-300-stroke);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .toolbarLeft {

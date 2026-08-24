@@ -321,7 +321,7 @@ export function PlansTable({
                           </span>
                           <span className={styles.sharedTooltip} role="tooltip">
                             {plan.createdBy === CURRENT_USER_INITIALS
-                              ? "This plan has been shared with others on your team."
+                              ? "You have shared this plan with others on your team."
                               : "This plan has been shared with you."}
                           </span>
                         </span>

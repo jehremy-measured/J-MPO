@@ -13,13 +13,13 @@
   max-width: 760px;
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 /* Review plan screen — full-width, chromeless layout with a viewport-sticky table footer */
 .pageReview {
   align-items: stretch;
-  padding: 24px 20px 0;
+  padding: 16px 24px 0;
   background: var(--gray-000);
 }
 
@@ -75,10 +75,10 @@
   position: sticky;
   bottom: 0;
   z-index: 2;
-  margin-left: -20px;
-  margin-right: -20px;
-  width: calc(100% + 40px);
-  padding: 16px 20px;
+  margin-left: -24px;
+  margin-right: -24px;
+  width: calc(100% + 48px);
+  padding: 16px 24px;
   border-radius: 0;
   background: var(--gray-000);
   box-shadow: 0 -4px 12px rgba(13, 45, 66, 0.06);
@@ -106,10 +106,10 @@
   width: 100%;
   max-width: 760px;
   padding: 12px 20px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   background: var(--gray-100);
   border: 1px solid var(--gray-300-stroke);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
 }
 
 .summaryChip {
@@ -167,7 +167,7 @@
   flex-direction: column;
   background: var(--gray-000);
   border: 1px solid var(--gray-300-stroke);
-  border-radius: 14px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(13, 45, 66, 0.06);
   overflow: hidden;
   animation: fadeIn 0.22s ease-out;
@@ -231,7 +231,7 @@
   padding: 16px 28px;
   background: var(--gray-100);
   border-top: 1px solid var(--gray-300-stroke);
-  border-radius: 0 0 14px 14px;
+  border-radius: 0 0 var(--radius-lg) var(--radius-lg);
 }
 
 .footerActions {
@@ -438,7 +438,7 @@
   text-align: left;
   padding: 20px;
   border: 1px solid var(--gray-300);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   background: var(--gray-000);
   transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
 }
@@ -452,7 +452,7 @@
 .methodIcon {
   width: 44px;
   height: 44px;
-  border-radius: 11px;
+  border-radius: var(--radius-sm);
   background: var(--blue-100);
   color: var(--blue-700);
   display: flex;
@@ -482,7 +482,7 @@
   gap: 12px;
   padding: 14px 16px;
   border: 1px solid var(--gray-300);
-  border-radius: 10px;
+  border-radius: var(--radius-lg);
   margin-bottom: 18px;
   background: var(--blue-100);
 }
@@ -490,7 +490,7 @@
 .templateRow .ti {
   width: 34px;
   height: 34px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--gray-000);
   color: var(--blue-700);
   display: flex;
@@ -518,7 +518,7 @@
 
 .dropzone {
   border: 1.5px dashed var(--gray-400);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   padding: 34px 20px;
   text-align: center;
   background: var(--gray-100);
@@ -761,7 +761,7 @@
 .fileInlineIcon {
   width: 26px;
   height: 26px;
-  border-radius: 7px;
+  border-radius: var(--radius-sm);
   background: #eafaf7;
   color: var(--green-700);
   display: flex;
@@ -877,7 +877,7 @@
   flex: 1 1 auto;
   min-height: 0;
   border: 1px solid var(--gray-300);
-  border-radius: 12px;
+  border-radius: var(--radius-lg);
   overflow-y: auto;
   overflow-x: hidden;
 }
