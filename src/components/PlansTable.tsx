@@ -252,7 +252,7 @@ export function PlansTable({
                       </span>
                       {plan.shared && (
                         <span className={styles.sharedIcon} aria-label="Shared plan" title="Shared plan">
-                          <MaterialIcon name="share" size={15} />
+                          <MaterialIcon name="group" size={16} />
                         </span>
                       )}
                     </span>
@@ -290,7 +290,7 @@ export function PlansTable({
                           </button>
                         )}
                         <button type="button" onClick={() => startRename(plan)}>
-                          <EditIcon size={20} /> Rename plan
+                          <EditIcon size={20} /> Rename
                         </button>
                         <button
                           type="button"
@@ -299,7 +299,7 @@ export function PlansTable({
                             onToggleSharePlan(plan.id);
                           }}
                         >
-                          <MaterialIcon name="share" size={20} /> {plan.shared ? "Unshare" : "Share"}
+                          <MaterialIcon name={plan.shared ? "group_off" : "group"} size={20} /> {plan.shared ? "Unshare" : "Share"}
                         </button>
                         <button
                           type="button"

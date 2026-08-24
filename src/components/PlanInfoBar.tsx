@@ -100,7 +100,7 @@ export function PlanInfoBar({
                 <div className={styles.moreMenu}>
                   {onRenamePlan && (
                     <button type="button" onClick={handleRename}>
-                      <EditIcon size={20} /> Rename plan
+                      <EditIcon size={20} /> Rename
                     </button>
                   )}
                   {onDuplicatePlan && (
