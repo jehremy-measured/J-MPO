@@ -2,13 +2,18 @@ type Props = {
   name: string;
   size?: number;
   className?: string;
+  /** "line" (default) renders a stroked outline icon, matching the app's default icon style.
+   * "fill" renders the solid/filled variant — reserved for the top navigation bar. */
+  variant?: "line" | "fill";
 };
 
-/** Inline SVG markup for each Material Icons glyph used in this app, fetched directly
- * from Google's icon CDN. Rendered as real vector paths (not the icon font) so the
- * icons are guaranteed to show up everywhere this prototype runs — no runtime font
- * request, no font-loading race, no fallback text ever visible. */
-const ICONS: Record<string, string> = {
+/** Inline SVG markup for each icon glyph used in this app. Rendered as real vector paths
+ * (not an icon font) so icons are guaranteed to show up everywhere this prototype runs —
+ * no runtime font request, no font-loading race, no fallback text ever visible.
+ *
+ * Filled variants (used only in the top navigation) fill the shape with currentColor.
+ * Line variants (used everywhere else) stroke an outline path with currentColor. */
+const FILL_ICONS: Record<string, string> = {
   add: `<path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>`,
   arrow_back: `<path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>`,
   arrow_drop_down: `<path d="M7 10l5 5 5-5z"/>`,
@@ -47,17 +52,64 @@ const ICONS: Record<string, string> = {
   upload: `<path d="M5,20h14v-2H5V20z M5,10h4v6h6v-6h4l-7-7L5,10z"/>`,
 };
 
-export function MaterialIcon({ name, size = 20, className }: Props) {
+/** Stroke-only outline paths, drawn on a 24x24 grid for a 2px stroke at stroke-linecap/linejoin
+ * "round" — the default icon style used everywhere except the top navigation bar. */
+const LINE_ICONS: Record<string, string> = {
+  add: `<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>`,
+  arrow_back: `<line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>`,
+  arrow_drop_down: `<polyline points="6 9 12 15 18 9"/>`,
+  auto_awesome: `<path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zM11.5 9.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z" stroke-linejoin="round"/>`,
+  autorenew: `<polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/>`,
+  build: `<path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/>`,
+  calendar_month: `<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>`,
+  check: `<polyline points="20 6 9 17 4 12"/>`,
+  chevron_left: `<polyline points="15 18 9 12 15 6"/>`,
+  chevron_right: `<polyline points="9 18 15 12 9 6"/>`,
+  close: `<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>`,
+  content_copy: `<rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>`,
+  delete: `<polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/>`,
+  description: `<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/>`,
+  download: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>`,
+  edit: `<path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>`,
+  expand_more: `<polyline points="6 9 12 15 18 9"/>`,
+  file_upload: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>`,
+  grid_view: `<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>`,
+  group: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
+  group_off: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/><line x1="1" y1="1" x2="23" y2="23"/>`,
+  help: `<circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/>`,
+  history: `<path d="M3 3v5h5"/><path d="M3.05 13A9 9 0 1 0 6 5.3L3 8"/><polyline points="12 7 12 12 16 14"/>`,
+  info: `<circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>`,
+  menu: `<line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/>`,
+  more_vert: `<circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/>`,
+  notifications: `<path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>`,
+  open_in_full: `<polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/>`,
+  play_arrow: `<polygon points="6 3 20 12 6 21 6 3" stroke-linejoin="round"/>`,
+  restart_alt: `<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>`,
+  search: `<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>`,
+  share: `<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>`,
+  send: `<line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" stroke-linejoin="round"/>`,
+  trending_up: `<polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>`,
+  unfold_more: `<polyline points="7 15 12 20 17 15"/><polyline points="7 9 12 4 17 9"/>`,
+  upload: `<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>`,
+};
+
+export function MaterialIcon({ name, size = 20, className, variant = "line" }: Props) {
+  const isFill = variant === "fill";
+  const markup = (isFill ? FILL_ICONS[name] : LINE_ICONS[name]) ?? "";
   return (
     <svg
       width={size}
       height={size}
       viewBox="0 0 24 24"
-      fill="currentColor"
+      fill={isFill ? "currentColor" : "none"}
+      stroke={isFill ? "none" : "currentColor"}
+      strokeWidth={isFill ? undefined : 2}
+      strokeLinecap={isFill ? undefined : "round"}
+      strokeLinejoin={isFill ? undefined : "round"}
       className={className}
       style={{ flexShrink: 0 }}
       aria-hidden
-      dangerouslySetInnerHTML={{ __html: ICONS[name] ?? "" }}
+      dangerouslySetInnerHTML={{ __html: markup }}
     />
   );
 }

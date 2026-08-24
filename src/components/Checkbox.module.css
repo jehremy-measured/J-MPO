@@ -29,7 +29,7 @@
 }
 
 .incBox svg {
-  fill: #fff;
+  stroke: #fff;
 }
 
 .inc input:checked + .incBox,
