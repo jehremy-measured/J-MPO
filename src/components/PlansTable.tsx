@@ -299,7 +299,7 @@ export function PlansTable({
                             onToggleSharePlan(plan.id);
                           }}
                         >
-                          <MaterialIcon name="share" size={20} /> {plan.shared ? "Stop sharing" : "Share plan"}
+                          <MaterialIcon name="share" size={20} /> {plan.shared ? "Unshare" : "Share"}
                         </button>
                         <button
                           type="button"
