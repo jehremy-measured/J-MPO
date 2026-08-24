@@ -41,10 +41,6 @@
   flex-shrink: 0;
   height: 32px;
   margin-left: auto;
-  padding-left: 14px;
-  background: var(--gray-200);
-  border-radius: 999px;
-  overflow: hidden;
 }
 
 .syncDot {
@@ -76,15 +72,16 @@
   align-items: center;
   gap: 6px;
   height: 100%;
-  padding: 0 14px 0 10px;
+  padding: 0 8px 0 6px;
   font-size: 13px;
   font-weight: 600;
   color: var(--gray-1000);
+  border-radius: var(--radius-sm);
   white-space: nowrap;
 }
 
 .syncRefreshBtn:hover {
-  background: var(--gray-300);
+  background: var(--gray-200);
 }
 
 .backLink {

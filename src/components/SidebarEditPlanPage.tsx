@@ -14,7 +14,6 @@ import {
   formatTargetLabel,
   includedCount,
   includedTotal,
-  targetLabel,
   targetNeedsValue,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
@@ -89,14 +88,11 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
 
   return (
     <div className={styles.page}>
-      <div className={styles.topBar}>
-        <button type="button" className={styles.plainCloseBtn} onClick={onExit} aria-label="Exit setup">
+      <div className={`${bp.topBar} ${bp.topBarReview} ${styles.topBarOverride}`}>
+        <h1 className={bp.reviewPageTitle}>{plan.label}</h1>
+        <button type="button" className={bp.plainCloseBtn} onClick={onExit} aria-label="Exit setup">
           <CloseIcon size={20} />
         </button>
-        <div className={styles.topBarText}>
-          <span className={styles.eyebrow}>Edit plan</span>
-          <h1>{plan.label}</h1>
-        </div>
       </div>
 
       <div className={styles.layout}>
@@ -241,23 +237,9 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
 
           {active === "tactics" && (
             <>
-              <div className={bp.summaryBar}>
-                <span className={bp.summaryItem}>
-                  Planning for <strong>{formatRangeLabel(state.planStart, state.planEnd)}</strong>
-                </span>
-                <span className={bp.summaryDivider} aria-hidden />
-                <span className={bp.summaryItem}>
-                  Target <strong>{targetLabel(state)}</strong>
-                </span>
-                <span className={bp.summaryDivider} aria-hidden />
-                <span className={bp.summaryItem}>
-                  Conversion type <strong>{conversionTypeLabel}</strong>
-                </span>
-              </div>
-
               <div className={styles.panelCardWide}>
                 <div className={bp.reviewToolbar}>
-                  <h2 className={bp.reviewTitle}>Confirm tactics and budget</h2>
+                  <h2 className={styles.panelTitle}>Confirm tactics</h2>
                   <div className={bp.reviewToolbarControls}>
                     <div className={bp.search}>
                       <SearchIcon size={17} />
@@ -290,7 +272,7 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
                   </div>
                 </div>
 
-                <div className={bp.tbl} style={{ maxHeight: "56vh" }}>
+                <div className={styles.tacticsTable} style={{ maxHeight: "56vh" }}>
                   <div className={bp.tblHead}>
                     <div className={bp.tblHeadTactic}>
                       <Checkbox

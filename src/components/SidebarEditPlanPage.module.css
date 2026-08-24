@@ -2,53 +2,15 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-height: calc(100vh - 48px);
   padding: 24px 24px 0;
   background: var(--gray-000);
 }
 
-.topBar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 20px;
+.topBarOverride {
+  max-width: none;
+  margin-bottom: 20px;
   flex-shrink: 0;
-}
-
-.plainCloseBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  color: var(--gray-800);
-  border-radius: var(--radius-sm);
-  flex-shrink: 0;
-}
-
-.plainCloseBtn:hover {
-  color: var(--gray-1000);
-  background: var(--gray-200);
-}
-
-.topBarText {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.eyebrow {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--blue-700);
-}
-
-.topBarText h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--gray-1000);
 }
 
 .layout {
@@ -192,8 +154,13 @@
 .panelCardWide {
   border: 1px solid var(--gray-300-stroke);
   border-radius: var(--radius-md);
-  padding: 20px 24px 0;
+  padding: 20px 24px 24px;
   background: var(--gray-000);
+}
+
+.tacticsTable {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .footer {

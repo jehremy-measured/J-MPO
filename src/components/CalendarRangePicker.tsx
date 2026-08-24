@@ -40,11 +40,17 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "
     }
   };
 
+  // With a single panel each has its own independent month nav. With two panels they act as
+  // one calendar spanning two consecutive months, so both cursors always shift together and
+  // only the outer edges (before the first panel, after the last) carry a nav control.
   const navigate = (panelIndex: number, dir: -1 | 1) => {
     setCursors((prev) => {
-      const next = [...prev];
-      next[panelIndex] = addMonths(next[panelIndex], dir);
-      return next;
+      if (panels === 1) {
+        const next = [...prev];
+        next[panelIndex] = addMonths(next[panelIndex], dir);
+        return next;
+      }
+      return prev.map((c) => addMonths(c, dir));
     });
   };
 
@@ -53,25 +59,33 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "
       {cursors.map((cursor, panelIndex) => (
         <div className={styles.panel} key={panelIndex}>
           <div className={styles.panelHead}>
-            <button
-              type="button"
-              className={styles.navBtn}
-              aria-label="Previous month"
-              onClick={() => navigate(panelIndex, -1)}
-            >
-              <ChevronLeftIcon size={20} />
-            </button>
+            {(panels === 1 || panelIndex === 0) ? (
+              <button
+                type="button"
+                className={styles.navBtn}
+                aria-label="Previous month"
+                onClick={() => navigate(panelIndex, -1)}
+              >
+                <ChevronLeftIcon size={20} />
+              </button>
+            ) : (
+              <span className={styles.navSpacer} aria-hidden />
+            )}
             <span className={styles.monthLabel}>
               {monthName(cursor)} {cursor.getFullYear()}
             </span>
-            <button
-              type="button"
-              className={styles.navBtn}
-              aria-label="Next month"
-              onClick={() => navigate(panelIndex, 1)}
-            >
-              <ChevronRightIcon size={20} />
-            </button>
+            {(panels === 1 || panelIndex === cursors.length - 1) ? (
+              <button
+                type="button"
+                className={styles.navBtn}
+                aria-label="Next month"
+                onClick={() => navigate(panelIndex, 1)}
+              >
+                <ChevronRightIcon size={20} />
+              </button>
+            ) : (
+              <span className={styles.navSpacer} aria-hidden />
+            )}
           </div>
           <div className={styles.weekRow}>
             {WEEKDAYS.map((d) => (
