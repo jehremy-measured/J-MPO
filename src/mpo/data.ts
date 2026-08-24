@@ -22,6 +22,17 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
   },
+  {
+    id: "sim-default-copy",
+    label: "Q3 2026 media simulation (copy)",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 10),
+    target: "incremental-sales",
+    planStart: new Date(2026, 6, 12),
+    planEnd: new Date(2026, 7, 10),
+    editVariant: "sidebar",
+  },
 ];
 
 export const INITIAL_TACTICS: Tactic[] = [

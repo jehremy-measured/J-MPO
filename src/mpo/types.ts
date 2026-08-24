@@ -35,6 +35,10 @@ export type Plan = {
   target: PlanTarget;
   planStart: Date;
   planEnd: Date;
+  /** When set to "sidebar", opening this plan for edit shows the vertical-nav editor
+   * (plan period / budget / tactics sections swapped on the right) instead of the
+   * normal step-by-step build flow. */
+  editVariant?: "sidebar";
 };
 
 export type PlanSnapshot = {

@@ -10,6 +10,7 @@ import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
+import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
@@ -31,6 +32,7 @@ export function MpoPage() {
   const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
+  const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
 
   const openBuildPlanPage = (seed?: BuildPlanState) => {
     setBuildPlanSeed(seed ?? null);
@@ -57,12 +59,16 @@ export function MpoPage() {
   };
 
   const openPlanForEdit = (planId: string) => {
+    const plan = state.plans.find((p) => p.id === planId);
+    if (plan?.editVariant === "sidebar") {
+      setSidebarEditPlanId(planId);
+      return;
+    }
     const stored = planBuildStates[planId];
     if (stored) {
       openBuildPlanPage(stored);
       return;
     }
-    const plan = state.plans.find((p) => p.id === planId);
     if (!plan) return;
     const seed = defaultBuildPlanState();
     seed.planStart = plan.planStart;
@@ -71,6 +77,8 @@ export function MpoPage() {
     seed.singleCT = "total";
     openBuildPlanPage(applyMethodChoice(seed, "fetch"));
   };
+
+  const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
   const currentTarget =
@@ -84,7 +92,9 @@ export function MpoPage() {
       <div className={styles.body}>
         <div className={styles.contentCol}>
           <main className={styles.main}>
-            {buildPlanOpen ? (
+            {sidebarEditPlan ? (
+              <SidebarEditPlanPage plan={sidebarEditPlan} onExit={() => setSidebarEditPlanId(null)} />
+            ) : buildPlanOpen ? (
               <BuildPlanPage
                 key={buildPlanKey}
                 onComplete={handleCreatePlan}
@@ -182,7 +192,7 @@ export function MpoPage() {
               </>
             )}
           </main>
-          {!(buildPlanOpen && buildPlanScreen === "review") && (
+          {!sidebarEditPlan && !(buildPlanOpen && buildPlanScreen === "review") && (
             <footer className={styles.footer}>
               <span>© 2020-2024 Measured All Rights Reserved</span>
               <span className={styles.footerDivider} aria-hidden />
