@@ -54,7 +54,7 @@ export function PlanInfoBar({
         {onEditPlan && (
           <button type="button" className={styles.editLink} onClick={onEditPlan}>
             <EditIcon size={18} />
-            Edit plan
+            Plan settings
           </button>
         )}
       </div>

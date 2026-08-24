@@ -47,6 +47,10 @@ type Props = {
   onExit: () => void;
   initialState?: BuildPlanState;
   onScreenChange?: (screen: BuildScreen) => void;
+  /** "edit" is used when opening the review screen to change an existing plan's
+   * settings (title becomes "Plan settings", the summary bar switches to labeled
+   * fields, and the finish button reads "Save" instead of "Create plan"). */
+  mode?: "create" | "edit";
 };
 
 function Card({
@@ -230,7 +234,7 @@ function TargetValueInput({
   );
 }
 
-export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange }: Props) {
+export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange, mode = "create" }: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [moreOpen, setMoreOpen] = useState(false);
@@ -253,7 +257,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
       <div className={`${styles.topBar} ${state.screen === "review" ? styles.topBarReview : ""}`}>
         {state.screen === "review" ? (
           <>
-            <h1 className={styles.reviewPageTitle}>Review plan</h1>
+            <h1 className={styles.reviewPageTitle}>{mode === "edit" ? "Plan settings" : "Review plan"}</h1>
             <button type="button" className={styles.plainCloseBtn} onClick={onExit} aria-label="Exit setup">
               <CloseIcon size={20} />
             </button>
@@ -506,6 +510,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
           setMoreOpen={setMoreOpen}
           onComplete={() => onComplete(buildPlanToCreatePlanInput(state), state)}
           onExit={onExit}
+          mode={mode}
         />
       )}
     </div>
@@ -519,6 +524,7 @@ function ReviewScreen({
   setMoreOpen,
   onComplete,
   onExit,
+  mode,
 }: {
   state: ReturnType<typeof useBuildPlanFlow>["state"];
   flow: ReturnType<typeof useBuildPlanFlow>;
@@ -526,6 +532,7 @@ function ReviewScreen({
   setMoreOpen: (v: boolean) => void;
   onComplete: () => void;
   onExit: () => void;
+  mode: "create" | "edit";
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
@@ -540,85 +547,162 @@ function ReviewScreen({
   const allVisibleIncluded = rows.length > 0 && includedVisibleCount === rows.length;
   const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;
 
-  return (
-    <>
-      <div className={styles.summaryBar}>
-        <span className={styles.summaryItem}>
-          Planning for <strong>{periodLabel(state)}</strong>
-        </span>
-        <span className={styles.summaryDivider} aria-hidden />
-        <span className={styles.summaryItem}>
-          Conversion type <strong>{conversionTypeLabel}</strong>
-        </span>
-        <span className={styles.summaryDivider} aria-hidden />
-        <span className={styles.summaryItem}>
-          Target <strong>{targetLabel(state)}</strong>
-        </span>
-        <span className={styles.summaryDivider} aria-hidden />
-        <span className={styles.summaryItem}>
-          Budget{" "}
-          {state.method === "fetch" ? (
-            <span className={styles.dateDropdown}>
-              <button type="button" className={styles.dateDropdownBtn} onClick={() => setDateOpen((v) => !v)}>
-                <strong>
-                  {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
-                </strong>
-                <ChevronDownIcon size={14} />
-              </button>
-              {dateOpen && (
-                <div className={styles.dateDropdownPanel}>
-                  <CalendarRangePicker
-                    start={srcWindow.start}
-                    end={srcWindow.end}
-                    onChange={(start) => {
-                      flow.setSourceStart(start);
-                      setDateOpen(false);
-                    }}
-                    panels={1}
-                    mode="fixed-length"
-                    fixedLengthDays={n}
-                  />
-                  <div className={styles.periodNote}>
-                    <InfoIcon size={20} />
-                    <span>
-                      Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
-                    </span>
-                  </div>
-                </div>
-              )}
-            </span>
-          ) : (
-            <strong className={styles.fileInlineName} title={state.source}>
-              {state.source}
-            </strong>
-          )}
-        </span>
-        {state.method === "upload" && (
-          <div className={styles.moreWrap}>
-            <button
-              type="button"
-              className={styles.plainIconBtn}
-              aria-label="More options"
-              onClick={() => setMoreOpen(!moreOpen)}
-            >
-              <MoreIcon size={20} />
-            </button>
-            {moreOpen && (
-              <div className={styles.moreMenu}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    downloadBudgetTemplate();
-                    setMoreOpen(false);
-                  }}
-                >
-                  Download template
-                </button>
-              </div>
-            )}
+  const channelControl = (
+    <div className={styles.channelDropdown}>
+      <button
+        type="button"
+        className={mode === "edit" ? styles.settingsBoxBtn : styles.channelDropdownBtn}
+        onClick={() => setChannelOpen((v) => !v)}
+      >
+        <span>{channelFilterLabel(state)}</span>
+        <ChevronDownIcon size={mode === "edit" ? 16 : 20} />
+      </button>
+      {channelOpen && (
+        <div className={styles.channelDropdownPanel}>
+          {allChannels.map((c) => (
+            <label key={c} className={styles.channelOption}>
+              <Checkbox checked={state.channels.includes(c)} onChange={() => flow.toggleChannel(c)} size={17} />
+              <span>{c}</span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const budgetControl =
+    state.method === "fetch" ? (
+      <span className={styles.dateDropdown}>
+        <button
+          type="button"
+          className={mode === "edit" ? styles.settingsBoxBtn : styles.dateDropdownBtn}
+          onClick={() => setDateOpen((v) => !v)}
+        >
+          <strong>
+            {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+          </strong>
+          <ChevronDownIcon size={14} />
+        </button>
+        {dateOpen && (
+          <div className={styles.dateDropdownPanel}>
+            <CalendarRangePicker
+              start={srcWindow.start}
+              end={srcWindow.end}
+              onChange={(start) => {
+                flow.setSourceStart(start);
+                setDateOpen(false);
+              }}
+              panels={1}
+              mode="fixed-length"
+              fixedLengthDays={n}
+            />
+            <div className={styles.periodNote}>
+              <InfoIcon size={20} />
+              <span>
+                Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
+              </span>
+            </div>
           </div>
         )}
-      </div>
+      </span>
+    ) : (
+      <strong className={styles.fileInlineName} title={state.source}>
+        {state.source}
+      </strong>
+    );
+
+  return (
+    <>
+      {mode === "edit" ? (
+        <div className={styles.settingsBar}>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Planning for</span>
+            <div className={styles.settingsBox}>{periodLabel(state)}</div>
+          </div>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Conversion type</span>
+            <div className={styles.settingsBox}>{conversionTypeLabel}</div>
+          </div>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Target</span>
+            <div className={styles.settingsBox}>{targetLabel(state)}</div>
+          </div>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Budget</span>
+            {budgetControl}
+          </div>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Channels</span>
+            {channelControl}
+          </div>
+          {state.method === "upload" && (
+            <div className={styles.moreWrap}>
+              <button
+                type="button"
+                className={styles.plainIconBtn}
+                aria-label="More options"
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                <MoreIcon size={20} />
+              </button>
+              {moreOpen && (
+                <div className={styles.moreMenu}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadBudgetTemplate();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    Download template
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className={styles.summaryBar}>
+          <span className={styles.summaryItem}>
+            Planning for <strong>{periodLabel(state)}</strong>
+          </span>
+          <span className={styles.summaryDivider} aria-hidden />
+          <span className={styles.summaryItem}>
+            Conversion type <strong>{conversionTypeLabel}</strong>
+          </span>
+          <span className={styles.summaryDivider} aria-hidden />
+          <span className={styles.summaryItem}>
+            Target <strong>{targetLabel(state)}</strong>
+          </span>
+          <span className={styles.summaryDivider} aria-hidden />
+          <span className={styles.summaryItem}>Budget {budgetControl}</span>
+          {state.method === "upload" && (
+            <div className={styles.moreWrap}>
+              <button
+                type="button"
+                className={styles.plainIconBtn}
+                aria-label="More options"
+                onClick={() => setMoreOpen(!moreOpen)}
+              >
+                <MoreIcon size={20} />
+              </button>
+              {moreOpen && (
+                <div className={styles.moreMenu}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      downloadBudgetTemplate();
+                      setMoreOpen(false);
+                    }}
+                  >
+                    Download template
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <Card
       footer={
         <div className={styles.footerActions}>
@@ -626,13 +710,18 @@ function ReviewScreen({
             Cancel
           </button>
           <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
-            Create plan
+            {mode === "edit" ? "Save" : "Create plan"}
           </button>
         </div>
       }
     >
       <div className={styles.reviewToolbar}>
-        <h2 className={styles.reviewTitle}>Confirm tactics and budget</h2>
+        <h2 className={styles.reviewTitle}>
+          Tactics
+          <span className={styles.reviewCountTag}>
+            {includedCount(state)}/{BUILD_TACTICS.length} included
+          </span>
+        </h2>
         <div className={styles.reviewToolbarControls}>
         <div className={styles.search}>
           <SearchIcon size={17} />
@@ -643,26 +732,7 @@ function ReviewScreen({
           />
         </div>
 
-        <div className={styles.channelDropdown}>
-          <button
-            type="button"
-            className={styles.channelDropdownBtn}
-            onClick={() => setChannelOpen((v) => !v)}
-          >
-            <span>{channelFilterLabel(state)}</span>
-            <ChevronDownIcon size={20} />
-          </button>
-          {channelOpen && (
-            <div className={styles.channelDropdownPanel}>
-              {allChannels.map((c) => (
-                <label key={c} className={styles.channelOption}>
-                  <Checkbox checked={state.channels.includes(c)} onChange={() => flow.toggleChannel(c)} size={17} />
-                  <span>{c}</span>
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
+        {mode !== "edit" && channelControl}
         </div>
       </div>
 
@@ -742,9 +812,7 @@ function ReviewScreen({
           })
         )}
         <div className={styles.tblFoot}>
-          <span className={styles.flabel}>
-            {includedCount(state)} of {BUILD_TACTICS.length} tactics included
-          </span>
+          <span />
           <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
         </div>
       </div>

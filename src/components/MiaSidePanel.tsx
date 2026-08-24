@@ -13,11 +13,11 @@ import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
 import {
+  ChevronDownIcon,
   ChevronRightIcon,
   DownloadIcon,
   ExpandIcon,
   FileIcon,
-  MenuIcon,
   ThinkingSpinnerIcon,
 } from "./icons/BuildPlanIcons";
 import { PlusIcon } from "./icons/PlusIcon";
@@ -410,7 +410,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
             onClick={() => setChatsMenuOpen((v) => !v)}
             aria-expanded={chatsMenuOpen}
           >
-            <MenuIcon size={20} /> My chats
+            My chats <ChevronDownIcon size={18} />
           </button>
           {chatsMenuOpen && (
             <div className={styles.chatsMenu} role="menu">

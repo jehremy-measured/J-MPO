@@ -98,6 +98,10 @@
   background: var(--blue-200);
 }
 
+.textBtnChevron {
+  padding: 0 8px 0 12px;
+}
+
 .tableWrap {
   border: 1px solid var(--gray-300-stroke);
   border-radius: var(--radius-lg);

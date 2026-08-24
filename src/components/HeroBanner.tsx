@@ -28,11 +28,11 @@ export function HeroBanner({ onSimulate, onOptimize }: Props) {
         <div className={styles.actions}>
           <button type="button" className={styles.primaryBtn} onClick={onSimulate}>
             Simulate
-            <SparkleIcon size={20} />
+            <SparkleIcon size={20} variant="fill" />
           </button>
           <button type="button" className={styles.primaryBtn} onClick={onOptimize}>
             Optimize
-            <SparkleIcon size={20} />
+            <SparkleIcon size={20} variant="fill" />
           </button>
         </div>
       </div>

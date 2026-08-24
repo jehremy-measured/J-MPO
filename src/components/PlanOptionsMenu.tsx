@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { DuplicateIcon, EditIcon, MoreIcon, TrashIcon } from "./icons/BuildPlanIcons";
+import { ChevronDownIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./PlanOptionsMenu.module.css";
 
@@ -66,8 +66,8 @@ export function PlanOptionsMenu({
   return (
     <div className={styles.moreWrap} ref={menuRef}>
       <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>
-        <MoreIcon size={20} />
         More
+        <ChevronDownIcon size={18} />
       </button>
       {menuOpen && (
         <div className={styles.moreMenu}>

@@ -35,6 +35,7 @@ export function MpoPage() {
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
   const [buildPlanScreen, setBuildPlanScreen] = useState<BuildScreen | null>(null);
+  const [buildPlanMode, setBuildPlanMode] = useState<"create" | "edit">("create");
   const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
@@ -47,10 +48,11 @@ export function MpoPage() {
     if (renamingTitle) titleInputRef.current?.select();
   }, [renamingTitle]);
 
-  const openBuildPlanPage = (seed?: BuildPlanState) => {
+  const openBuildPlanPage = (seed?: BuildPlanState, planMode: "create" | "edit" = "create") => {
     setBuildPlanSeed(seed ?? null);
     setBuildPlanKey((k) => k + 1);
     setBuildPlanOpen(true);
+    setBuildPlanMode(planMode);
   };
 
   const openPlan = (id: string) => {
@@ -79,7 +81,7 @@ export function MpoPage() {
     }
     const stored = planBuildStates[planId];
     if (stored) {
-      openBuildPlanPage(stored);
+      openBuildPlanPage(stored, "edit");
       return;
     }
     if (!plan) return;
@@ -88,7 +90,7 @@ export function MpoPage() {
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
     seed.singleCT = "total";
-    openBuildPlanPage(applyMethodChoice(seed, "fetch"));
+    openBuildPlanPage(applyMethodChoice(seed, "fetch"), "edit");
   };
 
   const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
@@ -129,6 +131,7 @@ export function MpoPage() {
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
                 onScreenChange={setBuildPlanScreen}
+                mode={buildPlanMode}
               />
             ) : viewMode === "list" ? (
               <>

@@ -111,9 +111,9 @@ export function BudgetTable({ target }: Props) {
             </button>
           </div>
           <input className={styles.search} type="search" placeholder="Search" />
-          <button type="button" className={styles.textBtn}>
-            <MaterialIcon name="grid_view" size={18} />
+          <button type="button" className={`${styles.textBtn} ${styles.textBtnChevron}`}>
             Options
+            <MaterialIcon name="expand_more" size={18} />
           </button>
           <button type="button" className={styles.textBtn}>
             <MaterialIcon name="file_upload" size={18} />
