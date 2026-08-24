@@ -182,8 +182,8 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
           </thead>
           <tbody>
             {visiblePlans.map((plan) => (
-              <tr key={plan.id} className={styles.row}>
-                <td className={styles.checkboxCol}>
+              <tr key={plan.id} className={styles.row} onClick={() => onOpenPlan(plan.id)}>
+                <td className={styles.checkboxCol} onClick={(e) => e.stopPropagation()}>
                   <Checkbox
                     checked={selected.has(plan.id)}
                     onChange={() => toggleOne(plan.id)}
@@ -191,10 +191,10 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                   />
                 </td>
                 <td>
-                  <button type="button" className={styles.nameCell} onClick={() => onOpenPlan(plan.id)}>
+                  <span className={styles.nameCell}>
                     <KindIcon kind={plan.kind} />
                     <span className={styles.nameText}>{plan.label}</span>
-                  </button>
+                  </span>
                 </td>
                 <td>{plan.createdBy}</td>
                 <td>{formatShortDate(plan.lastEdited)}</td>
@@ -204,7 +204,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                   </span>
                 </td>
                 <td className={styles.targetCell}>{TARGET_LABEL[plan.target]}</td>
-                <td className={styles.menuCol}>
+                <td className={styles.menuCol} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.moreWrap} ref={plan.id === openMenuId ? menuRef : undefined}>
                     <button
                       type="button"

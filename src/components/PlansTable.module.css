@@ -147,6 +147,10 @@
   color: var(--gray-900);
 }
 
+.row {
+  cursor: pointer;
+}
+
 .row:hover {
   background: var(--gray-100);
 }
@@ -156,7 +160,7 @@
 }
 
 .nameCell {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 10px;
   font-size: 14px;
@@ -164,7 +168,7 @@
   color: var(--gray-1000);
 }
 
-.nameCell:hover .nameText {
+.row:hover .nameText {
   color: var(--blue-700);
   text-decoration: underline;
 }
