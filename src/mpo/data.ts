@@ -6,11 +6,12 @@ export const PLANS: Plan[] = [
     id: "default",
     label: "Default Plan",
     kind: "optimization",
-    createdBy: "JH",
+    createdBy: "AS",
     lastEdited: new Date(2026, 7, 1),
     target: "incremental-roas",
     planStart: new Date(2026, 6, 2),
     planEnd: new Date(2026, 7, 1),
+    shared: true,
   },
   {
     id: "sim-default",

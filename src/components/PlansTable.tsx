@@ -45,6 +45,7 @@ const TARGET_LABEL: Record<PlanTarget, string> = {
 };
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
+const CURRENT_USER_INITIALS = "JH";
 
 function downloadPlansCsv(plansToExport: Plan[]) {
   const header = ["Plan name", "Type", "Created by", "Last updated", "Target"];
@@ -314,8 +315,15 @@ export function PlansTable({
                         <span className={styles.nameText}>{plan.label}</span>
                       </span>
                       {plan.shared && (
-                        <span className={styles.sharedIcon} aria-label="Shared plan" title="Shared plan">
-                          <MaterialIcon name="group" size={20} />
+                        <span className={styles.sharedIconWrap}>
+                          <span className={styles.sharedIcon} aria-label="Shared plan">
+                            <MaterialIcon name="group" size={20} />
+                          </span>
+                          <span className={styles.sharedTooltip} role="tooltip">
+                            {plan.createdBy === CURRENT_USER_INITIALS
+                              ? "This plan has been shared with others on your team."
+                              : "This plan has been shared with you."}
+                          </span>
                         </span>
                       )}
                     </span>

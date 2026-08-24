@@ -181,12 +181,45 @@
   min-width: 0;
 }
 
+.sharedIconWrap {
+  position: relative;
+  display: inline-flex;
+}
+
 .sharedIcon {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: var(--gray-600, var(--gray-800));
+}
+
+.sharedTooltip {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 30;
+  margin-top: 8px;
+  width: 200px;
+  padding: 8px 10px;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  color: var(--gray-1000);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+
+.sharedIconWrap:hover .sharedTooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .renameInput {
