@@ -269,6 +269,12 @@ export function useMpoState() {
     });
   }, []);
 
+  const renamePlan = useCallback((id: string, label: string) => {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, label: trimmed } : p)));
+  }, []);
+
   const totals = useMemo(
     () => ({
       budget: totalBudget(tactics),
@@ -364,6 +370,7 @@ export function useMpoState() {
     createPlan,
     duplicatePlan,
     deletePlan,
+    renamePlan,
     tactics,
     filteredTactics,
     groupedRows,

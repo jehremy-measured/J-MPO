@@ -2,7 +2,16 @@ import { useEffect, useRef, useState } from "react";
 import { formatShortDate } from "../mpo/buildPlan/dateUtils";
 import type { Plan, PlanTarget } from "../mpo/types";
 import { Checkbox } from "./Checkbox";
-import { ChevronDownIcon, DuplicateIcon, MoreIcon, ReturnCurveIcon, SearchIcon, TrashIcon, WrenchIcon } from "./icons/BuildPlanIcons";
+import {
+  ChevronDownIcon,
+  DuplicateIcon,
+  EditIcon,
+  MoreIcon,
+  ReturnCurveIcon,
+  SearchIcon,
+  TrashIcon,
+  WrenchIcon,
+} from "./icons/BuildPlanIcons";
 import styles from "./PlansTable.module.css";
 
 type Props = {
@@ -10,6 +19,7 @@ type Props = {
   onOpenPlan: (id: string) => void;
   onDuplicatePlan: (id: string) => void;
   onDeletePlan: (id: string) => void;
+  onRenamePlan: (id: string, label: string) => void;
 };
 
 type DateFilter = "90d" | "all";
@@ -41,14 +51,17 @@ function KindIcon({ kind }: { kind: Plan["kind"] }) {
   );
 }
 
-export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }: Props) {
+export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, onRenamePlan }: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [renamingId, setRenamingId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const filterRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -96,6 +109,21 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
       else next.add(id);
       return next;
     });
+  };
+
+  useEffect(() => {
+    if (renamingId) renameInputRef.current?.select();
+  }, [renamingId]);
+
+  const startRename = (plan: Plan) => {
+    setOpenMenuId(null);
+    setRenamingId(plan.id);
+    setRenameValue(plan.label);
+  };
+
+  const commitRename = () => {
+    if (renamingId) onRenamePlan(renamingId, renameValue);
+    setRenamingId(null);
   };
 
   const handleDelete = (plan: Plan) => {
@@ -191,10 +219,28 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                   />
                 </td>
                 <td className={styles.nameCol}>
-                  <span className={styles.nameCell}>
-                    <KindIcon kind={plan.kind} />
-                    <span className={styles.nameText}>{plan.label}</span>
-                  </span>
+                  {renamingId === plan.id ? (
+                    <span className={styles.nameCell} onClick={(e) => e.stopPropagation()}>
+                      <KindIcon kind={plan.kind} />
+                      <input
+                        ref={renameInputRef}
+                        type="text"
+                        className={styles.renameInput}
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onBlur={commitRename}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") commitRename();
+                          if (e.key === "Escape") setRenamingId(null);
+                        }}
+                      />
+                    </span>
+                  ) : (
+                    <span className={styles.nameCell}>
+                      <KindIcon kind={plan.kind} />
+                      <span className={styles.nameText}>{plan.label}</span>
+                    </span>
+                  )}
                 </td>
                 <td>{plan.createdBy}</td>
                 <td>{formatShortDate(plan.lastEdited)}</td>
@@ -227,6 +273,9 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan }:
                             <WrenchIcon size={20} /> Optimize
                           </button>
                         )}
+                        <button type="button" onClick={() => startRename(plan)}>
+                          <EditIcon size={20} /> Rename plan
+                        </button>
                         <button
                           type="button"
                           onClick={() => {

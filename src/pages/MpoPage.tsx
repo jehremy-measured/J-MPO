@@ -80,6 +80,11 @@ export function MpoPage() {
 
   const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
 
+  const handleDeleteActivePlan = (id: string) => {
+    state.deletePlan(id);
+    setViewMode("list");
+  };
+
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
   const currentTarget =
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
@@ -113,6 +118,7 @@ export function MpoPage() {
                   onOpenPlan={openPlan}
                   onDuplicatePlan={state.duplicatePlan}
                   onDeletePlan={state.deletePlan}
+                  onRenamePlan={state.renamePlan}
                 />
               </>
             ) : (
@@ -150,6 +156,11 @@ export function MpoPage() {
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
                         onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
+                        planId={state.newPlanSummary.planId}
+                        planLabel={state.activePlanLabel}
+                        onRenamePlan={state.renamePlan}
+                        onDuplicatePlan={state.duplicatePlan}
+                        onDeletePlan={handleDeleteActivePlan}
                       />
                       <PlanOverviewCard
                         planStart={state.newPlanSummary.planStart}
@@ -175,6 +186,11 @@ export function MpoPage() {
                         targetValue={null}
                         conversionType="All Orders"
                         onEditPlan={() => openPlanForEdit(activePlan.id)}
+                        planId={activePlan.id}
+                        planLabel={activePlan.label}
+                        onRenamePlan={state.renamePlan}
+                        onDuplicatePlan={state.duplicatePlan}
+                        onDeletePlan={handleDeleteActivePlan}
                       />
                       <PlanOverviewCard
                         planStart={activePlan.planStart}
