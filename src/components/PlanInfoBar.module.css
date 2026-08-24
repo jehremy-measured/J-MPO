@@ -4,6 +4,7 @@
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px 16px;
+  min-height: 56px;
   margin: 0 24px 16px;
   padding: 12px 20px;
   background: var(--gray-100);

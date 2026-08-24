@@ -210,13 +210,12 @@
 /* Target value input */
 .targetField {
   margin-top: 2px;
-  margin-left: 25px;
+  margin-left: 27px;
   margin-bottom: 12px;
 }
 
-.targetLabel {
-  display: block;
-  margin-bottom: 6px;
+.targetHint {
+  margin: 6px 0 0;
   font-size: 11.5px;
   color: var(--gray-800);
 }
@@ -250,9 +249,31 @@
   padding-left: 20px;
 }
 
+.targetInputEdited {
+  padding-right: 36px;
+}
+
 .targetInput:focus {
   outline: 2px solid var(--blue-200);
   border-color: var(--blue-700);
+}
+
+.targetResetBtn {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--blue-700);
+  border-radius: var(--radius-sm);
+}
+
+.targetResetBtn:hover {
+  background: var(--gray-100);
 }
 
 /* Method */

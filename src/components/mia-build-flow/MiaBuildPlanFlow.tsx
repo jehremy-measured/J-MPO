@@ -14,7 +14,7 @@ import type { BuildPlanState, PlanTypeChoice } from "../../mpo/buildPlan/types";
 import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { Checkbox } from "../Checkbox";
-import { HistoryIcon, UploadIcon } from "../icons/BuildPlanIcons";
+import { HistoryIcon, ResetIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
@@ -40,20 +40,15 @@ function TypingIndicator() {
   );
 }
 
-const TARGET_FIELD_LABEL: Record<Exclude<PlanTarget, null>, string> = {
-  "incremental-sales": "Target incremental sales",
-  "incremental-orders": "Target incremental orders",
-  "incremental-roas": "Target incremental ROAS",
-  "incremental-cpo": "Target incremental CPO",
-};
-
 function TargetValueInput({
   target,
   value,
+  defaultValue,
   onChange,
 }: {
   target: Exclude<PlanTarget, null>;
   value: number | null;
+  defaultValue: number | null;
   onChange: (value: number | null) => void;
 }) {
   const isDollar = target === "incremental-sales" || target === "incremental-cpo";
@@ -66,30 +61,49 @@ function TargetValueInput({
       : target === "incremental-roas"
       ? "e.g. 4.50"
       : "e.g. 45.00";
+  const edited = value !== defaultValue;
 
   const [text, setText] = useState(value == null ? "" : isInteger ? value.toLocaleString("en-US") : String(value));
 
   return (
-    <div className={styles.targetInputWrap}>
-      {isDollar && <span className={styles.dol}>$</span>}
-      <input
-        className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""}`}
-        inputMode={isInteger ? "numeric" : "decimal"}
-        placeholder={placeholder}
-        value={text}
-        onChange={(e) => {
-          setText(e.target.value);
-          const n = isInteger
-            ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
-            : parseFloat(e.target.value);
-          onChange(isNaN(n) ? null : n);
-        }}
-        onBlur={() => {
-          if (!isInteger) return;
-          const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
-          setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
-        }}
-      />
+    <div>
+      <div className={styles.targetInputWrap}>
+        {isDollar && <span className={styles.dol}>$</span>}
+        <input
+          className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""} ${
+            edited ? styles.targetInputEdited : ""
+          }`}
+          inputMode={isInteger ? "numeric" : "decimal"}
+          placeholder={placeholder}
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const n = isInteger
+              ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
+              : parseFloat(e.target.value);
+            onChange(isNaN(n) ? null : n);
+          }}
+          onBlur={() => {
+            if (!isInteger) return;
+            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+          }}
+        />
+        {edited && (
+          <button
+            type="button"
+            className={styles.targetResetBtn}
+            aria-label="Reset to suggested value"
+            onClick={() => {
+              onChange(defaultValue);
+              setText(defaultValue == null ? "" : isInteger ? defaultValue.toLocaleString("en-US") : String(defaultValue));
+            }}
+          >
+            <ResetIcon size={18} />
+          </button>
+        )}
+      </div>
+      {!edited && <p className={styles.targetHint}>This value is from the last 30 days</p>}
     </div>
   );
 }
@@ -206,11 +220,11 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                 </label>
                 {state.target === opt.id && targetNeedsValue(state.target) && (
                   <div className={styles.targetField}>
-                    <label className={styles.targetLabel}>{TARGET_FIELD_LABEL[state.target]}</label>
                     <TargetValueInput
                       key={state.target}
                       target={state.target}
                       value={state.targetValue}
+                      defaultValue={referenceTargetDefault(state, state.target)}
                       onChange={flow.setTargetValue}
                     />
                   </div>
