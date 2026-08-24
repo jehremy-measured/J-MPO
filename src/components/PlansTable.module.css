@@ -162,10 +162,45 @@
 .nameCell {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 10px;
+  width: 100%;
   font-size: 14px;
   font-weight: 500;
   color: var(--gray-1000);
+}
+
+.nameCellLeft {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sharedIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--gray-600, var(--gray-800));
+}
+
+.renameInput {
+  flex: 1;
+  min-width: 0;
+  height: 30px;
+  padding: 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  background: var(--gray-000);
+  border: 1px solid var(--blue-700);
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+.renameInput:focus {
+  outline: 2px solid var(--blue-200);
 }
 
 .nameCol:hover .nameText {

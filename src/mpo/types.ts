@@ -39,6 +39,8 @@ export type Plan = {
    * (plan period / budget / tactics sections swapped on the right) instead of the
    * normal step-by-step build flow. */
   editVariant?: "sidebar";
+  /** Whether this plan has been shared with other users. */
+  shared?: boolean;
 };
 
 export type PlanSnapshot = {

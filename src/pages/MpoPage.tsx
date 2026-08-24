@@ -119,6 +119,7 @@ export function MpoPage() {
                   onDuplicatePlan={state.duplicatePlan}
                   onDeletePlan={state.deletePlan}
                   onRenamePlan={state.renamePlan}
+                  onToggleSharePlan={state.toggleSharePlan}
                 />
               </>
             ) : (

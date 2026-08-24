@@ -275,6 +275,10 @@ export function useMpoState() {
     setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, label: trimmed } : p)));
   }, []);
 
+  const toggleSharePlan = useCallback((id: string) => {
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, shared: !p.shared } : p)));
+  }, []);
+
   const totals = useMemo(
     () => ({
       budget: totalBudget(tactics),
@@ -371,6 +375,7 @@ export function useMpoState() {
     duplicatePlan,
     deletePlan,
     renamePlan,
+    toggleSharePlan,
     tactics,
     filteredTactics,
     groupedRows,

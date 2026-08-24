@@ -12,6 +12,7 @@ import {
   TrashIcon,
   WrenchIcon,
 } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./PlansTable.module.css";
 
 type Props = {
@@ -20,6 +21,7 @@ type Props = {
   onDuplicatePlan: (id: string) => void;
   onDeletePlan: (id: string) => void;
   onRenamePlan: (id: string, label: string) => void;
+  onToggleSharePlan: (id: string) => void;
 };
 
 type DateFilter = "90d" | "all";
@@ -51,7 +53,14 @@ function KindIcon({ kind }: { kind: Plan["kind"] }) {
   );
 }
 
-export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, onRenamePlan }: Props) {
+export function PlansTable({
+  plans,
+  onOpenPlan,
+  onDuplicatePlan,
+  onDeletePlan,
+  onRenamePlan,
+  onToggleSharePlan,
+}: Props) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [query, setQuery] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
@@ -201,9 +210,9 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, o
                 />
               </th>
               <th>Plan name</th>
+              <th>Type</th>
               <th>Created by</th>
               <th>Last updated</th>
-              <th>Type</th>
               <th>Target</th>
               <th className={styles.menuCol} />
             </tr>
@@ -220,7 +229,7 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, o
                 </td>
                 <td className={styles.nameCol}>
                   {renamingId === plan.id ? (
-                    <span className={styles.nameCell} onClick={(e) => e.stopPropagation()}>
+                    <span className={styles.nameCellLeft} onClick={(e) => e.stopPropagation()}>
                       <KindIcon kind={plan.kind} />
                       <input
                         ref={renameInputRef}
@@ -237,18 +246,25 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, o
                     </span>
                   ) : (
                     <span className={styles.nameCell}>
-                      <KindIcon kind={plan.kind} />
-                      <span className={styles.nameText}>{plan.label}</span>
+                      <span className={styles.nameCellLeft}>
+                        <KindIcon kind={plan.kind} />
+                        <span className={styles.nameText}>{plan.label}</span>
+                      </span>
+                      {plan.shared && (
+                        <span className={styles.sharedIcon} aria-label="Shared plan" title="Shared plan">
+                          <MaterialIcon name="share" size={15} />
+                        </span>
+                      )}
                     </span>
                   )}
                 </td>
-                <td>{plan.createdBy}</td>
-                <td>{formatShortDate(plan.lastEdited)}</td>
                 <td>
                   <span className={`${styles.badge} ${plan.kind === "optimization" ? styles.badgeOptimization : styles.badgeSimulation}`}>
                     {KIND_LABEL[plan.kind]}
                   </span>
                 </td>
+                <td>{plan.createdBy}</td>
+                <td>{formatShortDate(plan.lastEdited)}</td>
                 <td className={styles.targetCell}>{TARGET_LABEL[plan.target]}</td>
                 <td className={styles.menuCol} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.moreWrap} ref={plan.id === openMenuId ? menuRef : undefined}>
@@ -275,6 +291,15 @@ export function PlansTable({ plans, onOpenPlan, onDuplicatePlan, onDeletePlan, o
                         )}
                         <button type="button" onClick={() => startRename(plan)}>
                           <EditIcon size={20} /> Rename plan
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            onToggleSharePlan(plan.id);
+                          }}
+                        >
+                          <MaterialIcon name="share" size={20} /> {plan.shared ? "Stop sharing" : "Share plan"}
                         </button>
                         <button
                           type="button"

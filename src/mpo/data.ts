@@ -21,6 +21,7 @@ export const PLANS: Plan[] = [
     target: "incremental-sales",
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
+    shared: true,
   },
   {
     id: "sim-default-copy",
