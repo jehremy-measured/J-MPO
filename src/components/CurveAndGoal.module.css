@@ -248,14 +248,14 @@
 
 .yTick,
 .xTick {
-  font-size: 10px;
+  font-size: 7.3px;
   fill: var(--gray-800);
   font-family: var(--font-inter);
 }
 
 .axisTitle,
 .axisTitleX {
-  font-size: 10.5px;
+  font-size: 7.7px;
   font-weight: 500;
   fill: var(--gray-800);
   font-family: var(--font-inter);
