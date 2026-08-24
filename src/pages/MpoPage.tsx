@@ -4,9 +4,9 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
 import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
+import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
@@ -125,11 +125,7 @@ export function MpoPage() {
             ) : (
               <>
                 <div className={styles.detailHeader}>
-                  <button type="button" className={styles.backLink} onClick={() => setViewMode("list")}>
-                    <BackArrowIcon size={20} />
-                    Back to plans
-                  </button>
-                  <span className={styles.detailPlanLabel}>{state.activePlanLabel}</span>
+                  <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
                   <div className={styles.syncPill}>
                     <span className={styles.syncDot} aria-hidden />
                     <span className={styles.syncText}>Updated 2 hours ago</span>
@@ -139,6 +135,15 @@ export function MpoPage() {
                       Refresh
                     </button>
                   </div>
+                  {state.activePlanId && (
+                    <PlanOptionsMenu
+                      planId={state.activePlanId}
+                      planLabel={state.activePlanLabel}
+                      onRenamePlan={state.renamePlan}
+                      onDuplicatePlan={state.duplicatePlan}
+                      onDeletePlan={handleDeleteActivePlan}
+                    />
+                  )}
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
@@ -157,11 +162,6 @@ export function MpoPage() {
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
                         onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
-                        planId={state.newPlanSummary.planId}
-                        planLabel={state.activePlanLabel}
-                        onRenamePlan={state.renamePlan}
-                        onDuplicatePlan={state.duplicatePlan}
-                        onDeletePlan={handleDeleteActivePlan}
                       />
                       <PlanOverviewCard
                         planStart={state.newPlanSummary.planStart}
@@ -187,11 +187,6 @@ export function MpoPage() {
                         targetValue={null}
                         conversionType="All Orders"
                         onEditPlan={() => openPlanForEdit(activePlan.id)}
-                        planId={activePlan.id}
-                        planLabel={activePlan.label}
-                        onRenamePlan={state.renamePlan}
-                        onDuplicatePlan={state.duplicatePlan}
-                        onDeletePlan={handleDeleteActivePlan}
                       />
                       <PlanOverviewCard
                         planStart={activePlan.planStart}

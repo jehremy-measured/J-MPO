@@ -1,0 +1,53 @@
+.moreWrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.iconBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
+  color: var(--gray-800);
+}
+
+.iconBtn:hover {
+  background: var(--gray-200);
+  color: var(--gray-1000);
+}
+
+.moreMenu {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 20;
+}
+
+.moreMenu button {
+  width: 100%;
+  text-align: left;
+  font-size: 13.5px;
+  color: var(--gray-1000);
+  padding: 9px 12px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.moreMenu button:hover {
+  background: var(--gray-100);
+}
+
+.moreMenu button.dangerItem {
+  color: #c22a4d;
+}
