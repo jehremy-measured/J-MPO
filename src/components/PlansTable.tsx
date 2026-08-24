@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { formatShortDate } from "../mpo/buildPlan/dateUtils";
 import type { Plan, PlanTarget } from "../mpo/types";
 import { Checkbox } from "./Checkbox";
+import { ConfirmDialog } from "./ConfirmDialog";
 import {
   ChevronDownIcon,
   DuplicateIcon,
@@ -45,6 +46,26 @@ const TARGET_LABEL: Record<PlanTarget, string> = {
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
+function downloadPlansCsv(plansToExport: Plan[]) {
+  const header = ["Plan name", "Type", "Created by", "Last updated", "Target"];
+  const rows = plansToExport.map((plan) => [
+    plan.label,
+    KIND_LABEL[plan.kind],
+    plan.createdBy,
+    formatShortDate(plan.lastEdited),
+    TARGET_LABEL[plan.target],
+  ]);
+  const csv = [header, ...rows]
+    .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+    .join("\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = plansToExport.length === 1 ? `${plansToExport[0].label}.csv` : "plans.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
 function KindIcon({ kind }: { kind: Plan["kind"] }) {
   return (
     <span className={`${styles.kindIcon} ${kind === "optimization" ? styles.kindOptimization : styles.kindSimulation}`}>
@@ -68,9 +89,12 @@ export function PlansTable({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
+  const [footerMenuOpen, setFooterMenuOpen] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ ids: string[]; message: string } | null>(null);
   const filterRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const renameInputRef = useRef<HTMLInputElement>(null);
+  const footerMenuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -89,6 +113,15 @@ export function PlansTable({
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [openMenuId]);
+
+  useEffect(() => {
+    if (!footerMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (footerMenuRef.current && !footerMenuRef.current.contains(e.target as Node)) setFooterMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [footerMenuOpen]);
 
   const now = Date.now();
   const visiblePlans = plans.filter((plan) => {
@@ -135,20 +168,50 @@ export function PlansTable({
     setRenamingId(null);
   };
 
-  const handleDelete = (plan: Plan) => {
+  const requestDelete = (ids: string[], message: string) => {
     setOpenMenuId(null);
-    if (window.confirm(`Delete "${plan.label}"? This can't be undone.`)) {
-      onDeletePlan(plan.id);
-      setSelected((prev) => {
-        const next = new Set(prev);
-        next.delete(plan.id);
-        return next;
-      });
-    }
+    setFooterMenuOpen(false);
+    setPendingDelete({ ids, message });
+  };
+
+  const handleDelete = (plan: Plan) => {
+    requestDelete([plan.id], `Delete "${plan.label}"? This can't be undone.`);
+  };
+
+  const handleDeleteSelected = () => {
+    requestDelete(
+      [...selected],
+      `Delete ${selected.size} plan${selected.size === 1 ? "" : "s"}? This can't be undone.`
+    );
+  };
+
+  const confirmDelete = () => {
+    if (!pendingDelete) return;
+    pendingDelete.ids.forEach((id) => onDeletePlan(id));
+    setSelected((prev) => {
+      const next = new Set(prev);
+      pendingDelete.ids.forEach((id) => next.delete(id));
+      return next;
+    });
+    setPendingDelete(null);
+  };
+
+  const selectedPlans = plans.filter((p) => selected.has(p.id));
+
+  const handleShareSelected = () => {
+    setFooterMenuOpen(false);
+    selectedPlans.forEach((plan) => {
+      if (!plan.shared) onToggleSharePlan(plan.id);
+    });
+  };
+
+  const handleDownloadSelected = () => {
+    setFooterMenuOpen(false);
+    downloadPlansCsv(selectedPlans);
   };
 
   return (
-    <section className={styles.section}>
+    <section className={selected.size > 0 ? `${styles.section} ${styles.sectionWithFooter}` : styles.section}>
       <div className={styles.header}>
         <h2>Plans</h2>
         {selected.size > 0 && <span className={styles.selectedCount}>{selected.size} selected</span>}
@@ -330,6 +393,46 @@ export function PlansTable({
         </table>
       </div>
       )}
+
+      {selected.size > 0 && (
+        <div className={styles.bulkFooter}>
+          <span className={styles.bulkCount}>{selected.size} selected</span>
+          <div className={styles.bulkActions}>
+            <button type="button" className={styles.bulkBtn} onClick={handleShareSelected}>
+              Share
+            </button>
+            <button type="button" className={styles.bulkBtn} onClick={handleDownloadSelected}>
+              Download
+            </button>
+            <div className={styles.moreWrap} ref={footerMenuRef}>
+              <button
+                type="button"
+                className={styles.iconBtn}
+                aria-label="More bulk actions"
+                onClick={() => setFooterMenuOpen((v) => !v)}
+              >
+                <MoreIcon size={20} />
+              </button>
+              {footerMenuOpen && (
+                <div className={`${styles.moreMenu} ${styles.moreMenuUp}`}>
+                  <button type="button" className={styles.dangerItem} onClick={handleDeleteSelected}>
+                    <TrashIcon size={20} /> Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={pendingDelete !== null}
+        title={pendingDelete && pendingDelete.ids.length > 1 ? "Delete plans?" : "Delete plan?"}
+        message={pendingDelete?.message ?? ""}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </section>
   );
 }

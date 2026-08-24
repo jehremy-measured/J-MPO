@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { PlanTarget } from "../mpo/types";
 import { formatTargetLabel } from "../mpo/buildPlan/logic";
+import { ConfirmDialog } from "./ConfirmDialog";
 import { DuplicateIcon, EditIcon, MoreIcon, TrashIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlanInfoBar.module.css";
 
@@ -30,6 +31,7 @@ export function PlanInfoBar({
   onDeletePlan,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const showMoreMenu = planId && (onRenamePlan || onDuplicatePlan || onDeletePlan);
 
@@ -57,9 +59,12 @@ export function PlanInfoBar({
   const handleDelete = () => {
     setMenuOpen(false);
     if (!planId || !onDeletePlan) return;
-    if (window.confirm(`Delete "${planLabel ?? "this plan"}"? This can't be undone.`)) {
-      onDeletePlan(planId);
-    }
+    setConfirmingDelete(true);
+  };
+
+  const confirmDelete = () => {
+    setConfirmingDelete(false);
+    if (planId && onDeletePlan) onDeletePlan(planId);
   };
 
   return (
@@ -119,6 +124,14 @@ export function PlanInfoBar({
           </>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Delete plan?"
+        message={`Delete "${planLabel ?? "this plan"}"? This can't be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </div>
   );
 }
