@@ -21,8 +21,10 @@
 .editLink {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 6px 10px;
+  height: 32px;
+  padding: 0 10px 0 8px;
   font-size: 13px;
   font-weight: 600;
   color: var(--blue-700);

@@ -70,7 +70,7 @@
   justify-content: center;
   gap: 7px;
   height: 32px;
-  padding: 0 16px;
+  padding: 0 12px 0 16px;
   border-radius: var(--radius-sm);
   background: var(--gray-1000);
   color: var(--gray-000);
@@ -88,7 +88,7 @@
   justify-content: center;
   gap: 7px;
   height: 32px;
-  padding: 0 14px;
+  padding: 0 14px 0 10px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.55);

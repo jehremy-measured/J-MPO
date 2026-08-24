@@ -40,29 +40,24 @@ const xAxis = ["$0", "$500K", "$1M", "$1.5M", "$2M", "$2.5M", "$3M"];
 export function CurveAndGoal() {
   return (
     <section className={styles.section} data-node-id="1:34014">
-      <div className={styles.card}>
-        <header className={styles.toolbar}>
-          <div className={styles.toolbarLeft}>
-            <span className={styles.highlight}>US Online Orders +2</span>
-            <ToolbarDivider />
-            <span className={styles.meta}>
-              Planning for <strong>Rolling 30 days</strong>
-            </span>
-            <ToolbarDivider />
-            <span className={styles.meta}>
-              Including <strong>All tactics</strong>
-            </span>
-            <ToolbarDivider />
-            <button type="button" className={styles.settingsLink}>
-              <EditIcon size={20} /> Plan settings
-            </button>
-          </div>
-          <div className={styles.toggle}>
-            <span className={styles.toggleActive}>ROAS</span>
-            <button type="button">CPO</button>
-          </div>
-        </header>
+      <div className={styles.toolbar}>
+        <div className={styles.toolbarLeft}>
+          <span className={styles.highlight}>US Online Orders +2</span>
+          <ToolbarDivider />
+          <span className={styles.meta}>
+            Planning for <strong>Rolling 30 days</strong>
+          </span>
+          <ToolbarDivider />
+          <span className={styles.meta}>
+            Including <strong>All tactics</strong>
+          </span>
+        </div>
+        <button type="button" className={styles.settingsLink}>
+          <EditIcon size={18} /> Plan settings
+        </button>
+      </div>
 
+      <div className={styles.card}>
         <div className={styles.body}>
           <aside className={styles.goals}>
             <div className={styles.goalsHeader}>
@@ -70,14 +65,6 @@ export function CurveAndGoal() {
               <button type="button" className={styles.resetLink}>
                 Reset
               </button>
-            </div>
-
-            <div className={styles.modeRow}>
-              <div className={styles.toggle}>
-                <span className={styles.toggleActive}>Balanced</span>
-                <button type="button">Maximized</button>
-              </div>
-              <span className={styles.rowLabel}>Optimization Mode</span>
             </div>
 
             {sliders.map((slider) => (

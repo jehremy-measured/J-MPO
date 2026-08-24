@@ -77,7 +77,6 @@ const TOTALS = {
   roas: "$9.11",
   orders: "209,875",
   cpo: "$44.76",
-  marginal: "$10,999,283",
 };
 
 function parseCurrency(value: string): number {
@@ -148,9 +147,7 @@ export function BudgetTable({ target }: Props) {
               <td>
                 <strong>{showOrders ? TOTALS.cpo : TOTALS.roas}</strong>
               </td>
-              <td>
-                <strong>{TOTALS.marginal}</strong>
-              </td>
+              <td />
             </tr>
             {rows.map((row) => (
               <tr key={row.name}>
