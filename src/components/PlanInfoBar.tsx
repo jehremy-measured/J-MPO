@@ -1,5 +1,4 @@
 import type { PlanTarget } from "../mpo/types";
-import { currencyFormatter } from "../mpo/buildPlan/data";
 import { formatTargetLabel } from "../mpo/buildPlan/logic";
 import { EditIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlanInfoBar.module.css";
@@ -9,7 +8,7 @@ type Props = {
   target: PlanTarget;
   targetValue: number | null;
   conversionType: string;
-  budget: number;
+  budgetSourceLabel: string;
   tacticsIncluded: number;
   tacticsTotal: number;
   onEditPlan?: () => void;
@@ -20,7 +19,7 @@ export function PlanInfoBar({
   target,
   targetValue,
   conversionType,
-  budget,
+  budgetSourceLabel,
   tacticsIncluded,
   tacticsTotal,
   onEditPlan,
@@ -41,7 +40,7 @@ export function PlanInfoBar({
         </span>
         <span className={styles.divider} aria-hidden />
         <span className={styles.item}>
-          Budget <strong>{currencyFormatter.format(budget)}</strong>
+          Budget from <strong>{budgetSourceLabel}</strong>
         </span>
         <span className={styles.divider} aria-hidden />
         <span className={styles.item}>

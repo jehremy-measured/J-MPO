@@ -4,7 +4,7 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { BackArrowIcon, EditIcon } from "../components/icons/BuildPlanIcons";
+import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
 import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
@@ -18,9 +18,14 @@ import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { formatRangeLabel } from "../mpo/buildPlan/dateUtils";
 import { applyMethodChoice } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import type { CreatePlanInput } from "../mpo/types";
+import type { CreatePlanInput, PlanKind } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
+
+const KIND_LABEL: Record<PlanKind, string> = {
+  optimization: "Optimization",
+  simulation: "Simulation",
+};
 
 /** MPO 1 screen — interactive prototype (Figma node 1:33651) */
 export function MpoPage() {
@@ -167,12 +172,18 @@ export function MpoPage() {
                       autoFocus
                     />
                   ) : (
-                    <button type="button" className={styles.detailPlanTitleBtn} onClick={startRenameTitle}>
+                    <>
                       <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
-                      <span className={styles.detailPlanTitleEditIcon}>
-                        <EditIcon size={20} />
-                      </span>
-                    </button>
+                      {activePlan && (
+                        <span
+                          className={`${styles.kindBadge} ${
+                            activePlan.kind === "optimization" ? styles.kindBadgeOptimization : styles.kindBadgeSimulation
+                          }`}
+                        >
+                          {KIND_LABEL[activePlan.kind]}
+                        </span>
+                      )}
+                    </>
                   )}
                   <div className={styles.syncPill}>
                     <span className={styles.syncDot} aria-hidden />
@@ -211,7 +222,7 @@ export function MpoPage() {
                         target={state.newPlanSummary.target}
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
-                        budget={state.totals.budget}
+                        budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
                         tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
@@ -239,7 +250,7 @@ export function MpoPage() {
                         target={activePlan.target}
                         targetValue={null}
                         conversionType="All Orders"
-                        budget={state.totals.budget}
+                        budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
                         tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(activePlan.id)}

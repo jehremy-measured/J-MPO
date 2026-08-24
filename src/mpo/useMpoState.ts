@@ -11,6 +11,7 @@ import {
   totalSales,
 } from "./calc";
 import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLANS } from "./data";
+import { formatRangeLabel, subtractYears } from "./buildPlan/dateUtils";
 import type {
   BudgetView,
   CreatePlanInput,
@@ -67,7 +68,14 @@ function snapshotFromInput(input: CreatePlanInput): PlanSnapshot {
 }
 
 function initialPlanData(): Record<string, PlanSnapshot> {
-  return { default: freshSnapshot() };
+  const data: Record<string, PlanSnapshot> = {};
+  for (const plan of PLANS) {
+    data[plan.id] = {
+      ...freshSnapshot(),
+      referencePeriod: formatRangeLabel(subtractYears(plan.planStart, 1), subtractYears(plan.planEnd, 1)),
+    };
+  }
+  return data;
 }
 
 export function useMpoState() {

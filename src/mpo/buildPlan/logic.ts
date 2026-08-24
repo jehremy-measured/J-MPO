@@ -263,8 +263,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
   });
 
   const targetBudget = Math.max(500_000, includedTotal(state));
-  const referencePeriod =
-    state.method === "fetch" ? activeWindow(state).label : state.source || "Uploaded budget";
+  const referencePeriod = state.method === "fetch" ? activeWindow(state).label : BUDGET_TEMPLATE_FILENAME;
   const label = periodLabel(state);
 
   return {
