@@ -263,46 +263,46 @@ export function PlanOverviewCard({
                 <div className={styles.primaryStat}>
                   <div className={styles.stat}>
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
-                    <span className={styles.statValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
+                    <span className={styles.statValueCol}>
+                      <span className={styles.statValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
+                      <span className={styles.statSubtext}>{progress.pctLabel} of target</span>
+                    </span>
                   </div>
-                  {primaryKind === "bar" ? (
-                    <>
-                      <div className={styles.barTrack}>
-                        <div
-                          className={styles.barFill}
-                          style={{ width: `${Math.min(100, Math.max(0, progress.pct))}%` }}
-                        />
-                      </div>
-                      <div className={styles.barFoot}>
-                        <TargetIcon size={16} />
-                        Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className={styles.sliderTrack}>
-                        <div
-                          className={styles.sliderGoodZone}
-                          style={{ left: `${goodZoneLeft}%`, width: `${goodZoneWidth}%` }}
-                        />
-                        <div className={styles.sliderTick} style={{ left: `${targetPct}%` }} />
-                        <div className={styles.sliderDot} style={{ left: `${actualPct}%` }} />
-                      </div>
-                      <div className={styles.sliderFoot}>
-                        <TargetIcon size={16} />
-                        Target {formatPrimaryValue(target as PlanTarget, targetValue as number)}
-                      </div>
-                    </>
-                  )}
                 </div>
 
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
+                    {primaryKind === "bar" ? (
+                      <>
+                        <div className={styles.barTrack}>
+                          <div
+                            className={styles.barFill}
+                            style={{ width: `${Math.min(100, Math.max(0, progress.pct))}%` }}
+                          />
+                        </div>
+                        <div className={styles.barFoot}>
+                          <TargetIcon size={16} />
+                          Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className={styles.sliderTrack}>
+                          <div
+                            className={styles.sliderGoodZone}
+                            style={{ left: `${goodZoneLeft}%`, width: `${goodZoneWidth}%` }}
+                          />
+                          <div className={styles.sliderTick} style={{ left: `${targetPct}%` }} />
+                          <div className={styles.sliderDot} style={{ left: `${actualPct}%` }} />
+                        </div>
+                        <div className={styles.sliderFoot}>
+                          <TargetIcon size={16} />
+                          Target {formatPrimaryValue(target as PlanTarget, targetValue as number)}
+                        </div>
+                      </>
+                    )}
                     <div className={styles.goalBannerBody}>
-                      <p className={styles.goalBannerHeadline}>
-                        <TargetIcon size={20} />
-                        {progress.pctLabel} of target reached
-                      </p>
+                      <p className={styles.goalBannerHeadline}>{progress.pctLabel} of target reached</p>
                       <p className={styles.goalBannerText}>{banner.text}</p>
                     </div>
                     <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
