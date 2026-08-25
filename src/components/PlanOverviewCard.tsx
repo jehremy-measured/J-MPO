@@ -105,6 +105,7 @@ export function PlanOverviewCard({
     width: 640,
     height: 260,
   });
+  const [tooltipRef, tooltipSize] = useElementSize<HTMLDivElement>({ width: 168, height: 70 });
   const PLOT_WIDTH = Math.max(1, VB_WIDTH - MARGIN.left - MARGIN.right);
   const PLOT_HEIGHT = Math.max(1, VB_HEIGHT - MARGIN.top - MARGIN.bottom);
 
@@ -120,6 +121,14 @@ export function PlanOverviewCard({
 
   const xFor = (i: number) => (weeks.length <= 1 ? MARGIN.left + PLOT_WIDTH / 2 : MARGIN.left + (i / (weeks.length - 1)) * PLOT_WIDTH);
   const yFor = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / yMax) * PLOT_HEIGHT;
+
+  // The line chart plots points edge-to-edge (xFor(0) sits exactly on the left margin), which
+  // is correct for a connected line but leaves no room for a bar centered on that same point.
+  // Bars use an even band per week instead, so every bar has margin on both sides.
+  const bandWidth = PLOT_WIDTH / weeks.length;
+  const bandLeft = (i: number) => MARGIN.left + bandWidth * i;
+  const bandCenter = (i: number) => bandLeft(i) + bandWidth / 2;
+  const pointX = (i: number) => (chartView === "weekly" ? bandCenter(i) : xFor(i));
 
   const salesPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.sales)}`).join(" ");
   const budgetPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.budget)}`).join(" ");
@@ -221,7 +230,7 @@ export function PlanOverviewCard({
                     i % labelEvery === 0 && (
                       <text
                         key={w.index}
-                        x={xFor(i)}
+                        x={pointX(i)}
                         y={VB_HEIGHT - 8}
                         className={styles.xTick}
                         textAnchor="middle"
@@ -256,12 +265,9 @@ export function PlanOverviewCard({
                   </>
                 ) : (
                   weeks.map((w, i) => {
-                    const slotLeft = i === 0 ? MARGIN.left : (xFor(i - 1) + xFor(i)) / 2;
-                    const slotRight = i === weeks.length - 1 ? VB_WIDTH - MARGIN.right : (xFor(i) + xFor(i + 1)) / 2;
-                    const slotWidth = slotRight - slotLeft;
-                    const barWidth = Math.max(2, Math.min(22, slotWidth * 0.18));
+                    const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
                     const gap = Math.max(2, barWidth * 0.3);
-                    const center = xFor(i);
+                    const center = bandCenter(i);
                     const salesX = center - barWidth - gap / 2;
                     const budgetX = center + gap / 2;
                     const baseline = MARGIN.top + PLOT_HEIGHT;
@@ -292,8 +298,18 @@ export function PlanOverviewCard({
                 )}
 
                 {weeks.map((w, i) => {
-                  const left = i === 0 ? MARGIN.left : (xFor(i - 1) + xFor(i)) / 2;
-                  const right = i === weeks.length - 1 ? VB_WIDTH - MARGIN.right : (xFor(i) + xFor(i + 1)) / 2;
+                  const left =
+                    chartView === "weekly"
+                      ? bandLeft(i)
+                      : i === 0
+                      ? MARGIN.left
+                      : (xFor(i - 1) + xFor(i)) / 2;
+                  const right =
+                    chartView === "weekly"
+                      ? bandLeft(i) + bandWidth
+                      : i === weeks.length - 1
+                      ? VB_WIDTH - MARGIN.right
+                      : (xFor(i) + xFor(i + 1)) / 2;
                   return (
                     <rect
                       key={w.index}
@@ -316,8 +332,14 @@ export function PlanOverviewCard({
 
               {hit && (
                 <div
+                  ref={tooltipRef}
                   className={styles.tooltip}
-                  style={{ left: `${(xFor(hit.index) / VB_WIDTH) * 100}%` }}
+                  style={{
+                    left: Math.min(
+                      Math.max(pointX(hit.index), tooltipSize.width / 2),
+                      VB_WIDTH - tooltipSize.width / 2
+                    ),
+                  }}
                 >
                   <div className={styles.tooltipLabel}>{hit.fullLabel}</div>
                   <div className={styles.tooltipRow}>
