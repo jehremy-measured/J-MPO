@@ -1,5 +1,5 @@
 import type { PlanTarget } from "../mpo/types";
-import { computeGoalProgress } from "../mpo/goalProgress";
+import { computeGoalProgress, formatGoalMetric, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { TargetIcon } from "./icons/BuildPlanIcons";
 import styles from "./SimulationGoalBanner.module.css";
 
@@ -28,7 +28,20 @@ export function SimulationGoalBanner({
     : null;
 
   const title = progress ? `${progress.pctLabel} of target achieved` : "No target set for this simulation";
-  const subtext = "Manually adjust tactic budgets, or optimize to auto-reallocate for maximum gains.";
+
+  let subtext = "Set a target when building this simulation to see how close it gets you.";
+  if (progress) {
+    const metricLabel = GOAL_METRIC_LABEL[target].toLowerCase();
+    const targetLabel = formatGoalMetric(target, targetValue as number);
+    const met = progress.isCostMetric ? progress.actual <= (targetValue as number) : progress.actual >= (targetValue as number);
+    if (met) {
+      subtext = `You've reached your ${metricLabel} target of ${targetLabel}. Run an optimization to maximize gains further.`;
+    } else {
+      const gap = progress.isCostMetric ? progress.actual - (targetValue as number) : (targetValue as number) - progress.actual;
+      const verb = progress.isCostMetric ? "over" : "short of";
+      subtext = `You are ${formatGoalMetric(target, gap)} ${verb} your ${metricLabel} target of ${targetLabel}. You can run an optimization to reach your target.`;
+    }
+  }
 
   return (
     <div className={styles.banner}>
