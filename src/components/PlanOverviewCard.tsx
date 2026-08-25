@@ -55,7 +55,7 @@ function computeBannerInfo(
     return {
       variant: "gap",
       text: `${formatPrimaryValue(target, gapRaw)} ${verb} your ${targetFormatted} target — run an optimization to close the gap.`,
-      buttonLabel: "Optimize to close the gap",
+      buttonLabel: "Optimize",
     };
   }
   if (kind === "threshold") {
@@ -63,13 +63,13 @@ function computeBannerInfo(
     return {
       variant: "underspend",
       text: `${direction} target means you're underspending — add budget to capture more sales.`,
-      buttonLabel: "Optimize toward target",
+      buttonLabel: "Optimize",
     };
   }
   return {
     variant: "reached",
     text: `You've reached your ${targetFormatted} target. Run an optimization to maximize gains further.`,
-    buttonLabel: "Optimize for more gains",
+    buttonLabel: "Optimize",
   };
 }
 
@@ -233,19 +233,18 @@ export function PlanOverviewCard({
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
-  // Threshold view needs an axis domain that comfortably fits both the target tick and the
-  // actual-value dot, with a "good" zone shaded toward whichever side is favorable.
-  let thresholdDomainMax = 1;
-  let targetPct = 0;
-  let actualPct = 0;
+  // Threshold view keeps the target tick fixed at center and places the actual-value dot
+  // relative to it, so the tick is always a stable reference point regardless of magnitude.
+  const targetPct = 50;
+  let actualPct = 50;
   let goodZoneLeft = 0;
   let goodZoneWidth = 0;
   if (hasTarget && progress && primaryKind === "threshold") {
-    thresholdDomainMax = niceCeiling(Math.max(progress.actual, targetValue as number) * 1.25);
-    targetPct = Math.min(100, ((targetValue as number) / thresholdDomainMax) * 100);
-    actualPct = Math.min(100, Math.max(0, (progress.actual / thresholdDomainMax) * 100));
+    const deviationScale = (targetValue as number) * 0.5 || 1;
+    const offsetPct = Math.max(-50, Math.min(50, ((progress.actual - (targetValue as number)) / deviationScale) * 50));
+    actualPct = 50 + offsetPct;
     goodZoneLeft = progress.isCostMetric ? 0 : targetPct;
-    goodZoneWidth = progress.isCostMetric ? targetPct : 100 - targetPct;
+    goodZoneWidth = 50;
   }
 
   return (
@@ -255,12 +254,12 @@ export function PlanOverviewCard({
           <div className={styles.statsCol}>
             {hasTarget && progress && primaryKind ? (
               <>
-                <h2 className={`${styles.colTitle} ${styles.forecastTitle}`}>Forecast</h2>
+                <h2 className={styles.colTitle}>Forecast</h2>
 
                 <div className={styles.primaryStat}>
-                  <div className={styles.primaryStatHead}>
-                    <span className={styles.primaryStatLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
-                    <span className={styles.primaryStatValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
+                  <div className={styles.stat}>
+                    <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
+                    <span className={styles.statValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
                   </div>
                   {primaryKind === "bar" ? (
                     <>
