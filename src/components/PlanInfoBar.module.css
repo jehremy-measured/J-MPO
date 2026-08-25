@@ -1,6 +1,6 @@
 .bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 10px 16px;
@@ -14,9 +14,9 @@
 
 .items {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 10px 16px;
+  gap: 10px 24px;
 }
 
 .actions {
@@ -45,19 +45,22 @@
 }
 
 .item {
-  font-size: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.itemLabel {
+  font-size: 12px;
+  font-weight: 500;
   color: var(--gray-800);
   white-space: nowrap;
 }
 
-.item strong {
+.itemValue {
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gray-1000);
-  font-weight: 600;
-}
-
-.divider {
-  width: 1px;
-  height: 14px;
-  background: var(--gray-300);
-  flex-shrink: 0;
+  white-space: nowrap;
 }

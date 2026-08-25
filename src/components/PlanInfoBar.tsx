@@ -27,28 +27,28 @@ export function PlanInfoBar({
   return (
     <div className={styles.bar}>
       <div className={styles.items}>
-        <span className={styles.item}>
-          Planning for <strong>{periodLabel}</strong>
-        </span>
-        <span className={styles.divider} aria-hidden />
-        <span className={styles.item}>
-          Conversion type <strong>{conversionType}</strong>
-        </span>
-        <span className={styles.divider} aria-hidden />
-        <span className={styles.item}>
-          Target <strong>{formatTargetLabel(target, targetValue)}</strong>
-        </span>
-        <span className={styles.divider} aria-hidden />
-        <span className={styles.item}>
-          Budget from <strong>{budgetSourceLabel}</strong>
-        </span>
-        <span className={styles.divider} aria-hidden />
-        <span className={styles.item}>
-          Tactics{" "}
-          <strong>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Planning for</span>
+          <span className={styles.itemValue}>{periodLabel}</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Conversion type</span>
+          <span className={styles.itemValue}>{conversionType}</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Target</span>
+          <span className={styles.itemValue}>{formatTargetLabel(target, targetValue)}</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Budget from</span>
+          <span className={styles.itemValue}>{budgetSourceLabel}</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Tactics</span>
+          <span className={styles.itemValue}>
             {tacticsIncluded} of {tacticsTotal} included
-          </strong>
-        </span>
+          </span>
+        </div>
       </div>
       <div className={styles.actions}>
         {onEditPlan && (
