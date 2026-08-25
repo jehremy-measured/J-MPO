@@ -53,35 +53,42 @@
 .statsCol {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   padding: 24px;
   border-right: 1px solid var(--gray-300-stroke);
 }
 
 .colTitle {
-  margin: 0;
+  margin: 0 0 8px;
   font-size: 16px;
   font-weight: 600;
   color: var(--gray-1000);
 }
 
 .stat {
-  background: var(--gray-100);
-  border-radius: var(--radius-sm);
-  padding: 18px 20px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.stat:last-child {
+  border-bottom: none;
 }
 
 .statLabel {
-  font-size: 13px;
-  color: var(--gray-800);
-  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
 }
 
 .statValue {
-  font-size: 22px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gray-1000);
   line-height: 1.3;
+  white-space: nowrap;
 }
 
 .chartCol {
