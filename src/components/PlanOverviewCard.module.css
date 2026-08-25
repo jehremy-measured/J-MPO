@@ -258,6 +258,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 36px;
   padding: 0 16px;
   font-size: 14px;

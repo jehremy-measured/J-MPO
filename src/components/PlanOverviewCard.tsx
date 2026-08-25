@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
@@ -176,29 +177,43 @@ export function PlanOverviewCard({
     [planStart, planEnd, incrementalSales, totalBudget]
   );
 
-  const yMax = useMemo(() => {
-    const peak = Math.max(...weeks.map((w) => Math.max(w.sales, w.budget)), 1);
-    return niceCeiling(peak * 1.08);
+  // Cumulative view runs a prefix sum over each week's own figures, so week N shows weeks
+  // 1..N combined instead of just that week's slice.
+  const cumulativeWeeks = useMemo(() => {
+    let salesSum = 0;
+    let budgetSum = 0;
+    return weeks.map((w) => {
+      salesSum += w.sales;
+      budgetSum += w.budget;
+      return { ...w, sales: salesSum, budget: budgetSum };
+    });
   }, [weeks]);
 
-  const xFor = (i: number) => (weeks.length <= 1 ? MARGIN.left + PLOT_WIDTH / 2 : MARGIN.left + (i / (weeks.length - 1)) * PLOT_WIDTH);
+  const chartWeeks = chartView === "cumulative" ? cumulativeWeeks : weeks;
+
+  const yMax = useMemo(() => {
+    const peak = Math.max(...chartWeeks.map((w) => Math.max(w.sales, w.budget)), 1);
+    return niceCeiling(peak * 1.08);
+  }, [chartWeeks]);
+
+  const xFor = (i: number) => (chartWeeks.length <= 1 ? MARGIN.left + PLOT_WIDTH / 2 : MARGIN.left + (i / (chartWeeks.length - 1)) * PLOT_WIDTH);
   const yFor = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / yMax) * PLOT_HEIGHT;
 
   // The line chart plots points edge-to-edge (xFor(0) sits exactly on the left margin), which
   // is correct for a connected line but leaves no room for a bar centered on that same point.
   // Bars use an even band per week instead, so every bar has margin on both sides.
-  const bandWidth = PLOT_WIDTH / weeks.length;
+  const bandWidth = PLOT_WIDTH / chartWeeks.length;
   const bandLeft = (i: number) => MARGIN.left + bandWidth * i;
   const bandCenter = (i: number) => bandLeft(i) + bandWidth / 2;
   const pointX = (i: number) => (chartView === "weekly" ? bandCenter(i) : xFor(i));
 
-  const salesPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.sales)}`).join(" ");
-  const budgetPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.budget)}`).join(" ");
-  const areaPath = `${salesPath} L${xFor(weeks.length - 1)},${MARGIN.top + PLOT_HEIGHT} L${xFor(0)},${MARGIN.top + PLOT_HEIGHT} Z`;
+  const salesPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.sales)}`).join(" ");
+  const budgetPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.budget)}`).join(" ");
+  const areaPath = `${salesPath} L${xFor(chartWeeks.length - 1)},${MARGIN.top + PLOT_HEIGHT} L${xFor(0)},${MARGIN.top + PLOT_HEIGHT} Z`;
 
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
-  const labelEvery = Math.max(1, Math.ceil(weeks.length / 6));
-  const hit = hoverIndex != null ? weeks[hoverIndex] : null;
+  const labelEvery = Math.max(1, Math.ceil(chartWeeks.length / 6));
+  const hit = hoverIndex != null ? chartWeeks[hoverIndex] : null;
 
   const hasTarget = target != null && targetValue != null && targetValue > 0;
   const progress = hasTarget
@@ -295,6 +310,7 @@ export function PlanOverviewCard({
                     <p className={styles.goalBannerText}>{banner.text}</p>
                     <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
                       {banner.buttonLabel}
+                      <SparkleIcon size={16} variant="fill" />
                     </button>
                   </div>
                 )}
@@ -355,7 +371,7 @@ export function PlanOverviewCard({
                 role="img"
                 aria-label={
                   chartView === "cumulative"
-                    ? "Line chart of projected incremental sales and budget by week"
+                    ? "Line chart of projected cumulative incremental sales and budget by week"
                     : "Bar chart of projected incremental sales and budget by week"
                 }
               >
@@ -384,7 +400,7 @@ export function PlanOverviewCard({
                   );
                 })}
 
-                {weeks.map(
+                {chartWeeks.map(
                   (w, i) =>
                     i % labelEvery === 0 && (
                       <text
@@ -415,7 +431,7 @@ export function PlanOverviewCard({
                       />
                     )}
 
-                    {weeks.map((w, i) => (
+                    {chartWeeks.map((w, i) => (
                       <g key={w.index}>
                         <circle cx={xFor(i)} cy={yFor(w.budget)} r={hoverIndex === i ? 5 : 3} className={styles.budgetDot} />
                         <circle cx={xFor(i)} cy={yFor(w.sales)} r={hoverIndex === i ? 5 : 3} className={styles.salesDot} />
@@ -423,7 +439,7 @@ export function PlanOverviewCard({
                     ))}
                   </>
                 ) : (
-                  weeks.map((w, i) => {
+                  chartWeeks.map((w, i) => {
                     const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
                     const gap = Math.max(2, barWidth * 0.3);
                     const center = bandCenter(i);
@@ -456,7 +472,7 @@ export function PlanOverviewCard({
                   })
                 )}
 
-                {weeks.map((w, i) => {
+                {chartWeeks.map((w, i) => {
                   const left =
                     chartView === "weekly"
                       ? bandLeft(i)
@@ -466,7 +482,7 @@ export function PlanOverviewCard({
                   const right =
                     chartView === "weekly"
                       ? bandLeft(i) + bandWidth
-                      : i === weeks.length - 1
+                      : i === chartWeeks.length - 1
                       ? VB_WIDTH - MARGIN.right
                       : (xFor(i) + xFor(i + 1)) / 2;
                   return (
@@ -500,21 +516,29 @@ export function PlanOverviewCard({
                     ),
                   }}
                 >
-                  <div className={styles.tooltipLabel}>{hit.fullLabel}</div>
+                  <div className={styles.tooltipLabel}>
+                    {chartView === "cumulative" ? `Through ${hit.fullLabel.split(" – ")[1] ?? hit.fullLabel}` : hit.fullLabel}
+                  </div>
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-                    Incremental Sales <strong>{formatFullCurrency(hit.sales)}</strong>
+                    {chartView === "cumulative" ? "Cumulative Sales" : "Incremental Sales"}{" "}
+                    <strong>{formatFullCurrency(hit.sales)}</strong>
                   </div>
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-                    Budget <strong>{formatFullCurrency(hit.budget)}</strong>
+                    {chartView === "cumulative" ? "Cumulative Budget" : "Budget"}{" "}
+                    <strong>{formatFullCurrency(hit.budget)}</strong>
                   </div>
                 </div>
               )}
             </div>
 
             <table className={styles.srOnly}>
-              <caption>Projected incremental sales and budget by week</caption>
+              <caption>
+                {chartView === "cumulative"
+                  ? "Projected cumulative incremental sales and budget by week"
+                  : "Projected incremental sales and budget by week"}
+              </caption>
               <thead>
                 <tr>
                   <th scope="col">Week</th>
@@ -523,7 +547,7 @@ export function PlanOverviewCard({
                 </tr>
               </thead>
               <tbody>
-                {weeks.map((w) => (
+                {chartWeeks.map((w) => (
                   <tr key={w.index}>
                     <td>{w.fullLabel}</td>
                     <td>{formatFullCurrency(w.sales)}</td>
