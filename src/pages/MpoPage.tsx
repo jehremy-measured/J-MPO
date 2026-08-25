@@ -12,7 +12,6 @@ import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
-import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
@@ -231,14 +230,6 @@ export function MpoPage() {
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
                     <>
-                      <TargetBanner
-                        target={state.newPlanSummary.target}
-                        targetValue={state.newPlanSummary.targetValue}
-                        incrementalSales={state.totals.sales}
-                        roas={state.totals.roas}
-                        incrementalOrders={state.totals.orders}
-                        cpo={state.totals.cpo}
-                      />
                       <PlanInfoBar
                         periodLabel={state.newPlanSummary.planningWindow}
                         target={state.newPlanSummary.target}
@@ -264,14 +255,6 @@ export function MpoPage() {
                     </>
                   ) : activePlan?.kind === "simulation" ? (
                     <>
-                      <TargetBanner
-                        target={activePlan.target}
-                        targetValue={null}
-                        incrementalSales={state.totals.sales}
-                        roas={state.totals.roas}
-                        incrementalOrders={state.totals.orders}
-                        cpo={state.totals.cpo}
-                      />
                       <PlanInfoBar
                         periodLabel={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
                         target={activePlan.target}

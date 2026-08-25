@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
+import { TargetIcon } from "./icons/BuildPlanIcons";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
@@ -226,8 +227,9 @@ export function PlanOverviewCard({
   const banner = hasTarget && progress ? computeBannerInfo(target as PlanTarget, targetValue as number, progress, primaryKind!) : null;
 
   const metricRows = [
-    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryValue("incremental-sales", incrementalSales) },
+    { key: "total-budget" as const, label: "Total budget", value: formatCompactCurrency(totalBudget) },
     { key: "incremental-roas" as const, label: "Incremental ROAS", value: formatPrimaryValue("incremental-roas", incrementalRoas) },
+    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryValue("incremental-sales", incrementalSales) },
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
@@ -254,6 +256,13 @@ export function PlanOverviewCard({
               <>
                 <h2 className={styles.colTitle}>Forecast</h2>
 
+                {secondaryMetricRows.map((row) => (
+                  <div className={styles.stat} key={row.key}>
+                    <div className={styles.statLabel}>{row.label}</div>
+                    <div className={styles.statValue}>{row.value}</div>
+                  </div>
+                ))}
+
                 <div className={styles.primaryStat}>
                   <div className={styles.stat}>
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
@@ -268,10 +277,7 @@ export function PlanOverviewCard({
                         />
                       </div>
                       <div className={styles.barFoot}>
-                        <span className={styles.barPct}>{progress.pctLabel} of target</span>
-                        <span className={styles.barTargetLabel}>
-                          Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
-                        </span>
+                        Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
                       </div>
                     </>
                   ) : (
@@ -293,24 +299,23 @@ export function PlanOverviewCard({
 
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
-                    <p className={styles.goalBannerText}>{banner.text}</p>
-                    <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
-                      {banner.buttonLabel}
-                      <SparkleIcon size={14} variant="fill" />
-                    </button>
+                    <span className={styles.goalBannerIcon} aria-hidden>
+                      <TargetIcon size={16} />
+                    </span>
+                    <div className={styles.goalBannerBody}>
+                      <div className={styles.goalBannerRow}>
+                        <p className={styles.goalBannerText}>{banner.text}</p>
+                        <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
+                          {banner.buttonLabel}
+                          <SparkleIcon size={14} variant="fill" />
+                        </button>
+                      </div>
+                      {primaryKind === "bar" && (
+                        <p className={styles.goalBannerSubtext}>{progress.pctLabel} of target</p>
+                      )}
+                    </div>
                   </div>
                 )}
-
-                {secondaryMetricRows.map((row) => (
-                  <div className={styles.stat} key={row.key}>
-                    <div className={styles.statLabel}>{row.label}</div>
-                    <div className={styles.statValue}>{row.value}</div>
-                  </div>
-                ))}
-                <div className={styles.stat}>
-                  <div className={styles.statLabel}>Total budget</div>
-                  <div className={styles.statValue}>{formatCompactCurrency(totalBudget)}</div>
-                </div>
               </>
             ) : (
               <>

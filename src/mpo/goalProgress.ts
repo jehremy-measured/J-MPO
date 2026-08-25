@@ -29,8 +29,7 @@ export type GoalProgress = {
   isCostMetric: boolean;
 };
 
-/** Shared "how close is this plan to its target" math, used by both the post-creation
- * TargetBanner and the simulation plan's goal-progress banner. */
+/** Shared "how close is this plan to its target" math, used by the plan's goal-progress banner. */
 export function computeGoalProgress(target: PlanTarget, targetValue: number, metrics: GoalMetrics): GoalProgress {
   const isCostMetric = target === "incremental-cpo";
   const actual =
