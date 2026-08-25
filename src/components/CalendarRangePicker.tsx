@@ -95,19 +95,13 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "
             ))}
           </div>
           <div className={styles.grid}>
-            {monthGrid(cursor).map(({ date, inMonth }, i, cells) => {
+            {monthGrid(cursor).map(({ date, inMonth }, i) => {
               const isStart = isSameDay(date, start);
               const isEnd = isSameDay(date, end);
               const inBand = date >= start && date <= end;
               const colIndex = i % 7;
-              const leftInBand = colIndex > 0 && cells[i - 1].date >= start && cells[i - 1].date <= end;
-              const rightInBand = colIndex < 6 && cells[i + 1].date >= start && cells[i + 1].date <= end;
-              // A highlighted day with no in-band neighbor in its row is an isolated single-day
-              // pick — skip the pill background so the selected-day circle isn't left inside a
-              // non-circular (42x36) stadium shape.
-              const isIsolated = inBand && !leftInBand && !rightInBand;
               const cellClasses = [styles.cell];
-              if (inBand && inMonth && !isIsolated) {
+              if (inBand && inMonth) {
                 cellClasses.push(styles.cellInBand);
                 if (isStart || colIndex === 0) cellClasses.push(styles.cellRoundLeft);
                 if (isEnd || colIndex === 6) cellClasses.push(styles.cellRoundRight);
