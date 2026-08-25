@@ -1,5 +1,5 @@
 import type { PlanTarget } from "../mpo/types";
-import { computeGoalProgress, formatGoalMetric, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
+import { computeGoalProgress, formatGoalMetric } from "../mpo/goalProgress";
 import styles from "./SimulationGoalBanner.module.css";
 
 type Props = {
@@ -11,6 +11,15 @@ type Props = {
   cpo: number;
   onOptimize: () => void;
 };
+
+/** Compact "$1.1M" / "$120K" style, used for the headline's gap-to-goal figure. */
+function formatCompactGap(target: PlanTarget, value: number): string {
+  if (target === "incremental-roas" || target === "incremental-cpo") return formatGoalMetric(target, value);
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
+  if (abs >= 1_000) return `$${Math.round(value / 1_000)}K`;
+  return formatGoalMetric(target, value);
+}
 
 export function SimulationGoalBanner({
   target,
@@ -25,15 +34,18 @@ export function SimulationGoalBanner({
   const progress = hasTarget
     ? computeGoalProgress(target, targetValue as number, { incrementalSales, roas, incrementalOrders, cpo })
     : null;
-  const metricLabel = GOAL_METRIC_LABEL[target].toLowerCase();
 
-  const title = progress ? `${progress.pctLabel} of target achieved in this simulation` : "No target set for this simulation";
-  const subtext = progress
-    ? `This plan is projected to reach ${formatGoalMetric(target, progress.actual)} of your ${formatGoalMetric(
-        target,
-        targetValue as number
-      )} ${metricLabel} goal. To reach your target, manually adjust tactic-level budgets, or run an optimization to automatically reallocate tactic budgets.`
-    : `Manually adjust tactic-level budgets, or run an optimization to automatically reallocate tactic budgets toward your goal.`;
+  let title = "No target set for this simulation";
+  if (progress) {
+    if (progress.onTrack) {
+      title = `${progress.pctLabel} to goal — on track`;
+    } else {
+      const gap = progress.isCostMetric ? progress.actual - (targetValue as number) : (targetValue as number) - progress.actual;
+      const gapLabel = progress.isCostMetric ? `${formatCompactGap(target, gap)} over` : `${formatCompactGap(target, gap)} short`;
+      title = `${progress.pctLabel} to goal — ${gapLabel}`;
+    }
+  }
+  const subtext = "Manually adjust tactic budgets, or optimize to auto-reallocate for maximum gains.";
 
   return (
     <div className={`${styles.banner} ${progress ? (progress.onTrack ? styles.onTrack : styles.offTrack) : ""}`}>
