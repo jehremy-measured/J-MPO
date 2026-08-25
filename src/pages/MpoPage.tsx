@@ -43,6 +43,7 @@ export function MpoPage() {
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [creatingPlanPhase, setCreatingPlanPhase] = useState<"creating" | "simulating" | null>(null);
 
   useEffect(() => {
     if (renamingTitle) titleInputRef.current?.select();
@@ -66,11 +67,25 @@ export function MpoPage() {
   };
 
   const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState) => {
-    const result = state.createPlan(input);
-    setPlanBuildStates((prev) => ({ ...prev, [result.id]: { ...rawState, screen: "review" } }));
+    const finish = () => {
+      const result = state.createPlan(input);
+      setPlanBuildStates((prev) => ({ ...prev, [result.id]: { ...rawState, screen: "review" } }));
+      setViewMode("detail");
+    };
+
+    if (buildPlanMode === "edit") {
+      setBuildPlanOpen(false);
+      finish();
+      return;
+    }
+
     setBuildPlanOpen(false);
-    setViewMode("detail");
-    return result;
+    setCreatingPlanPhase("creating");
+    setTimeout(() => setCreatingPlanPhase("simulating"), 1500);
+    setTimeout(() => {
+      finish();
+      setCreatingPlanPhase(null);
+    }, 3000);
   };
 
   const openPlanForEdit = (planId: string) => {
@@ -240,6 +255,11 @@ export function MpoPage() {
                         totalBudget={state.totals.budget}
                         incrementalSales={state.totals.sales}
                         incrementalRoas={state.totals.roas}
+                        target={state.newPlanSummary.target}
+                        targetValue={state.newPlanSummary.targetValue}
+                        incrementalOrders={state.totals.orders}
+                        cpo={state.totals.cpo}
+                        onOptimize={() => startMiaFlow("spend")}
                       />
                     </>
                   ) : activePlan?.kind === "simulation" ? (
@@ -305,6 +325,14 @@ export function MpoPage() {
         totalSales={state.totals.sales}
         blendedRoas={state.totals.roas}
       />
+      {creatingPlanPhase && (
+        <div className={styles.loadingOverlay} role="status" aria-live="polite">
+          <span className={styles.loadingSpinner} aria-hidden />
+          <p className={styles.loadingText}>
+            {creatingPlanPhase === "creating" ? "Creating your plan.." : "Running simulations.."}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
