@@ -781,16 +781,22 @@ function ReviewScreen({
             {ctControl}
           </div>
           <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Channels</span>
+            {channelControl}
+          </div>
+          <div className={styles.settingsField}>
+            <span className={styles.settingsLabel}>Tactics</span>
+            <span className={styles.settingsStaticValue}>
+              {includedCount(state)} of {BUILD_TACTICS.length} included
+            </span>
+          </div>
+          <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Target</span>
             {targetControl}
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Budget from</span>
             {budgetControl}
-          </div>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Channels</span>
-            {channelControl}
           </div>
           {state.method === "upload" && (
             <div className={styles.moreWrap}>

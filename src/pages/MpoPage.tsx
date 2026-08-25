@@ -15,7 +15,7 @@ import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
-import { applyMethodChoice, budgetFromWindow } from "../mpo/buildPlan/logic";
+import { applyMethodChoice, budgetFromWindow, channelsPresent } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { CreatePlanInput, PlanKind } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
@@ -25,6 +25,12 @@ const KIND_LABEL: Record<PlanKind, string> = {
   optimization: "Optimization",
   simulation: "Simulation",
 };
+
+function channelsLabelFor(count: number): string {
+  const total = channelsPresent().length;
+  if (count >= total) return "All channels";
+  return `${count} channel${count === 1 ? "" : "s"}`;
+}
 
 /** MPO 1 screen — interactive prototype (Figma node 1:33651) */
 export function MpoPage() {
@@ -235,6 +241,7 @@ export function MpoPage() {
                         target={state.newPlanSummary.target}
                         targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
+                        channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
                         tacticsTotal={state.tactics.length}
@@ -260,6 +267,7 @@ export function MpoPage() {
                         target={activePlan.target}
                         targetValue={null}
                         conversionType="Total Orders"
+                        channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
                         tacticsTotal={state.tactics.length}

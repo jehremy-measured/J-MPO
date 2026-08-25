@@ -44,16 +44,13 @@ function formatPrimaryValue(target: PlanTarget, value: number): string {
 type BannerVariant = "gap" | "underspend" | "reached";
 
 function computeBannerInfo(
-  target: PlanTarget,
-  targetValue: number,
   progress: GoalProgress,
   kind: "bar" | "threshold"
 ): { variant: BannerVariant; text: string; buttonLabel: string } {
-  const targetFormatted = formatPrimaryValue(target, targetValue);
   if (progress.pct < 100) {
     return {
       variant: "gap",
-      text: "Run an optimization to achieve your target.",
+      text: "Run an optimization to achieve your target",
       buttonLabel: "Optimize",
     };
   }
@@ -61,13 +58,13 @@ function computeBannerInfo(
     const direction = progress.isCostMetric ? "Below" : "Above";
     return {
       variant: "underspend",
-      text: `${direction} target means you're underspending — add budget to capture more sales.`,
+      text: `${direction} target means you're underspending — add budget to capture more sales`,
       buttonLabel: "Optimize",
     };
   }
   return {
     variant: "reached",
-    text: `You've reached your ${targetFormatted} target. Run an optimization to maximize gains further.`,
+    text: "Run an optimization to maximize gains further",
     buttonLabel: "Optimize",
   };
 }
@@ -224,7 +221,7 @@ export function PlanOverviewCard({
       })
     : null;
   const primaryKind = hasTarget ? primaryKindFor(target as PlanTarget) : null;
-  const banner = hasTarget && progress ? computeBannerInfo(target as PlanTarget, targetValue as number, progress, primaryKind!) : null;
+  const banner = hasTarget && progress ? computeBannerInfo(progress, primaryKind!) : null;
 
   const metricRows = [
     { key: "total-budget" as const, label: "Total budget", value: formatCompactCurrency(totalBudget) },
@@ -300,20 +297,16 @@ export function PlanOverviewCard({
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
                     <span className={styles.goalBannerIcon} aria-hidden>
-                      <TargetIcon size={16} />
+                      <TargetIcon size={22} />
                     </span>
                     <div className={styles.goalBannerBody}>
-                      <div className={styles.goalBannerRow}>
-                        <p className={styles.goalBannerText}>{banner.text}</p>
-                        <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
-                          {banner.buttonLabel}
-                          <SparkleIcon size={14} variant="fill" />
-                        </button>
-                      </div>
-                      {primaryKind === "bar" && (
-                        <p className={styles.goalBannerSubtext}>{progress.pctLabel} of target</p>
-                      )}
+                      <p className={styles.goalBannerHeadline}>{progress.pctLabel} of target reached</p>
+                      <p className={styles.goalBannerText}>{banner.text}</p>
                     </div>
+                    <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
+                      {banner.buttonLabel}
+                      <SparkleIcon size={14} variant="fill" />
+                    </button>
                   </div>
                 )}
               </>

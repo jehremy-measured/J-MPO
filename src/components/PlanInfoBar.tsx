@@ -8,6 +8,7 @@ type Props = {
   target: PlanTarget;
   targetValue: number | null;
   conversionType: string;
+  channelsLabel: string;
   budgetSourceLabel: string;
   tacticsIncluded: number;
   tacticsTotal: number;
@@ -19,6 +20,7 @@ export function PlanInfoBar({
   target,
   targetValue,
   conversionType,
+  channelsLabel,
   budgetSourceLabel,
   tacticsIncluded,
   tacticsTotal,
@@ -36,18 +38,22 @@ export function PlanInfoBar({
           <span className={styles.itemValue}>{conversionType}</span>
         </div>
         <div className={styles.item}>
-          <span className={styles.itemLabel}>Target</span>
-          <span className={styles.itemValue}>{formatTargetLabel(target, targetValue)}</span>
-        </div>
-        <div className={styles.item}>
-          <span className={styles.itemLabel}>Budget from</span>
-          <span className={styles.itemValue}>{budgetSourceLabel}</span>
+          <span className={styles.itemLabel}>Channels</span>
+          <span className={styles.itemValue}>{channelsLabel}</span>
         </div>
         <div className={styles.item}>
           <span className={styles.itemLabel}>Tactics</span>
           <span className={styles.itemValue}>
             {tacticsIncluded} of {tacticsTotal} included
           </span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Target</span>
+          <span className={styles.itemValue}>{formatTargetLabel(target, targetValue)}</span>
+        </div>
+        <div className={styles.item}>
+          <span className={styles.itemLabel}>Budget from</span>
+          <span className={styles.itemValue}>{budgetSourceLabel}</span>
         </div>
       </div>
       <div className={styles.actions}>
