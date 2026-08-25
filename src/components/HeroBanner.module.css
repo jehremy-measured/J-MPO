@@ -43,7 +43,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-plex);
+  font-family: var(--font-inter);
   font-weight: 300;
   font-size: 40px;
   line-height: 48px;
@@ -52,7 +52,7 @@
 
 .subtitle {
   max-width: 640px;
-  font-family: var(--font-plex);
+  font-family: var(--font-inter);
   font-size: 20px;
   line-height: 28px;
   color: var(--gray-900);

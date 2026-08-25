@@ -71,11 +71,6 @@
   justify-content: space-between;
   gap: 12px;
   padding: 14px 0;
-  border-bottom: 1px solid var(--gray-300-stroke);
-}
-
-.stat:last-of-type {
-  border-bottom: none;
 }
 
 .statLabel {
@@ -100,7 +95,7 @@
 
 .chartWrap {
   position: relative;
-  padding: 8px 24px 4px;
+  padding: 8px 24px 24px;
   flex: 1;
   min-height: 0;
   display: flex;
