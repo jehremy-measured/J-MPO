@@ -598,11 +598,11 @@ function ReviewScreen({
     <div className={styles.channelDropdown} ref={channelRef}>
       <button
         type="button"
-        className={mode === "edit" ? styles.settingsBoxBtn : styles.channelDropdownBtn}
+        className={styles.settingsBoxBtn}
         onClick={() => setOpenDropdown((v) => (v === "channel" ? null : "channel"))}
       >
         <span>{channelFilterLabel(state)}</span>
-        <ChevronDownIcon size={mode === "edit" ? 16 : 20} />
+        <ChevronDownIcon size={16} />
       </button>
       {channelOpen && (
         <div className={styles.channelDropdownPanel}>
@@ -622,23 +622,13 @@ function ReviewScreen({
       <span className={styles.dateDropdown} ref={dateRef}>
         <button
           type="button"
-          className={mode === "edit" ? styles.settingsBoxBtn : styles.dateDropdownBtn}
+          className={styles.settingsBoxBtn}
           onClick={() => setOpenDropdown((v) => (v === "date" ? null : "date"))}
         >
-          {mode === "edit" ? (
-            <span>
-              {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
-            </span>
-          ) : (
-            <strong>
-              {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
-            </strong>
-          )}
-          {mode === "edit" ? (
-            <MaterialIcon name="calendar_month" size={16} />
-          ) : (
-            <ChevronDownIcon size={14} />
-          )}
+          <span>
+            {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+          </span>
+          <MaterialIcon name="calendar_month" size={16} />
         </button>
         {dateOpen && (
           <div className={styles.dateDropdownPanel}>
@@ -774,96 +764,53 @@ function ReviewScreen({
 
   return (
     <>
-      {mode === "edit" ? (
-        <div className={styles.settingsBar}>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Planning period</span>
-            {periodControl}
-          </div>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Conversion type</span>
-            {ctControl}
-          </div>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Channels</span>
-            {channelControl}
-          </div>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Target</span>
-            {targetControl}
-          </div>
-          <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Budget from</span>
-            {budgetControl}
-          </div>
-          {state.method === "upload" && (
-            <div className={styles.moreWrap}>
-              <button
-                type="button"
-                className={styles.plainIconBtn}
-                aria-label="More options"
-                onClick={() => setMoreOpen(!moreOpen)}
-              >
-                <MoreIcon size={20} />
-              </button>
-              {moreOpen && (
-                <div className={styles.moreMenu}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      downloadBudgetTemplate();
-                      setMoreOpen(false);
-                    }}
-                  >
-                    Download template
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+      <div className={styles.settingsBar}>
+        <div className={styles.settingsField}>
+          <span className={styles.settingsLabel}>Planning period</span>
+          {periodControl}
         </div>
-      ) : (
-        <div className={styles.summaryBar}>
-          <span className={styles.summaryItem}>
-            Planning for <strong>{periodLabel(state)}</strong>
-          </span>
-          <span className={styles.summaryDivider} aria-hidden />
-          <span className={styles.summaryItem}>
-            Conversion type <strong>{conversionTypeLabel}</strong>
-          </span>
-          <span className={styles.summaryDivider} aria-hidden />
-          <span className={styles.summaryItem}>
-            Target <strong>{targetLabel(state)}</strong>
-          </span>
-          <span className={styles.summaryDivider} aria-hidden />
-          <span className={styles.summaryItem}>Budget {budgetControl}</span>
-          {state.method === "upload" && (
-            <div className={styles.moreWrap}>
-              <button
-                type="button"
-                className={styles.plainIconBtn}
-                aria-label="More options"
-                onClick={() => setMoreOpen(!moreOpen)}
-              >
-                <MoreIcon size={20} />
-              </button>
-              {moreOpen && (
-                <div className={styles.moreMenu}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      downloadBudgetTemplate();
-                      setMoreOpen(false);
-                    }}
-                  >
-                    Download template
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+        <div className={styles.settingsField}>
+          <span className={styles.settingsLabel}>Conversion type</span>
+          {ctControl}
         </div>
-      )}
+        <div className={styles.settingsField}>
+          <span className={styles.settingsLabel}>Channels</span>
+          {channelControl}
+        </div>
+        <div className={styles.settingsField}>
+          <span className={styles.settingsLabel}>Target</span>
+          {targetControl}
+        </div>
+        <div className={styles.settingsField}>
+          <span className={styles.settingsLabel}>Budget from</span>
+          {budgetControl}
+        </div>
+        {state.method === "upload" && (
+          <div className={styles.moreWrap}>
+            <button
+              type="button"
+              className={styles.plainIconBtn}
+              aria-label="More options"
+              onClick={() => setMoreOpen(!moreOpen)}
+            >
+              <MoreIcon size={20} />
+            </button>
+            {moreOpen && (
+              <div className={styles.moreMenu}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    downloadBudgetTemplate();
+                    setMoreOpen(false);
+                  }}
+                >
+                  Download template
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       <Card
       footer={
         <div className={styles.footerActions}>
@@ -892,8 +839,6 @@ function ReviewScreen({
             onChange={(e) => flow.setQuery(e.target.value)}
           />
         </div>
-
-        {mode !== "edit" && channelControl}
         </div>
       </div>
 

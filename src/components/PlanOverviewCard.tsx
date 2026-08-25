@@ -70,7 +70,7 @@ function computeBannerInfo(
       variant: "gap",
       segments: [
         { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
-        { text: " achieved in this simulation. Run an optimization to achieve your target." },
+        { text: " reached in this simulation. Run an optimization to achieve your target." },
       ],
       buttonLabel: "Optimize",
     };
@@ -91,7 +91,7 @@ function computeBannerInfo(
     variant: "reached",
     segments: [
       { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
-      { text: " achieved in this simulation. Run an optimization to maximize gains further." },
+      { text: " reached in this simulation. Run an optimization to maximize gains further." },
     ],
     buttonLabel: "Optimize",
   };
