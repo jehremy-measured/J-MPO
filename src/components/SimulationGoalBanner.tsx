@@ -9,7 +9,6 @@ type Props = {
   roas: number;
   incrementalOrders: number;
   cpo: number;
-  onCreateVariant: () => void;
   onOptimize: () => void;
 };
 
@@ -20,7 +19,6 @@ export function SimulationGoalBanner({
   roas,
   incrementalOrders,
   cpo,
-  onCreateVariant,
   onOptimize,
 }: Props) {
   const hasTarget = targetValue != null && targetValue > 0;
@@ -29,27 +27,21 @@ export function SimulationGoalBanner({
     : null;
   const metricLabel = GOAL_METRIC_LABEL[target].toLowerCase();
 
-  const progressCopy = progress
+  const title = progress ? `${progress.pctLabel} of target achieved in this simulation` : "No target set for this simulation";
+  const subtext = progress
     ? `This plan is projected to reach ${formatGoalMetric(target, progress.actual)} of your ${formatGoalMetric(
         target,
         targetValue as number
-      )} ${metricLabel} goal — ${progress.pctLabel} of target${progress.onTrack ? "." : ", short of where you want to be."}`
-    : `Set a target to see how this plan's projected ${metricLabel} compares to your goal.`;
+      )} ${metricLabel} goal. To reach your target, manually adjust tactic-level budgets, or run an optimization to automatically reallocate tactic budgets.`
+    : `Manually adjust tactic-level budgets, or run an optimization to automatically reallocate tactic budgets toward your goal.`;
 
   return (
     <div className={`${styles.banner} ${progress ? (progress.onTrack ? styles.onTrack : styles.offTrack) : ""}`}>
       <div className={styles.textCol}>
-        {progress && <span className={styles.pct}>{progress.pctLabel}</span>}
-        <p className={styles.copy}>
-          {progressCopy} Create a variant to manually adjust tactic-level budgets yourself, or run an optimization to
-          automatically reallocate tactic budgets for maximum gains — in optimization mode you can also change the
-          overall budget and tactics will reallocate to match.
-        </p>
+        <p className={styles.title}>{title}</p>
+        <p className={styles.subtext}>{subtext}</p>
       </div>
       <div className={styles.actions}>
-        <button type="button" className={styles.variantBtn} onClick={onCreateVariant}>
-          Create variant
-        </button>
         <button type="button" className={styles.optimizeBtn} onClick={onOptimize}>
           Optimize
         </button>

@@ -16,8 +16,8 @@ import { SimulationGoalBanner } from "../components/SimulationGoalBanner";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
-import { formatRangeLabel } from "../mpo/buildPlan/dateUtils";
-import { applyMethodChoice } from "../mpo/buildPlan/logic";
+import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
+import { applyMethodChoice, budgetFromWindow } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { CreatePlanInput, PlanKind } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
@@ -74,8 +74,8 @@ export function MpoPage() {
     return result;
   };
 
-  const openPlanForEdit = (planId: string, planOverride?: (typeof state.plans)[number]) => {
-    const plan = planOverride ?? state.plans.find((p) => p.id === planId);
+  const openPlanForEdit = (planId: string) => {
+    const plan = state.plans.find((p) => p.id === planId);
     if (plan?.editVariant === "sidebar") {
       setSidebarEditPlanId(planId);
       return;
@@ -91,7 +91,12 @@ export function MpoPage() {
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
     seed.singleCT = "total";
-    openBuildPlanPage(applyMethodChoice(seed, "fetch"), "edit");
+    const seeded = applyMethodChoice(seed, "fetch");
+    // Match the reference period already shown on the plan-detail page (one year back from
+    // the plan's own dates), rather than the wizard's "most recent window" default.
+    seeded.sourceStart = subtractYears(plan.planStart, 1);
+    seeded.budget = budgetFromWindow(seeded).budget;
+    openBuildPlanPage(seeded, "edit");
   };
 
   const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
@@ -109,13 +114,6 @@ export function MpoPage() {
   const commitRenameTitle = () => {
     if (state.activePlanId) state.renamePlan(state.activePlanId, titleRenameValue);
     setRenamingTitle(false);
-  };
-
-  const handleCreateVariant = (sourcePlan: (typeof state.plans)[number]) => {
-    const newId = state.duplicatePlan(sourcePlan.id);
-    if (!newId) return;
-    state.selectPlan(newId);
-    openPlanForEdit(newId, { ...sourcePlan, id: newId });
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
@@ -259,7 +257,7 @@ export function MpoPage() {
                         periodLabel={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
                         target={activePlan.target}
                         targetValue={null}
-                        conversionType="All Orders"
+                        conversionType="Total Orders"
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
                         tacticsTotal={state.tactics.length}
@@ -279,7 +277,6 @@ export function MpoPage() {
                             roas={state.totals.roas}
                             incrementalOrders={state.totals.orders}
                             cpo={state.totals.cpo}
-                            onCreateVariant={() => handleCreateVariant(activePlan)}
                             onOptimize={() => startMiaFlow("spend")}
                           />
                         }

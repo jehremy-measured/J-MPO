@@ -39,6 +39,7 @@ import {
   UploadIcon,
 } from "./icons/BuildPlanIcons";
 import { CloseIcon } from "./icons/CloseIcon";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./BuildPlanPage.module.css";
 
 type Props = {
@@ -605,7 +606,11 @@ function ReviewScreen({
               {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
             </strong>
           )}
-          <ChevronDownIcon size={mode === "edit" ? 16 : 14} />
+          {mode === "edit" ? (
+            <MaterialIcon name="calendar_month" size={16} />
+          ) : (
+            <ChevronDownIcon size={14} />
+          )}
         </button>
         {dateOpen && (
           <div className={styles.dateDropdownPanel}>
@@ -636,7 +641,7 @@ function ReviewScreen({
         onClick={() => setOpenDropdown((v) => (v === "period" ? null : "period"))}
       >
         <span>{periodLabel(state)}</span>
-        <ChevronDownIcon size={16} />
+        <MaterialIcon name="calendar_month" size={16} />
       </button>
       {periodOpen && (
         <div className={styles.dateDropdownPanel}>

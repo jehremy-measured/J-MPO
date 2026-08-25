@@ -17,23 +17,23 @@
 
 .textCol {
   display: flex;
-  align-items: center;
-  gap: 16px;
+  flex-direction: column;
+  gap: 4px;
   flex: 1;
   min-width: 0;
 }
 
-.pct {
-  flex-shrink: 0;
-  font-size: 22px;
-  font-weight: 700;
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--gray-1000);
-  min-width: 52px;
 }
 
-.copy {
+.subtext {
   margin: 0;
-  font-size: 13px;
+  font-size: 14px;
+  font-weight: 400;
   line-height: 1.5;
   color: var(--gray-900);
 }
@@ -43,26 +43,6 @@
   align-items: center;
   flex-shrink: 0;
   gap: 8px;
-}
-
-.variantBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  height: 32px;
-  padding: 0 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gray-1000);
-  background: var(--gray-000);
-  border: 1px solid var(--gray-400);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-}
-
-.variantBtn:hover {
-  background: var(--gray-100);
-  border-color: var(--gray-500);
 }
 
 .optimizeBtn {
