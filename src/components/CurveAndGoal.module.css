@@ -147,13 +147,14 @@
 }
 
 .goalValueEditIcon {
-  display: none;
+  display: inline-flex;
   flex-shrink: 0;
   color: var(--blue-700);
+  visibility: hidden;
 }
 
 .goalValue:hover .goalValueEditIcon {
-  display: inline-flex;
+  visibility: visible;
 }
 
 .goalInputWrap {
