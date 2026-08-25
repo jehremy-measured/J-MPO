@@ -139,7 +139,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 12px;
+  padding: 0 8px 0 12px;
   height: 32px;
   align-self: center;
   font-size: 14px;

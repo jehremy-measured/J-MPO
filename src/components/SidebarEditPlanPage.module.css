@@ -135,9 +135,9 @@
   align-items: center;
   gap: 8px;
   height: 32px;
-  padding: 0 14px 0 10px;
-  font-size: 13px;
-  font-weight: 600;
+  padding: 0 12px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gray-1000);
   background: var(--gray-000);
   border: 1px solid var(--gray-400);
@@ -181,9 +181,9 @@
   align-items: center;
   justify-content: center;
   height: 32px;
-  padding: 0 18px;
+  padding: 0 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gray-1000);
   background: var(--gray-000);
   border: 1px solid var(--gray-400);
@@ -199,9 +199,9 @@
   align-items: center;
   justify-content: center;
   height: 32px;
-  padding: 0 18px;
+  padding: 0 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--gray-000);
   background: var(--blue-700);
   border: 1px solid var(--blue-700);

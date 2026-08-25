@@ -303,7 +303,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
             <>
               <BackLink onClick={flow.back} />
               <span className={styles.dayCount}>{periodLabel(state)} · {planDaysFor(state)} days</span>
-              <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={flow.continueFromPeriod}>
+              <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={flow.continueFromPeriod}>
                 Continue
               </button>
             </>
@@ -323,7 +323,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               <BackLink onClick={flow.back} />
               <button
                 type="button"
-                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
+                className={`${styles.btn} ${styles.btnPrimary}`}
                 disabled={!state.target || (targetNeedsValue(state.target) && !(state.targetValue! > 0))}
                 onClick={flow.continueFromTarget}
               >
@@ -372,7 +372,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               <BackLink onClick={flow.back} />
               <button
                 type="button"
-                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
+                className={`${styles.btn} ${styles.btnPrimary}`}
                 disabled={!state.singleCT && state.attrs.length === 0}
                 onClick={flow.continueFromCT}
               >
@@ -455,7 +455,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               <BackLink onClick={flow.back} />
               <button
                 type="button"
-                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
+                className={`${styles.btn} ${styles.btnPrimary}`}
                 disabled={state.source !== "upload-ready"}
                 onClick={flow.continueFromUpload}
               >
@@ -472,7 +472,11 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
               <strong>{BUDGET_TEMPLATE_FILENAME}</strong>
               <span>{BUILD_TACTICS.length} tactics · Tactic, Channel, Budget columns</span>
             </div>
-            <button type="button" className={styles.btn} onClick={downloadBudgetTemplate}>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnIconLeft}`}
+              onClick={downloadBudgetTemplate}
+            >
               <DownloadIcon size={20} /> Download
             </button>
           </div>
@@ -870,7 +874,7 @@ function ReviewScreen({
           <button type="button" className={styles.btn} onClick={onExit}>
             Cancel
           </button>
-          <button type="button" className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`} onClick={onComplete}>
+          <button type="button" className={`${styles.btn} ${styles.btnPrimary}`} onClick={onComplete}>
             {mode === "edit" ? "Save" : "Create plan"}
           </button>
         </div>

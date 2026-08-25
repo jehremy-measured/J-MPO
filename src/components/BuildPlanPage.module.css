@@ -187,8 +187,8 @@
   align-items: center;
   gap: 6px;
   height: 32px;
-  padding: 0 10px;
-  font-size: 13.5px;
+  padding: 0 8px 0 12px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--gray-1000);
   background: var(--gray-000);
@@ -217,7 +217,7 @@
   gap: 6px;
   height: 32px;
   padding: 0 12px 0 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--gray-800);
   border-radius: var(--radius-sm);
@@ -327,14 +327,21 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 8px;
   height: 32px;
-  padding: 0 18px;
+  padding: 0 12px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 500;
   border-radius: var(--radius-sm);
   border: 1px solid var(--gray-400);
   color: var(--gray-1000);
   background: var(--gray-000);
+}
+
+/* Download template button: icon before text, so the icon side gets the
+   tighter 8px inset while the text side keeps the standard 12px. */
+.btnIconLeft {
+  padding-left: 8px;
 }
 
 .btn:hover {
@@ -743,10 +750,12 @@
 
 .moreMenu button {
   width: 100%;
+  height: 32px;
   text-align: left;
-  font-size: 13.5px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--gray-1000);
-  padding: 9px 12px;
+  padding: 0 12px;
   border-radius: 7px;
   display: flex;
   align-items: center;
@@ -893,8 +902,9 @@
   gap: 8px;
   font-family: inherit;
   font-size: 14px;
+  font-weight: 500;
   height: 32px;
-  padding: 0 12px;
+  padding: 0 8px 0 12px;
   border: 1px solid var(--gray-400);
   border-radius: var(--radius-sm);
   background: var(--gray-000);
@@ -1137,7 +1147,7 @@
   justify-self: end;
   width: 150px;
   height: 32px;
-  padding: 0 10px;
+  padding: 0 8px 0 12px;
   border-radius: var(--radius-sm);
 }
 
@@ -1278,8 +1288,4 @@
   text-align: center;
   font-size: 13.5px;
   color: var(--gray-600, var(--gray-800));
-}
-
-.btnLg {
-  font-size: 15px;
 }
