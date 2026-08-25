@@ -121,10 +121,9 @@ export function PlanOverviewCard({
   return (
     <section className={styles.section}>
       <div className={styles.card}>
-        {banner}
         <div className={styles.body}>
           <div className={styles.statsCol}>
-            <h2 className={styles.colTitle}>Goals</h2>
+            <h2 className={styles.colTitle}>Forecast</h2>
             <div className={styles.stat}>
               <div className={styles.statLabel}>Total budget</div>
               <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
@@ -137,10 +136,11 @@ export function PlanOverviewCard({
               <div className={styles.statLabel}>Incremental ROAS</div>
               <div className={styles.statValue}>${incrementalRoas.toFixed(2)}</div>
             </div>
+            {banner}
           </div>
 
           <div className={styles.chartCol}>
-            <h2 className={`${styles.colTitle} ${styles.chartTitle}`}>Forecast</h2>
+            <h2 className={`${styles.colTitle} ${styles.chartTitle}`}>Weekly Forecast</h2>
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
