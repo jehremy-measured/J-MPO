@@ -50,11 +50,9 @@ function computeBannerInfo(
 ): { variant: BannerVariant; text: string; buttonLabel: string } {
   const targetFormatted = formatPrimaryValue(target, targetValue);
   if (progress.pct < 100) {
-    const gapRaw = progress.isCostMetric ? progress.actual - targetValue : targetValue - progress.actual;
-    const verb = progress.isCostMetric ? "over" : "short of";
     return {
       variant: "gap",
-      text: `${formatPrimaryValue(target, gapRaw)} ${verb} your ${targetFormatted} target — run an optimization to close the gap.`,
+      text: "Run an optimization to close the gap.",
       buttonLabel: "Optimize",
     };
   }
@@ -293,6 +291,18 @@ export function PlanOverviewCard({
                   )}
                 </div>
 
+                {banner && (
+                  <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
+                    <p className={styles.goalBannerText}>
+                      {banner.text}{" "}
+                      <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
+                        {banner.buttonLabel}
+                        <SparkleIcon size={14} variant="fill" />
+                      </button>
+                    </p>
+                  </div>
+                )}
+
                 {secondaryMetricRows.map((row) => (
                   <div className={styles.stat} key={row.key}>
                     <div className={styles.statLabel}>{row.label}</div>
@@ -303,16 +313,6 @@ export function PlanOverviewCard({
                   <div className={styles.statLabel}>Total budget</div>
                   <div className={styles.statValue}>{formatCompactCurrency(totalBudget)}</div>
                 </div>
-
-                {banner && (
-                  <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
-                    <p className={styles.goalBannerText}>{banner.text}</p>
-                    <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
-                      {banner.buttonLabel}
-                      <SparkleIcon size={16} variant="fill" />
-                    </button>
-                  </div>
-                )}
               </>
             ) : (
               <>

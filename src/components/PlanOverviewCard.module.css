@@ -115,10 +115,6 @@
   padding-top: 0;
 }
 
-.primaryStat + .stat {
-  padding-top: 16px;
-}
-
 .barTrack {
   height: 10px;
   border-radius: 6px;
@@ -195,13 +191,14 @@
 }
 
 .goalBanner {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
   margin-top: 8px;
+  margin-bottom: 8px;
   padding: 16px;
   border-radius: var(--radius-lg);
+}
+
+.primaryStat + .goalBanner {
+  margin-top: 16px;
 }
 
 .goalBanner_gap {
@@ -235,23 +232,20 @@
   line-height: 1.4;
 }
 
-.goalBannerBtn {
+.goalBannerLink {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 36px;
-  padding: 0 16px;
+  gap: 4px;
   font-size: 14px;
   font-weight: 600;
-  color: var(--gray-000);
-  background: var(--gray-1000);
-  border-radius: var(--radius-sm);
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
   white-space: nowrap;
 }
 
-.goalBannerBtn:hover {
-  background: var(--gray-900);
+.goalBannerLink:hover {
+  opacity: 0.75;
 }
 
 .stat {
