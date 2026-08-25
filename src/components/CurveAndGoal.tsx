@@ -257,6 +257,7 @@ export function CurveAndGoal() {
             <svg
               className={styles.svg}
               viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
+              preserveAspectRatio="none"
               role="img"
               aria-label="Diminishing return curve of incremental sales and incremental ROAS by media spend"
             >

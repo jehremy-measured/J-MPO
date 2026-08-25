@@ -59,8 +59,15 @@ function buildWeeklyProjection(
   totalBudget: number
 ): WeekPoint[] {
   const totalDays = Math.max(1, daysBetweenInclusive(planStart, planEnd));
-  const weekCount = Math.max(1, Math.ceil(totalDays / 7));
-  const dayLengths = Array.from({ length: weekCount }, (_, i) => Math.min(7, totalDays - i * 7));
+  // Fold any trailing partial week into the last full week instead of plotting it as its own
+  // point — a 1-2 day sliver charted at the same weight as a full week reads as a fake decline.
+  const weekCount = Math.max(1, Math.floor(totalDays / 7));
+  const dayLengths = Array.from({ length: weekCount }, () => 7);
+  if (totalDays < 7) {
+    dayLengths[0] = totalDays;
+  } else {
+    dayLengths[weekCount - 1] += totalDays - weekCount * 7;
+  }
 
   const rampWeeks = Math.min(3, Math.ceil(weekCount / 3));
   const salesWeights = dayLengths.map((days, i) => Math.min(1, (i + 1) / rampWeeks) * (days / 7));
@@ -155,6 +162,7 @@ export function PlanOverviewCard({
               <svg
                 className={styles.svg}
                 viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
+                preserveAspectRatio="none"
                 role="img"
                 aria-label="Line chart of projected incremental sales and budget by week"
               >

@@ -290,7 +290,8 @@
 
 .svg {
   width: 100%;
-  height: auto;
+  flex: 1;
+  min-height: 0;
   display: block;
   overflow: visible;
 }
