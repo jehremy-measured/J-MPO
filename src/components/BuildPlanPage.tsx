@@ -789,10 +789,6 @@ function ReviewScreen({
             {channelControl}
           </div>
           <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Tactics</span>
-            <span className={styles.settingsStaticValue}>{includedCount(state)} tactics</span>
-          </div>
-          <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Target</span>
             {targetControl}
           </div>

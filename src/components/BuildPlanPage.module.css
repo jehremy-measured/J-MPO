@@ -201,16 +201,6 @@
   border-color: var(--gray-500);
 }
 
-.settingsStaticValue {
-  display: inline-flex;
-  align-items: center;
-  height: 32px;
-  font-size: 13.5px;
-  font-weight: 500;
-  color: var(--gray-1000);
-  white-space: nowrap;
-}
-
 .exitBtn {
   display: inline-flex;
   align-items: center;

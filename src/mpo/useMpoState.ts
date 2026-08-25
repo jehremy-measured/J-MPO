@@ -213,6 +213,7 @@ export function useMpoState() {
           createdBy: "JH",
           lastEdited: new Date(),
           target: input.target,
+          targetValue: input.targetValue ?? undefined,
           planStart: input.planStart,
           planEnd: input.planEnd,
         },

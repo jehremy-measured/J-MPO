@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
+import { TargetIcon } from "./icons/BuildPlanIcons";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
@@ -273,6 +274,7 @@ export function PlanOverviewCard({
                         />
                       </div>
                       <div className={styles.barFoot}>
+                        <TargetIcon size={16} />
                         Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
                       </div>
                     </>
@@ -287,6 +289,7 @@ export function PlanOverviewCard({
                         <div className={styles.sliderDot} style={{ left: `${actualPct}%` }} />
                       </div>
                       <div className={styles.sliderFoot}>
+                        <TargetIcon size={16} />
                         Target {formatPrimaryValue(target as PlanTarget, targetValue as number)}
                       </div>
                     </>
@@ -296,7 +299,10 @@ export function PlanOverviewCard({
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
                     <div className={styles.goalBannerBody}>
-                      <p className={styles.goalBannerHeadline}>{progress.pctLabel} of target reached</p>
+                      <p className={styles.goalBannerHeadline}>
+                        <TargetIcon size={20} />
+                        {progress.pctLabel} of target reached
+                      </p>
                       <p className={styles.goalBannerText}>{banner.text}</p>
                     </div>
                     <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
