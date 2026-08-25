@@ -100,7 +100,7 @@
 }
 
 .colTitle {
-  margin: 0 0 8px;
+  margin: 0 0 24px;
   font-size: 16px;
   font-weight: 600;
   color: var(--gray-1000);
@@ -108,7 +108,6 @@
 
 .primaryStat {
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--gray-300-stroke);
 }
 
 .primaryStat .stat {
@@ -125,7 +124,7 @@
 .barFill {
   height: 100%;
   border-radius: 6px;
-  background: var(--blue-700);
+  background: var(--gray-800);
   transition: width 0.2s ease;
 }
 
@@ -140,7 +139,7 @@
 
 .barPct {
   font-weight: 600;
-  color: var(--blue-700);
+  color: var(--gray-800);
 }
 
 .barTargetLabel {
@@ -191,54 +190,42 @@
 }
 
 .goalBanner {
-  margin-top: 8px;
-  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-top: 0;
+  margin-bottom: 16px;
   padding: 16px;
   border-radius: var(--radius-lg);
+  background: var(--gray-100);
 }
 
-.primaryStat + .goalBanner {
-  margin-top: 16px;
-}
+.goalBanner_gap {}
 
-.goalBanner_gap {
-  background: #fdf1ef;
-}
+.goalBanner_underspend {}
 
-.goalBanner_gap .goalBannerText {
-  color: #9a3226;
-}
-
-.goalBanner_underspend {
-  background: #fdf3df;
-}
-
-.goalBanner_underspend .goalBannerText {
-  color: #8a5a12;
-}
-
-.goalBanner_reached {
-  background: var(--green-100);
-}
-
-.goalBanner_reached .goalBannerText {
-  color: var(--green-800);
-}
+.goalBanner_reached {}
 
 .goalBannerText {
+  flex: 1 1 auto;
+  min-width: 0;
   margin: 0;
   font-size: 14px;
   font-weight: 500;
   line-height: 1.4;
+  color: var(--gray-1000);
 }
 
 .goalBannerLink {
   display: inline-flex;
   align-items: center;
+  flex-shrink: 0;
+  margin-left: auto;
   gap: 4px;
   font-size: 14px;
   font-weight: 600;
-  color: inherit;
+  color: var(--blue-700);
   text-decoration: underline;
   text-underline-offset: 2px;
   white-space: nowrap;
@@ -246,6 +233,11 @@
 
 .goalBannerLink:hover {
   opacity: 0.75;
+}
+
+.goalBanner + .stat {
+  border-top: 1px solid var(--gray-300-stroke);
+  padding-top: 16px;
 }
 
 .stat {

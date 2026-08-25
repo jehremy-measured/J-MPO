@@ -52,7 +52,7 @@ function computeBannerInfo(
   if (progress.pct < 100) {
     return {
       variant: "gap",
-      text: "Run an optimization to close the gap.",
+      text: "Run an optimization to achieve your target.",
       buttonLabel: "Optimize",
     };
   }
@@ -293,13 +293,11 @@ export function PlanOverviewCard({
 
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
-                    <p className={styles.goalBannerText}>
-                      {banner.text}{" "}
-                      <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
-                        {banner.buttonLabel}
-                        <SparkleIcon size={14} variant="fill" />
-                      </button>
-                    </p>
+                    <p className={styles.goalBannerText}>{banner.text}</p>
+                    <button type="button" className={styles.goalBannerLink} onClick={onOptimize}>
+                      {banner.buttonLabel}
+                      <SparkleIcon size={14} variant="fill" />
+                    </button>
                   </div>
                 )}
 
