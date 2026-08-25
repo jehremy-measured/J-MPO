@@ -1,4 +1,4 @@
-import { useId, useState, type CSSProperties } from "react";
+import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { EditIcon } from "./icons/BuildPlanIcons";
 import styles from "./CurveAndGoal.module.css";
 
@@ -9,8 +9,7 @@ type Goal = {
   max: number;
   step: number;
   color: string;
-  format: (v: number) => string;
-  markerPercent?: number;
+  decimals: 0 | 2;
 };
 
 const GOALS: Goal[] = [
@@ -21,8 +20,7 @@ const GOALS: Goal[] = [
     max: 3_000_000,
     step: 10_000,
     color: "var(--green-600)",
-    format: (v) => `$${Math.round(v).toLocaleString()}`,
-    markerPercent: 68,
+    decimals: 0,
   },
   {
     key: "sales",
@@ -31,7 +29,7 @@ const GOALS: Goal[] = [
     max: 250_000_000,
     step: 500_000,
     color: "var(--green-800)",
-    format: (v) => `$${Math.round(v).toLocaleString()}`,
+    decimals: 0,
   },
   {
     key: "roas",
@@ -40,9 +38,73 @@ const GOALS: Goal[] = [
     max: 10,
     step: 0.05,
     color: "var(--green-500)",
-    format: (v) => `$${v.toFixed(2)}`,
+    decimals: 2,
   },
 ];
+
+function formatGoalValue(value: number, decimals: 0 | 2): string {
+  return decimals === 2 ? value.toFixed(2) : Math.round(value).toLocaleString("en-US");
+}
+
+function EditableGoalValue({
+  value,
+  decimals,
+  onChange,
+}: {
+  value: number;
+  decimals: 0 | 2;
+  onChange: (value: number) => void;
+}) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [text, setText] = useState(formatGoalValue(value, decimals));
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!isEditing) setText(formatGoalValue(value, decimals));
+  }, [value, decimals, isEditing]);
+
+  if (!isEditing) {
+    return (
+      <button
+        type="button"
+        className={styles.goalValue}
+        onClick={() => {
+          setIsEditing(true);
+          requestAnimationFrame(() => inputRef.current?.focus());
+        }}
+      >
+        <span className={styles.goalValueEditIcon}>
+          <EditIcon size={16} />
+        </span>
+        <span className={styles.goalValueText}>${text}</span>
+      </button>
+    );
+  }
+
+  return (
+    <span className={styles.goalInputWrap}>
+      <span className={styles.goalDol}>$</span>
+      <input
+        ref={inputRef}
+        className={styles.goalInput}
+        inputMode={decimals === 2 ? "decimal" : "numeric"}
+        value={text}
+        onChange={(e) => setText(e.target.value)}
+        onBlur={() => {
+          const raw = text.replace(/[^0-9.]/g, "");
+          const n = decimals === 2 ? parseFloat(raw) : parseInt(raw, 10);
+          const next = isNaN(n) ? value : n;
+          onChange(next);
+          setText(formatGoalValue(next, decimals));
+          setIsEditing(false);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") inputRef.current?.blur();
+        }}
+      />
+    </span>
+  );
+}
 
 const DEFAULT_VALUES: Record<string, number> = {
   budget: 1_500_000,
@@ -155,12 +217,13 @@ export function CurveAndGoal() {
                 <div key={goal.key} className={styles.goalRow}>
                   <div className={styles.goalRowHead}>
                     <span className={styles.rowLabel}>{goal.label}</span>
-                    <span className={styles.sliderValue}>{goal.format(value)}</span>
+                    <EditableGoalValue
+                      value={value}
+                      decimals={goal.decimals}
+                      onChange={(next) => setValues((prev) => ({ ...prev, [goal.key]: next }))}
+                    />
                   </div>
                   <div className={styles.sliderWrap}>
-                    {goal.markerPercent != null && (
-                      <span className={styles.sliderMarker} style={{ left: `${goal.markerPercent}%` }} aria-hidden />
-                    )}
                     <input
                       type="range"
                       className={styles.sliderInput}

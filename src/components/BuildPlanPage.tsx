@@ -539,6 +539,8 @@ function ReviewScreen({
   const [dateOpen, setDateOpen] = useState(false);
   const [channelOpen, setChannelOpen] = useState(false);
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
+  const [periodOpen, setPeriodOpen] = useState(false);
+  const [ctOpen, setCtOpen] = useState(false);
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
@@ -578,24 +580,32 @@ function ReviewScreen({
           className={mode === "edit" ? styles.settingsBoxBtn : styles.dateDropdownBtn}
           onClick={() => setDateOpen((v) => !v)}
         >
-          <strong>
-            {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
-          </strong>
-          <ChevronDownIcon size={14} />
+          {mode === "edit" ? (
+            <span>
+              {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+            </span>
+          ) : (
+            <strong>
+              {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+            </strong>
+          )}
+          <ChevronDownIcon size={mode === "edit" ? 16 : 14} />
         </button>
         {dateOpen && (
           <div className={styles.dateDropdownPanel}>
-            <CalendarRangePicker
-              start={srcWindow.start}
-              end={srcWindow.end}
-              onChange={(start) => {
-                flow.setSourceStart(start);
-                setDateOpen(false);
-              }}
-              panels={1}
-              mode="fixed-length"
-              fixedLengthDays={n}
-            />
+            <div className={styles.calendarPad}>
+              <CalendarRangePicker
+                start={srcWindow.start}
+                end={srcWindow.end}
+                onChange={(start) => {
+                  flow.setSourceStart(start);
+                  setDateOpen(false);
+                }}
+                panels={2}
+                mode="fixed-length"
+                fixedLengthDays={n}
+              />
+            </div>
             <div className={styles.periodNote}>
               <InfoIcon size={20} />
               <span>
@@ -611,24 +621,76 @@ function ReviewScreen({
       </strong>
     );
 
+  const periodControl = (
+    <div className={styles.channelDropdown}>
+      <button type="button" className={styles.settingsBoxBtn} onClick={() => setPeriodOpen((v) => !v)}>
+        <span>{periodLabel(state)}</span>
+        <ChevronDownIcon size={16} />
+      </button>
+      {periodOpen && (
+        <div className={styles.dateDropdownPanel}>
+          <div className={styles.calendarPad}>
+            <CalendarRangePicker start={state.planStart} end={state.planEnd} onChange={flow.setPeriod} panels={2} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const ctControl = (
+    <div className={styles.channelDropdown}>
+      <button type="button" className={styles.settingsBoxBtn} onClick={() => setCtOpen((v) => !v)}>
+        <span>{conversionTypeLabel}</span>
+        <ChevronDownIcon size={16} />
+      </button>
+      {ctOpen && (
+        <div className={styles.channelDropdownPanel}>
+          {CT_GROUPS.map((group) => (
+            <div key={group.group}>
+              <p className={styles.groupLabel}>
+                {group.label} <span className={styles.sub}>· {group.sub}</span>
+              </p>
+              {group.items.map((item) => {
+                const selected =
+                  group.selectionType === "single" ? state.singleCT === item.id : state.attrs.includes(item.id);
+                const onSelect = () =>
+                  group.selectionType === "single" ? flow.toggleSingleCT(item.id) : flow.toggleAttr(item.id);
+                return (
+                  <label key={item.id} className={styles.channelOption}>
+                    {group.selectionType === "single" ? (
+                      <input type="radio" name="ct-group-inline" checked={selected} onChange={onSelect} />
+                    ) : (
+                      <Checkbox checked={selected} onChange={onSelect} size={17} />
+                    )}
+                    <span>{item.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <>
       {mode === "edit" ? (
         <div className={styles.settingsBar}>
           <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Planning for</span>
-            <div className={styles.settingsBox}>{periodLabel(state)}</div>
+            <span className={styles.settingsLabel}>Planning period</span>
+            {periodControl}
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Conversion type</span>
-            <div className={styles.settingsBox}>{conversionTypeLabel}</div>
+            {ctControl}
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Target</span>
             <div className={styles.settingsBox}>{targetLabel(state)}</div>
           </div>
           <div className={styles.settingsField}>
-            <span className={styles.settingsLabel}>Budget</span>
+            <span className={styles.settingsLabel}>Budget from</span>
             {budgetControl}
           </div>
           <div className={styles.settingsField}>
