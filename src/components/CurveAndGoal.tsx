@@ -147,8 +147,8 @@ const RIGHT_AXIS_MAX = 5;
 const GRID_STEPS = [0, 0.25, 0.5, 0.75, 1];
 
 const VB_WIDTH = 560;
-const VB_HEIGHT = 230;
-const MARGIN = { top: 16, right: 72, bottom: 40, left: 72 };
+const VB_HEIGHT = 148;
+const MARGIN = { top: 12, right: 72, bottom: 28, left: 72 };
 const PLOT_WIDTH = VB_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_HEIGHT = VB_HEIGHT - MARGIN.top - MARGIN.bottom;
 const PLOT_BOTTOM = MARGIN.top + PLOT_HEIGHT;

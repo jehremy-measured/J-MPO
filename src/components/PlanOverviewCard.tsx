@@ -81,8 +81,8 @@ function buildWeeklyProjection(
 }
 
 const VB_WIDTH = 520;
-const VB_HEIGHT = 200;
-const MARGIN = { top: 20, right: 16, bottom: 32, left: 60 };
+const VB_HEIGHT = 128;
+const MARGIN = { top: 14, right: 16, bottom: 22, left: 60 };
 const PLOT_WIDTH = VB_WIDTH - MARGIN.left - MARGIN.right;
 const PLOT_HEIGHT = VB_HEIGHT - MARGIN.top - MARGIN.bottom;
 

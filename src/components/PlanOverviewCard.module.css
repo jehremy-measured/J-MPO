@@ -10,7 +10,7 @@
 }
 
 .chartTitle {
-  padding: 20px 24px 0;
+  padding: 16px 24px 0;
 }
 
 .legend {
@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 12px 24px 0;
+  padding: 8px 24px 0;
 }
 
 .legendItem {
@@ -54,7 +54,7 @@
 .statsCol {
   display: flex;
   flex-direction: column;
-  padding: 24px;
+  padding: 20px 24px;
   border-right: 1px solid var(--gray-300-stroke);
 }
 
@@ -98,7 +98,7 @@
 
 .chartWrap {
   position: relative;
-  padding: 12px 24px 8px;
+  padding: 8px 24px 4px;
 }
 
 .svg {
