@@ -107,12 +107,12 @@
 }
 
 .primaryStat {
-  padding-top: 8px;
   padding-bottom: 16px;
 }
 
-.primaryStat .stat {
-  padding-top: 0;
+.statsCol > .stat + .stat,
+.statsCol > .stat + .primaryStat {
+  margin-top: 24px;
 }
 
 .barTrack {
@@ -254,7 +254,6 @@
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
-  padding: 8px 0;
 }
 
 .statLabel {
