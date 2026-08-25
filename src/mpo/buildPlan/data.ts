@@ -33,7 +33,6 @@ export const CT_GROUPS: ConversionTypeGroup[] = [
   {
     group: "baseline",
     label: "Baseline",
-    sub: "raw conversion types",
     selectionType: "single",
     items: [
       { id: "online", name: "Online Orders", desc: "Ecommerce conversions", group: "baseline" },
@@ -44,17 +43,15 @@ export const CT_GROUPS: ConversionTypeGroup[] = [
   {
     group: "rollup",
     label: "Roll-up",
-    sub: "aggregated across sources",
     selectionType: "single",
     items: [
-      { id: "omni", name: "Omni Orders", desc: "Online + In-Store combined", group: "rollup" },
-      { id: "total", name: "Total Orders", desc: "All conversion sources", group: "rollup" },
+      { id: "omni", name: "Omni Orders", desc: "Online + In-Store combined", group: "rollup", rollupOf: ["online", "instore"] },
+      { id: "total", name: "Total Orders", desc: "All conversion sources", group: "rollup", rollupOf: ["online", "instore", "retail"] },
     ],
   },
   {
     group: "attribute",
     label: "Attributes",
-    sub: "combine multiple",
     selectionType: "multi",
     items: [
       { id: "newcust", name: "New Customers", desc: "First-time buyers", group: "attribute" },

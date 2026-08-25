@@ -18,6 +18,7 @@ import {
   visibleTactics,
 } from "../mpo/buildPlan/logic";
 import { BudgetInput } from "./BuildPlanPage";
+import { RollupHint } from "./RollupHint";
 import bp from "./BuildPlanPage.module.css";
 import { defaultBuildPlanState, useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
 import { CalendarRangePicker } from "./CalendarRangePicker";
@@ -164,9 +165,7 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
               </p>
               {CT_GROUPS.map((group) => (
                 <div className={bp.group} key={group.group}>
-                  <p className={bp.groupLabel}>
-                    {group.label} <span className={bp.sub}>· {group.sub}</span>
-                  </p>
+                  <p className={bp.groupLabel}>{group.label}</p>
                   {group.items.map((item) => {
                     const selected =
                       group.selectionType === "single"
@@ -188,6 +187,7 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
                           <Checkbox checked={selected} onChange={onSelect} />
                         )}
                         <span className={bp.optTitle}>{item.name}</span>
+                        <RollupHint item={item} />
                       </label>
                     );
                   })}

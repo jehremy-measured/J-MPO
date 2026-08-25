@@ -62,6 +62,14 @@ export function InfoIcon({ size = 16, variant }: IconProps) {
   return <MaterialIcon name="info" size={size} variant={variant} />;
 }
 
+export function LayersIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="layers" size={size} variant={variant} />;
+}
+
+export function TargetIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="target" size={size} variant={variant} />;
+}
+
 export function CheckIcon({ size = 13, variant }: IconProps) {
   return <MaterialIcon name="check" size={size} variant={variant} />;
 }

@@ -14,6 +14,7 @@ import type { BuildPlanState, PlanTypeChoice } from "../../mpo/buildPlan/types";
 import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { Checkbox } from "../Checkbox";
+import { RollupHint } from "../RollupHint";
 import { HistoryIcon, ResetIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
@@ -275,6 +276,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                         <Checkbox checked={selected} onChange={onSelect} />
                       )}
                       <span className={styles.optTitle}>{item.name}</span>
+                      <RollupHint item={item} />
                     </label>
                   );
                 })}

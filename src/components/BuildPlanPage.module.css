@@ -407,13 +407,6 @@
   color: var(--gray-800);
 }
 
-.groupLabel .sub {
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--gray-600, var(--gray-800));
-}
-
 .optRow {
   display: flex;
   align-items: center;
@@ -925,6 +918,31 @@
   box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
   padding: 6px;
   min-width: 180px;
+}
+
+.ctDropdownPanel {
+  width: max-content;
+  max-width: 320px;
+}
+
+.targetDropdownFooter {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid var(--gray-300-stroke);
+}
+
+.targetDropdownFooter .btn {
+  height: 30px;
+  padding: 0 14px;
+  font-size: 13px;
+}
+
+.targetPopoverValue {
+  margin: 2px 10px 8px 35px;
 }
 
 .channelOption {

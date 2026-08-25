@@ -1,5 +1,6 @@
 import type { PlanTarget } from "../mpo/types";
-import { computeGoalProgress, formatGoalMetric } from "../mpo/goalProgress";
+import { computeGoalProgress } from "../mpo/goalProgress";
+import { TargetIcon } from "./icons/BuildPlanIcons";
 import styles from "./SimulationGoalBanner.module.css";
 
 type Props = {
@@ -11,15 +12,6 @@ type Props = {
   cpo: number;
   onOptimize: () => void;
 };
-
-/** Compact "$1.1M" / "$120K" style, used for the headline's gap-to-goal figure. */
-function formatCompactGap(target: PlanTarget, value: number): string {
-  if (target === "incremental-roas" || target === "incremental-cpo") return formatGoalMetric(target, value);
-  const abs = Math.abs(value);
-  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`;
-  if (abs >= 1_000) return `$${Math.round(value / 1_000)}K`;
-  return formatGoalMetric(target, value);
-}
 
 export function SimulationGoalBanner({
   target,
@@ -35,28 +27,24 @@ export function SimulationGoalBanner({
     ? computeGoalProgress(target, targetValue as number, { incrementalSales, roas, incrementalOrders, cpo })
     : null;
 
-  let title = "No target set for this simulation";
-  if (progress) {
-    if (progress.onTrack) {
-      title = `${progress.pctLabel} to goal — on track`;
-    } else {
-      const gap = progress.isCostMetric ? progress.actual - (targetValue as number) : (targetValue as number) - progress.actual;
-      const gapLabel = progress.isCostMetric ? `${formatCompactGap(target, gap)} over` : `${formatCompactGap(target, gap)} short`;
-      title = `${progress.pctLabel} to goal — ${gapLabel}`;
-    }
-  }
+  const title = progress ? `${progress.pctLabel} of target achieved` : "No target set for this simulation";
   const subtext = "Manually adjust tactic budgets, or optimize to auto-reallocate for maximum gains.";
 
   return (
-    <div className={`${styles.banner} ${progress ? (progress.onTrack ? styles.onTrack : styles.offTrack) : ""}`}>
-      <div className={styles.textCol}>
-        <p className={styles.title}>{title}</p>
-        <p className={styles.subtext}>{subtext}</p>
-      </div>
-      <div className={styles.actions}>
-        <button type="button" className={styles.optimizeBtn} onClick={onOptimize}>
-          Optimize
-        </button>
+    <div className={styles.banner}>
+      <span className={styles.icon}>
+        <TargetIcon size={20} />
+      </span>
+      <div className={styles.body}>
+        <div className={styles.textCol}>
+          <p className={styles.title}>{title}</p>
+          <p className={styles.subtext}>{subtext}</p>
+        </div>
+        <div className={styles.actions}>
+          <button type="button" className={styles.optimizeBtn} onClick={onOptimize}>
+            Optimize
+          </button>
+        </div>
       </div>
     </div>
   );

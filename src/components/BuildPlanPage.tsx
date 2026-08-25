@@ -25,6 +25,7 @@ import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import { Checkbox } from "./Checkbox";
+import { RollupHint } from "./RollupHint";
 import {
   BackArrowIcon,
   CheckIcon,
@@ -382,9 +383,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
         >
           {CT_GROUPS.map((group) => (
             <div className={styles.group} key={group.group}>
-              <p className={styles.groupLabel}>
-                {group.label} <span className={styles.sub}>· {group.sub}</span>
-              </p>
+              <p className={styles.groupLabel}>{group.label}</p>
               {group.items.map((item) => {
                 const selected =
                   group.selectionType === "single"
@@ -406,6 +405,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
                       <Checkbox checked={selected} onChange={onSelect} />
                     )}
                     <span className={styles.optTitle}>{item.name}</span>
+                    <RollupHint item={item} />
                   </label>
                 );
               })}
@@ -536,20 +536,24 @@ function ReviewScreen({
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
-  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | "target" | null>(null);
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
+  const [draftTarget, setDraftTarget] = useState<PlanTarget | null>(state.target);
+  const [draftTargetValue, setDraftTargetValue] = useState<number | null>(state.targetValue);
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
   const ctOpen = openDropdown === "ct";
+  const targetOpen = openDropdown === "target";
   const dateRef = useRef<HTMLSpanElement>(null);
   const channelRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
   const ctRef = useRef<HTMLDivElement>(null);
+  const targetRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!openDropdown) return;
-    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef };
+    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef, target: targetRef };
     const activeRef = refs[openDropdown];
     const onPointerDown = (e: MouseEvent) => {
       if (activeRef.current && !activeRef.current.contains(e.target as Node)) setOpenDropdown(null);
@@ -557,6 +561,26 @@ function ReviewScreen({
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [openDropdown]);
+
+  const openTargetEditor = () => {
+    setDraftTarget(state.target);
+    setDraftTargetValue(
+      state.targetValue ?? (state.target ? referenceTargetDefault(state, state.target) : null)
+    );
+    setOpenDropdown("target");
+  };
+
+  const selectDraftTarget = (id: PlanTarget) => {
+    setDraftTarget(id);
+    setDraftTargetValue(referenceTargetDefault(state, id));
+  };
+
+  const saveTargetEdit = () => {
+    if (!draftTarget) return;
+    flow.setTarget(draftTarget);
+    flow.setTargetValue(draftTargetValue);
+    setOpenDropdown(null);
+  };
 
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
@@ -664,12 +688,10 @@ function ReviewScreen({
         <ChevronDownIcon size={16} />
       </button>
       {ctOpen && (
-        <div className={styles.channelDropdownPanel}>
+        <div className={`${styles.channelDropdownPanel} ${styles.ctDropdownPanel}`}>
           {CT_GROUPS.map((group) => (
             <div key={group.group}>
-              <p className={styles.groupLabel}>
-                {group.label} <span className={styles.sub}>· {group.sub}</span>
-              </p>
+              <p className={styles.groupLabel}>{group.label}</p>
               {group.items.map((item) => {
                 const selected =
                   group.selectionType === "single" ? state.singleCT === item.id : state.attrs.includes(item.id);
@@ -683,11 +705,64 @@ function ReviewScreen({
                       <Checkbox checked={selected} onChange={onSelect} size={17} />
                     )}
                     <span>{item.name}</span>
+                    <RollupHint item={item} />
                   </label>
                 );
               })}
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const targetControl = (
+    <div className={styles.channelDropdown} ref={targetRef}>
+      <button type="button" className={styles.settingsBoxBtn} onClick={targetOpen ? () => setOpenDropdown(null) : openTargetEditor}>
+        <span>{targetLabel(state)}</span>
+        <EditIcon size={16} />
+      </button>
+      {targetOpen && (
+        <div className={`${styles.channelDropdownPanel} ${styles.ctDropdownPanel}`}>
+          <div className={styles.group}>
+            {TARGET_OPTIONS.map((opt) => (
+              <div key={opt.id}>
+                <label className={styles.channelOption}>
+                  <input
+                    type="radio"
+                    name="settings-target"
+                    checked={draftTarget === opt.id}
+                    onChange={() => selectDraftTarget(opt.id)}
+                  />
+                  <span>{opt.label}</span>
+                </label>
+                {draftTarget === opt.id && targetNeedsValue(draftTarget) && (
+                  <div className={styles.targetPopoverValue}>
+                    <TargetValueInput
+                      key={draftTarget}
+                      target={draftTarget}
+                      value={draftTargetValue}
+                      defaultValue={referenceTargetDefault(state, draftTarget)}
+                      onChange={setDraftTargetValue}
+                    />
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          <div className={styles.targetDropdownFooter}>
+            <button type="button" className={styles.btn} onClick={() => setOpenDropdown(null)}>
+              Cancel
+            </button>
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={!draftTarget || (targetNeedsValue(draftTarget) && !(draftTargetValue! > 0))}
+              onClick={saveTargetEdit}
+            >
+              Save
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -707,7 +782,7 @@ function ReviewScreen({
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Target</span>
-            <div className={styles.settingsBox}>{targetLabel(state)}</div>
+            {targetControl}
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Budget from</span>

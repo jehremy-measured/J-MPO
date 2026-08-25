@@ -7,12 +7,13 @@ export type ConversionTypeOption = {
   name: string;
   desc: string;
   group: ConversionTypeGroupId;
+  /** For a roll-up option: ids of the baseline options it aggregates, shown on hover. */
+  rollupOf?: string[];
 };
 
 export type ConversionTypeGroup = {
   group: ConversionTypeGroupId;
   label: string;
-  sub: string;
   selectionType: "single" | "multi";
   items: ConversionTypeOption[];
 };

@@ -1,23 +1,31 @@
 .banner {
   display: flex;
-  flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
   margin-top: 16px;
   padding: 14px 16px;
-  border: 1px solid var(--gray-300-stroke);
   border-radius: var(--radius-lg);
   background: var(--gray-100);
 }
 
-.onTrack {
-  background: var(--green-100);
-  border-color: var(--green-500);
+.icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 84, 32, 0.12);
+  color: var(--orange-600);
 }
 
-.offTrack {
-  background: #fff6f2;
-  border-color: var(--orange-600);
+.body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
 }
 
 .textCol {
