@@ -264,6 +264,7 @@ export function useMpoState() {
         },
       }));
       notify(`Duplicated "${source.label}"`);
+      return newId;
     },
     [plans, planData, activePlanId, currentSnapshot, notify]
   );

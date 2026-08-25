@@ -1,4 +1,4 @@
-import { useId, useMemo, useState } from "react";
+import { useId, useMemo, useState, type ReactNode } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget } from "../mpo/types";
 import styles from "./PlanOverviewCard.module.css";
@@ -9,6 +9,8 @@ type Props = {
   totalBudget: number;
   incrementalSales: number;
   incrementalRoas: number;
+  /** Rendered as a strip attached to the top of the card, above the Goals/Forecast body. */
+  banner?: ReactNode;
 };
 
 type WeekPoint = {
@@ -90,6 +92,7 @@ export function PlanOverviewCard({
   totalBudget,
   incrementalSales,
   incrementalRoas,
+  banner,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -118,6 +121,7 @@ export function PlanOverviewCard({
   return (
     <section className={styles.section}>
       <div className={styles.card}>
+        {banner}
         <div className={styles.body}>
           <div className={styles.statsCol}>
             <h2 className={styles.colTitle}>Goals</h2>

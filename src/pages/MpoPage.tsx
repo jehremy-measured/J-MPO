@@ -12,6 +12,7 @@ import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
+import { SimulationGoalBanner } from "../components/SimulationGoalBanner";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
@@ -73,8 +74,8 @@ export function MpoPage() {
     return result;
   };
 
-  const openPlanForEdit = (planId: string) => {
-    const plan = state.plans.find((p) => p.id === planId);
+  const openPlanForEdit = (planId: string, planOverride?: (typeof state.plans)[number]) => {
+    const plan = planOverride ?? state.plans.find((p) => p.id === planId);
     if (plan?.editVariant === "sidebar") {
       setSidebarEditPlanId(planId);
       return;
@@ -108,6 +109,13 @@ export function MpoPage() {
   const commitRenameTitle = () => {
     if (state.activePlanId) state.renamePlan(state.activePlanId, titleRenameValue);
     setRenamingTitle(false);
+  };
+
+  const handleCreateVariant = (sourcePlan: (typeof state.plans)[number]) => {
+    const newId = state.duplicatePlan(sourcePlan.id);
+    if (!newId) return;
+    state.selectPlan(newId);
+    openPlanForEdit(newId, { ...sourcePlan, id: newId });
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
@@ -263,6 +271,18 @@ export function MpoPage() {
                         totalBudget={state.totals.budget}
                         incrementalSales={state.totals.sales}
                         incrementalRoas={state.totals.roas}
+                        banner={
+                          <SimulationGoalBanner
+                            target={activePlan.target}
+                            targetValue={activePlan.targetValue}
+                            incrementalSales={state.totals.sales}
+                            roas={state.totals.roas}
+                            incrementalOrders={state.totals.orders}
+                            cpo={state.totals.cpo}
+                            onCreateVariant={() => handleCreateVariant(activePlan)}
+                            onOptimize={() => startMiaFlow("spend")}
+                          />
+                        }
                       />
                     </>
                   ) : (

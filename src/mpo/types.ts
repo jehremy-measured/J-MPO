@@ -33,6 +33,9 @@ export type Plan = {
   createdBy: string;
   lastEdited: Date;
   target: PlanTarget;
+  /** The numeric goal for `target`, when the plan was created against one. Drives the
+   * "how close is this to goal" messaging shown for simulation plans. */
+  targetValue?: number;
   planStart: Date;
   planEnd: Date;
   /** When set to "sidebar", opening this plan for edit shows the vertical-nav editor
