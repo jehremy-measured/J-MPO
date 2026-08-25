@@ -100,6 +100,7 @@ export function PlanOverviewCard({
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
   const [chartWrapRef, { width: VB_WIDTH, height: VB_HEIGHT }] = useElementSize<HTMLDivElement>({
     width: 640,
     height: 260,
@@ -150,7 +151,25 @@ export function PlanOverviewCard({
           </div>
 
           <div className={styles.chartCol}>
-            <h2 className={`${styles.colTitle} ${styles.chartTitle}`}>Weekly Forecast</h2>
+            <div className={styles.chartHeader}>
+              <h2 className={styles.colTitle}>Weekly Forecast</h2>
+              <div className={styles.viewToggle}>
+                <button
+                  type="button"
+                  className={chartView === "cumulative" ? styles.viewActive : ""}
+                  onClick={() => setChartView("cumulative")}
+                >
+                  Cumulative
+                </button>
+                <button
+                  type="button"
+                  className={chartView === "weekly" ? styles.viewActive : ""}
+                  onClick={() => setChartView("weekly")}
+                >
+                  Weekly
+                </button>
+              </div>
+            </div>
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
@@ -166,7 +185,11 @@ export function PlanOverviewCard({
                 className={styles.svg}
                 viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
                 role="img"
-                aria-label="Line chart of projected incremental sales and budget by week"
+                aria-label={
+                  chartView === "cumulative"
+                    ? "Line chart of projected incremental sales and budget by week"
+                    : "Bar chart of projected incremental sales and budget by week"
+                }
               >
                 <defs>
                   <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
@@ -208,26 +231,65 @@ export function PlanOverviewCard({
                     )
                 )}
 
-                <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
-                <path d={budgetPath} className={styles.budgetLine} fill="none" />
-                <path d={salesPath} className={styles.salesLine} fill="none" />
+                {chartView === "cumulative" ? (
+                  <>
+                    <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
+                    <path d={budgetPath} className={styles.budgetLine} fill="none" />
+                    <path d={salesPath} className={styles.salesLine} fill="none" />
 
-                {hit && (
-                  <line
-                    x1={xFor(hit.index)}
-                    x2={xFor(hit.index)}
-                    y1={MARGIN.top}
-                    y2={MARGIN.top + PLOT_HEIGHT}
-                    className={styles.crosshair}
-                  />
+                    {hit && (
+                      <line
+                        x1={xFor(hit.index)}
+                        x2={xFor(hit.index)}
+                        y1={MARGIN.top}
+                        y2={MARGIN.top + PLOT_HEIGHT}
+                        className={styles.crosshair}
+                      />
+                    )}
+
+                    {weeks.map((w, i) => (
+                      <g key={w.index}>
+                        <circle cx={xFor(i)} cy={yFor(w.budget)} r={hoverIndex === i ? 5 : 3} className={styles.budgetDot} />
+                        <circle cx={xFor(i)} cy={yFor(w.sales)} r={hoverIndex === i ? 5 : 3} className={styles.salesDot} />
+                      </g>
+                    ))}
+                  </>
+                ) : (
+                  weeks.map((w, i) => {
+                    const slotLeft = i === 0 ? MARGIN.left : (xFor(i - 1) + xFor(i)) / 2;
+                    const slotRight = i === weeks.length - 1 ? VB_WIDTH - MARGIN.right : (xFor(i) + xFor(i + 1)) / 2;
+                    const slotWidth = slotRight - slotLeft;
+                    const barWidth = Math.max(2, Math.min(22, slotWidth * 0.18));
+                    const gap = Math.max(2, barWidth * 0.3);
+                    const center = xFor(i);
+                    const salesX = center - barWidth - gap / 2;
+                    const budgetX = center + gap / 2;
+                    const baseline = MARGIN.top + PLOT_HEIGHT;
+                    const salesY = yFor(w.sales);
+                    const budgetY = yFor(w.budget);
+                    const active = hoverIndex === i;
+                    return (
+                      <g key={w.index} opacity={hoverIndex == null || active ? 1 : 0.45}>
+                        <rect
+                          x={salesX}
+                          y={salesY}
+                          width={barWidth}
+                          height={Math.max(0, baseline - salesY)}
+                          rx={2}
+                          className={styles.salesBar}
+                        />
+                        <rect
+                          x={budgetX}
+                          y={budgetY}
+                          width={barWidth}
+                          height={Math.max(0, baseline - budgetY)}
+                          rx={2}
+                          className={styles.budgetBar}
+                        />
+                      </g>
+                    );
+                  })
                 )}
-
-                {weeks.map((w, i) => (
-                  <g key={w.index}>
-                    <circle cx={xFor(i)} cy={yFor(w.budget)} r={hoverIndex === i ? 5 : 3} className={styles.budgetDot} />
-                    <circle cx={xFor(i)} cy={yFor(w.sales)} r={hoverIndex === i ? 5 : 3} className={styles.salesDot} />
-                  </g>
-                ))}
 
                 {weeks.map((w, i) => {
                   const left = i === 0 ? MARGIN.left : (xFor(i - 1) + xFor(i)) / 2;

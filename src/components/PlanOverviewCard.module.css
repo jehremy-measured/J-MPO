@@ -9,8 +9,49 @@
   background: var(--gray-000);
 }
 
-.chartTitle {
+.chartHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   padding: 20px 24px 0;
+}
+
+.chartHeader .colTitle {
+  margin: 0;
+}
+
+.viewToggle {
+  display: flex;
+  flex-shrink: 0;
+  background: var(--gray-200);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+}
+
+.viewToggle button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 26px;
+  padding: 0 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.viewActive {
+  background: var(--gray-400);
+}
+
+.salesBar {
+  fill: var(--blue-700);
+}
+
+.budgetBar {
+  fill: var(--green-800);
 }
 
 .legend {
