@@ -175,8 +175,8 @@
 
 .statLabel {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--gray-1000);
+  font-weight: 400;
+  color: var(--gray-800);
 }
 
 .statValue {
