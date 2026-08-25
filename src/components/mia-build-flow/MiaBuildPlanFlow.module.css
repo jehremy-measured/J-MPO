@@ -210,7 +210,7 @@
 /* Target value input */
 .targetField {
   margin-top: 2px;
-  margin-left: 27px;
+  margin-left: 35px;
   margin-bottom: 12px;
 }
 
@@ -220,9 +220,16 @@
   color: var(--gray-800);
 }
 
+.targetFieldRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .targetInputWrap {
   position: relative;
-  width: 100%;
+  flex: 1;
+  min-width: 0;
 }
 
 .targetInputWrap .dol {
@@ -249,25 +256,18 @@
   padding-left: 20px;
 }
 
-.targetInputEdited {
-  padding-right: 36px;
-}
-
 .targetInput:focus {
   outline: 2px solid var(--blue-200);
   border-color: var(--blue-700);
 }
 
 .targetResetBtn {
-  position: absolute;
-  right: 5px;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   color: var(--blue-700);
   border-radius: var(--radius-sm);
 }

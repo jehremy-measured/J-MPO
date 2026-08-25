@@ -193,28 +193,28 @@ function TargetValueInput({
 
   return (
     <div>
-      <div className={styles.targetInputWrap}>
-        {isDollar && <span className={styles.dol}>$</span>}
-        <input
-          className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""} ${
-            edited ? styles.targetInputEdited : ""
-          }`}
-          inputMode={isInteger ? "numeric" : "decimal"}
-          placeholder={placeholder}
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            const n = isInteger
-              ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
-              : parseFloat(e.target.value);
-            onChange(isNaN(n) ? null : n);
-          }}
-          onBlur={() => {
-            if (!isInteger) return;
-            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
-            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
-          }}
-        />
+      <div className={styles.targetFieldRow}>
+        <div className={styles.targetInputWrap}>
+          {isDollar && <span className={styles.dol}>$</span>}
+          <input
+            className={`${styles.targetInput} ${isDollar ? styles.targetInputPrefixed : ""}`}
+            inputMode={isInteger ? "numeric" : "decimal"}
+            placeholder={placeholder}
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              const n = isInteger
+                ? parseInt(e.target.value.replace(/[^0-9]/g, ""), 10)
+                : parseFloat(e.target.value);
+              onChange(isNaN(n) ? null : n);
+            }}
+            onBlur={() => {
+              if (!isInteger) return;
+              const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+              setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+            }}
+          />
+        </div>
         {edited && (
           <button
             type="button"

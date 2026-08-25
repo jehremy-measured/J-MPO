@@ -447,6 +447,12 @@
   color: var(--gray-800);
 }
 
+.targetFieldRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .targetInputWrap {
   position: relative;
   width: 220px;
@@ -476,20 +482,13 @@
   padding-left: 22px;
 }
 
-.targetInputEdited {
-  padding-right: 38px;
-}
-
 .targetInput:focus {
   outline: 2px solid var(--blue-200);
   border-color: var(--blue-700);
 }
 
 .targetResetBtn {
-  position: absolute;
-  right: 6px;
-  top: 50%;
-  transform: translateY(-50%);
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
