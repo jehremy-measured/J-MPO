@@ -11,7 +11,6 @@ type Props = {
   channelsLabel: string;
   budgetSourceLabel: string;
   tacticsIncluded: number;
-  tacticsTotal: number;
   onEditPlan?: () => void;
 };
 
@@ -23,7 +22,6 @@ export function PlanInfoBar({
   channelsLabel,
   budgetSourceLabel,
   tacticsIncluded,
-  tacticsTotal,
   onEditPlan,
 }: Props) {
   return (
@@ -43,9 +41,7 @@ export function PlanInfoBar({
         </div>
         <div className={styles.item}>
           <span className={styles.itemLabel}>Tactics</span>
-          <span className={styles.itemValue}>
-            {tacticsIncluded} of {tacticsTotal} included
-          </span>
+          <span className={styles.itemValue}>{tacticsIncluded} tactics</span>
         </div>
         <div className={styles.item}>
           <span className={styles.itemLabel}>Target</span>

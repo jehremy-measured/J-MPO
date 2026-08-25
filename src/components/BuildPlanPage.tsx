@@ -786,9 +786,7 @@ function ReviewScreen({
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Tactics</span>
-            <span className={styles.settingsStaticValue}>
-              {includedCount(state)} of {BUILD_TACTICS.length} included
-            </span>
+            <span className={styles.settingsStaticValue}>{includedCount(state)} tactics</span>
           </div>
           <div className={styles.settingsField}>
             <span className={styles.settingsLabel}>Target</span>

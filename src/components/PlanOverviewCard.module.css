@@ -197,14 +197,6 @@
 
 .goalBanner_reached {}
 
-.goalBannerIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  color: var(--gray-1000);
-}
-
 .goalBannerBody {
   display: flex;
   flex-direction: column;
@@ -223,7 +215,7 @@
 
 .goalBannerText {
   margin: 0;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 1.4;
   color: var(--gray-600);
@@ -235,7 +227,7 @@
   flex-shrink: 0;
   margin-left: auto;
   gap: 6px;
-  height: 40px;
+  height: 32px;
   padding: 0 16px;
   border-radius: var(--radius-sm);
   background: var(--gray-1000);

@@ -244,7 +244,6 @@ export function MpoPage() {
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
-                        tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
                       />
                       <PlanOverviewCard
@@ -270,7 +269,6 @@ export function MpoPage() {
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
-                        tacticsTotal={state.tactics.length}
                         onEditPlan={() => openPlanForEdit(activePlan.id)}
                       />
                       <PlanOverviewCard
