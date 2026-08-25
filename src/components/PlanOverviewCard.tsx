@@ -2,7 +2,6 @@ import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
-import { TargetIcon } from "./icons/BuildPlanIcons";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
@@ -58,7 +57,7 @@ function computeBannerInfo(
     const direction = progress.isCostMetric ? "Below" : "Above";
     return {
       variant: "underspend",
-      tail: `achieved in this simulation. ${direction} target means you're underspending — add budget to capture more sales.`,
+      tail: `achieved in this simulation. ${direction} target means you're underspending. Optimize to find the ideal budget to achieve your target.`,
       buttonLabel: "Optimize",
     };
   }
@@ -230,20 +229,6 @@ export function PlanOverviewCard({
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
-  // Threshold view keeps the target tick fixed at center and places the actual-value dot
-  // relative to it, so the tick is always a stable reference point regardless of magnitude.
-  const targetPct = 50;
-  let actualPct = 50;
-  let goodZoneLeft = 0;
-  let goodZoneWidth = 0;
-  if (hasTarget && progress && primaryKind === "threshold") {
-    const deviationScale = (targetValue as number) * 0.5 || 1;
-    const offsetPct = Math.max(-50, Math.min(50, ((progress.actual - (targetValue as number)) / deviationScale) * 50));
-    actualPct = 50 + offsetPct;
-    goodZoneLeft = progress.isCostMetric ? 0 : targetPct;
-    goodZoneWidth = 50;
-  }
-
   // "$X above/below target" reads the raw gap between actual and target, regardless of
   // which direction counts as "good" for this metric (that framing lives in the banner text).
   const primaryDiffLabel =
@@ -283,35 +268,6 @@ export function PlanOverviewCard({
 
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
-                    {primaryKind === "bar" ? (
-                      <>
-                        <div className={styles.barTrack}>
-                          <div
-                            className={styles.barFill}
-                            style={{ width: `${Math.min(100, Math.max(0, progress.pct))}%` }}
-                          />
-                        </div>
-                        <div className={styles.barFoot}>
-                          <TargetIcon size={16} />
-                          Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className={styles.sliderTrack}>
-                          <div
-                            className={styles.sliderGoodZone}
-                            style={{ left: `${goodZoneLeft}%`, width: `${goodZoneWidth}%` }}
-                          />
-                          <div className={styles.sliderTick} style={{ left: `${targetPct}%` }} />
-                          <div className={styles.sliderDot} style={{ left: `${actualPct}%` }} />
-                        </div>
-                        <div className={styles.sliderFoot}>
-                          <TargetIcon size={16} />
-                          Target {formatPrimaryValue(target as PlanTarget, targetValue as number)}
-                        </div>
-                      </>
-                    )}
                     <p className={styles.goalBannerText}>
                       <strong>
                         {progress.pctLabel} of {GOAL_METRIC_LABEL[target as PlanTarget].toLowerCase()} target
