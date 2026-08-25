@@ -72,6 +72,7 @@
 .body {
   display: grid;
   grid-template-columns: minmax(320px, 422px) 1fr;
+  min-height: var(--plan-goal-card-height);
   background: var(--gray-000);
 }
 
