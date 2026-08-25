@@ -46,11 +46,11 @@ type BannerVariant = "gap" | "underspend" | "reached";
 function computeBannerInfo(
   progress: GoalProgress,
   kind: "bar" | "threshold"
-): { variant: BannerVariant; text: string; buttonLabel: string } {
+): { variant: BannerVariant; tail: string; buttonLabel: string } {
   if (progress.pct < 100) {
     return {
       variant: "gap",
-      text: "Run an optimization to achieve your target",
+      tail: "achieved in this simulation. Run an optimization to achieve your target.",
       buttonLabel: "Optimize",
     };
   }
@@ -58,13 +58,13 @@ function computeBannerInfo(
     const direction = progress.isCostMetric ? "Below" : "Above";
     return {
       variant: "underspend",
-      text: `${direction} target means you're underspending — add budget to capture more sales`,
+      tail: `achieved in this simulation. ${direction} target means you're underspending — add budget to capture more sales.`,
       buttonLabel: "Optimize",
     };
   }
   return {
     variant: "reached",
-    text: "Run an optimization to maximize gains further",
+    tail: "achieved in this simulation. Run an optimization to maximize gains further.",
     buttonLabel: "Optimize",
   };
 }
@@ -244,6 +244,17 @@ export function PlanOverviewCard({
     goodZoneWidth = 50;
   }
 
+  // "$X above/below target" reads the raw gap between actual and target, regardless of
+  // which direction counts as "good" for this metric (that framing lives in the banner text).
+  const primaryDiffLabel =
+    hasTarget && progress
+      ? (() => {
+          const diff = progress.actual - (targetValue as number);
+          const formatted = formatPrimaryValue(target as PlanTarget, Math.abs(diff));
+          return `${formatted} ${diff >= 0 ? "above" : "below"} target`;
+        })()
+      : "";
+
   return (
     <section className={styles.section}>
       <div className={styles.card}>
@@ -265,7 +276,7 @@ export function PlanOverviewCard({
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
                     <span className={styles.statValueCol}>
                       <span className={styles.statValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
-                      <span className={styles.statSubtext}>{progress.pctLabel} of target</span>
+                      <span className={styles.statSubtext}>{primaryDiffLabel}</span>
                     </span>
                   </div>
                 </div>
@@ -301,13 +312,15 @@ export function PlanOverviewCard({
                         </div>
                       </>
                     )}
-                    <div className={styles.goalBannerBody}>
-                      <p className={styles.goalBannerHeadline}>{progress.pctLabel} of target reached</p>
-                      <p className={styles.goalBannerText}>{banner.text}</p>
-                    </div>
+                    <p className={styles.goalBannerText}>
+                      <strong>
+                        {progress.pctLabel} of {GOAL_METRIC_LABEL[target as PlanTarget].toLowerCase()} target
+                      </strong>{" "}
+                      {banner.tail}
+                    </p>
                     <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
-                      {banner.buttonLabel}
                       <SparkleIcon size={14} variant="fill" />
+                      {banner.buttonLabel}
                     </button>
                   </div>
                 )}
