@@ -106,6 +106,172 @@
   color: var(--gray-1000);
 }
 
+.forecastTitle {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+
+.primaryStat {
+  padding-bottom: 20px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.primaryStatHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.primaryStatLabel {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--gray-1000);
+}
+
+.primaryStatValue {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  white-space: nowrap;
+}
+
+.barTrack {
+  height: 10px;
+  border-radius: 6px;
+  background: var(--gray-200);
+  overflow: hidden;
+}
+
+.barFill {
+  height: 100%;
+  border-radius: 6px;
+  background: var(--blue-700);
+  transition: width 0.2s ease;
+}
+
+.barFoot {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.barPct {
+  font-weight: 600;
+  color: var(--blue-700);
+}
+
+.barTargetLabel {
+  color: var(--gray-800);
+}
+
+.sliderTrack {
+  position: relative;
+  height: 10px;
+  border-radius: 6px;
+  background: var(--gray-200);
+}
+
+.sliderGoodZone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  border-radius: 6px;
+  background: var(--green-100);
+}
+
+.sliderTick {
+  position: absolute;
+  top: -3px;
+  width: 2px;
+  height: 16px;
+  background: var(--gray-1000);
+  transform: translateX(-50%);
+}
+
+.sliderDot {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--orange-600);
+  border: 2px solid var(--gray-000);
+  box-shadow: 0 1px 3px rgba(13, 45, 66, 0.25);
+  transform: translate(-50%, -50%);
+}
+
+.sliderFoot {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--gray-800);
+  text-align: center;
+}
+
+.goalBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+}
+
+.goalBanner_gap {
+  background: #fdf1ef;
+}
+
+.goalBanner_gap .goalBannerText {
+  color: #9a3226;
+}
+
+.goalBanner_underspend {
+  background: #fdf3df;
+}
+
+.goalBanner_underspend .goalBannerText {
+  color: #8a5a12;
+}
+
+.goalBanner_reached {
+  background: var(--green-100);
+}
+
+.goalBanner_reached .goalBannerText {
+  color: var(--green-800);
+}
+
+.goalBannerText {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.goalBannerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-000);
+  background: var(--gray-1000);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.goalBannerBtn:hover {
+  background: var(--gray-900);
+}
+
 .stat {
   display: flex;
   align-items: baseline;

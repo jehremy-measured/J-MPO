@@ -1,6 +1,7 @@
-import { useId, useMemo, useState, type ReactNode } from "react";
+import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
-import { formatBudget } from "../mpo/types";
+import { formatBudget, type PlanTarget } from "../mpo/types";
+import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
@@ -10,9 +11,66 @@ type Props = {
   totalBudget: number;
   incrementalSales: number;
   incrementalRoas: number;
-  /** Rendered as a strip attached to the top of the card, above the Goals/Forecast body. */
-  banner?: ReactNode;
+  /** When set along with a positive targetValue, the stats column promotes this metric to a
+   * headline progress/threshold visualization and shows a goal-status banner beneath it. */
+  target?: PlanTarget | null;
+  targetValue?: number | null;
+  incrementalOrders?: number;
+  cpo?: number;
+  onOptimize?: () => void;
 };
+
+/** incremental-sales/orders read as a magnitude to climb toward (0..target); incremental-roas/cpo
+ * read as a threshold to clear, where the "good" side depends on metric direction. */
+function primaryKindFor(target: PlanTarget): "bar" | "threshold" {
+  return target === "incremental-roas" || target === "incremental-cpo" ? "threshold" : "bar";
+}
+
+/** Sales gets a 2-decimal compact figure ("$8.36M") to match the headline treatment; the other
+ * metrics keep their natural formatting (plain integer orders, $X.XX ROAS/CPO). */
+function formatPrimaryValue(target: PlanTarget, value: number): string {
+  if (target !== "incremental-sales") {
+    if (target === "incremental-orders") return Math.round(value).toLocaleString();
+    return `$${value.toFixed(2)}`;
+  }
+  const abs = Math.abs(value);
+  if (abs >= 1_000_000) return `$${(value / 1_000_000).toFixed(2).replace(/\.?0+$/, "")}M`;
+  if (abs >= 1_000) return `$${(value / 1_000).toFixed(abs >= 10_000 ? 0 : 1).replace(/\.?0+$/, "")}K`;
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+type BannerVariant = "gap" | "underspend" | "reached";
+
+function computeBannerInfo(
+  target: PlanTarget,
+  targetValue: number,
+  progress: GoalProgress,
+  kind: "bar" | "threshold"
+): { variant: BannerVariant; text: string; buttonLabel: string } {
+  const targetFormatted = formatPrimaryValue(target, targetValue);
+  if (progress.pct < 100) {
+    const gapRaw = progress.isCostMetric ? progress.actual - targetValue : targetValue - progress.actual;
+    const verb = progress.isCostMetric ? "over" : "short of";
+    return {
+      variant: "gap",
+      text: `${formatPrimaryValue(target, gapRaw)} ${verb} your ${targetFormatted} target — run an optimization to close the gap.`,
+      buttonLabel: "Optimize to close the gap",
+    };
+  }
+  if (kind === "threshold") {
+    const direction = progress.isCostMetric ? "Below" : "Above";
+    return {
+      variant: "underspend",
+      text: `${direction} target means you're underspending — add budget to capture more sales.`,
+      buttonLabel: "Optimize toward target",
+    };
+  }
+  return {
+    variant: "reached",
+    text: `You've reached your ${targetFormatted} target. Run an optimization to maximize gains further.`,
+    buttonLabel: "Optimize for more gains",
+  };
+}
 
 type WeekPoint = {
   index: number;
@@ -96,7 +154,11 @@ export function PlanOverviewCard({
   totalBudget,
   incrementalSales,
   incrementalRoas,
-  banner,
+  target,
+  targetValue,
+  incrementalOrders = 0,
+  cpo = 0,
+  onOptimize,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -138,25 +200,122 @@ export function PlanOverviewCard({
   const labelEvery = Math.max(1, Math.ceil(weeks.length / 6));
   const hit = hoverIndex != null ? weeks[hoverIndex] : null;
 
+  const hasTarget = target != null && targetValue != null && targetValue > 0;
+  const progress = hasTarget
+    ? computeGoalProgress(target as PlanTarget, targetValue as number, {
+        incrementalSales,
+        roas: incrementalRoas,
+        incrementalOrders,
+        cpo,
+      })
+    : null;
+  const primaryKind = hasTarget ? primaryKindFor(target as PlanTarget) : null;
+  const banner = hasTarget && progress ? computeBannerInfo(target as PlanTarget, targetValue as number, progress, primaryKind!) : null;
+
+  const metricRows = [
+    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryValue("incremental-sales", incrementalSales) },
+    { key: "incremental-roas" as const, label: "Incremental ROAS", value: formatPrimaryValue("incremental-roas", incrementalRoas) },
+  ];
+  const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
+
+  // Threshold view needs an axis domain that comfortably fits both the target tick and the
+  // actual-value dot, with a "good" zone shaded toward whichever side is favorable.
+  let thresholdDomainMax = 1;
+  let targetPct = 0;
+  let actualPct = 0;
+  let goodZoneLeft = 0;
+  let goodZoneWidth = 0;
+  if (hasTarget && progress && primaryKind === "threshold") {
+    thresholdDomainMax = niceCeiling(Math.max(progress.actual, targetValue as number) * 1.25);
+    targetPct = Math.min(100, ((targetValue as number) / thresholdDomainMax) * 100);
+    actualPct = Math.min(100, Math.max(0, (progress.actual / thresholdDomainMax) * 100));
+    goodZoneLeft = progress.isCostMetric ? 0 : targetPct;
+    goodZoneWidth = progress.isCostMetric ? targetPct : 100 - targetPct;
+  }
+
   return (
     <section className={styles.section}>
       <div className={styles.card}>
         <div className={styles.body}>
           <div className={styles.statsCol}>
-            <h2 className={styles.colTitle}>Forecast</h2>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Total budget</div>
-              <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Incremental Sales</div>
-              <div className={styles.statValue}>{formatBudget(incrementalSales)}</div>
-            </div>
-            <div className={styles.stat}>
-              <div className={styles.statLabel}>Incremental ROAS</div>
-              <div className={styles.statValue}>${incrementalRoas.toFixed(2)}</div>
-            </div>
-            {banner}
+            {hasTarget && progress && primaryKind ? (
+              <>
+                <h2 className={`${styles.colTitle} ${styles.forecastTitle}`}>Forecast</h2>
+
+                <div className={styles.primaryStat}>
+                  <div className={styles.primaryStatHead}>
+                    <span className={styles.primaryStatLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
+                    <span className={styles.primaryStatValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
+                  </div>
+                  {primaryKind === "bar" ? (
+                    <>
+                      <div className={styles.barTrack}>
+                        <div
+                          className={styles.barFill}
+                          style={{ width: `${Math.min(100, Math.max(0, progress.pct))}%` }}
+                        />
+                      </div>
+                      <div className={styles.barFoot}>
+                        <span className={styles.barPct}>{progress.pctLabel} of target</span>
+                        <span className={styles.barTargetLabel}>
+                          Target: {formatPrimaryValue(target as PlanTarget, targetValue as number)}
+                        </span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className={styles.sliderTrack}>
+                        <div
+                          className={styles.sliderGoodZone}
+                          style={{ left: `${goodZoneLeft}%`, width: `${goodZoneWidth}%` }}
+                        />
+                        <div className={styles.sliderTick} style={{ left: `${targetPct}%` }} />
+                        <div className={styles.sliderDot} style={{ left: `${actualPct}%` }} />
+                      </div>
+                      <div className={styles.sliderFoot}>
+                        Target {formatPrimaryValue(target as PlanTarget, targetValue as number)}
+                      </div>
+                    </>
+                  )}
+                </div>
+
+                {secondaryMetricRows.map((row) => (
+                  <div className={styles.stat} key={row.key}>
+                    <div className={styles.statLabel}>{row.label}</div>
+                    <div className={styles.statValue}>{row.value}</div>
+                  </div>
+                ))}
+                <div className={styles.stat}>
+                  <div className={styles.statLabel}>Total budget</div>
+                  <div className={styles.statValue}>{formatCompactCurrency(totalBudget)}</div>
+                </div>
+
+                {banner && (
+                  <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
+                    <p className={styles.goalBannerText}>{banner.text}</p>
+                    <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
+                      {banner.buttonLabel}
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <h2 className={styles.colTitle}>Forecast</h2>
+                <div className={styles.stat}>
+                  <div className={styles.statLabel}>Total budget</div>
+                  <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
+                </div>
+                <div className={styles.stat}>
+                  <div className={styles.statLabel}>Incremental Sales</div>
+                  <div className={styles.statValue}>{formatBudget(incrementalSales)}</div>
+                </div>
+                <div className={styles.stat}>
+                  <div className={styles.statLabel}>Incremental ROAS</div>
+                  <div className={styles.statValue}>${incrementalRoas.toFixed(2)}</div>
+                </div>
+              </>
+            )}
           </div>
 
           <div className={styles.chartCol}>

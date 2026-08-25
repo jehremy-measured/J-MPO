@@ -12,7 +12,6 @@ import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
-import { SimulationGoalBanner } from "../components/SimulationGoalBanner";
 import { TargetBanner } from "../components/TargetBanner";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
@@ -269,17 +268,11 @@ export function MpoPage() {
                         totalBudget={state.totals.budget}
                         incrementalSales={state.totals.sales}
                         incrementalRoas={state.totals.roas}
-                        banner={
-                          <SimulationGoalBanner
-                            target={activePlan.target}
-                            targetValue={activePlan.targetValue}
-                            incrementalSales={state.totals.sales}
-                            roas={state.totals.roas}
-                            incrementalOrders={state.totals.orders}
-                            cpo={state.totals.cpo}
-                            onOptimize={() => startMiaFlow("spend")}
-                          />
-                        }
+                        target={activePlan.target}
+                        targetValue={activePlan.targetValue}
+                        incrementalOrders={state.totals.orders}
+                        cpo={state.totals.cpo}
+                        onOptimize={() => startMiaFlow("spend")}
                       />
                     </>
                   ) : (
