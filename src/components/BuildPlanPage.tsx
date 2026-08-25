@@ -33,7 +33,6 @@ import {
   EditIcon,
   FileIcon,
   HistoryIcon,
-  InfoIcon,
   MoreIcon,
   ResetIcon,
   SearchIcon,
@@ -536,11 +535,28 @@ function ReviewScreen({
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
-  const [dateOpen, setDateOpen] = useState(false);
-  const [channelOpen, setChannelOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | null>(null);
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
-  const [periodOpen, setPeriodOpen] = useState(false);
-  const [ctOpen, setCtOpen] = useState(false);
+  const dateOpen = openDropdown === "date";
+  const channelOpen = openDropdown === "channel";
+  const periodOpen = openDropdown === "period";
+  const ctOpen = openDropdown === "ct";
+  const dateRef = useRef<HTMLSpanElement>(null);
+  const channelRef = useRef<HTMLDivElement>(null);
+  const periodRef = useRef<HTMLDivElement>(null);
+  const ctRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!openDropdown) return;
+    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef };
+    const activeRef = refs[openDropdown];
+    const onPointerDown = (e: MouseEvent) => {
+      if (activeRef.current && !activeRef.current.contains(e.target as Node)) setOpenDropdown(null);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [openDropdown]);
+
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
@@ -550,11 +566,11 @@ function ReviewScreen({
   const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;
 
   const channelControl = (
-    <div className={styles.channelDropdown}>
+    <div className={styles.channelDropdown} ref={channelRef}>
       <button
         type="button"
         className={mode === "edit" ? styles.settingsBoxBtn : styles.channelDropdownBtn}
-        onClick={() => setChannelOpen((v) => !v)}
+        onClick={() => setOpenDropdown((v) => (v === "channel" ? null : "channel"))}
       >
         <span>{channelFilterLabel(state)}</span>
         <ChevronDownIcon size={mode === "edit" ? 16 : 20} />
@@ -574,11 +590,11 @@ function ReviewScreen({
 
   const budgetControl =
     state.method === "fetch" ? (
-      <span className={styles.dateDropdown}>
+      <span className={styles.dateDropdown} ref={dateRef}>
         <button
           type="button"
           className={mode === "edit" ? styles.settingsBoxBtn : styles.dateDropdownBtn}
-          onClick={() => setDateOpen((v) => !v)}
+          onClick={() => setOpenDropdown((v) => (v === "date" ? null : "date"))}
         >
           {mode === "edit" ? (
             <span>
@@ -597,20 +613,11 @@ function ReviewScreen({
               <CalendarRangePicker
                 start={srcWindow.start}
                 end={srcWindow.end}
-                onChange={(start) => {
-                  flow.setSourceStart(start);
-                  setDateOpen(false);
-                }}
+                onChange={(start) => flow.setSourceStart(start)}
                 panels={2}
                 mode="fixed-length"
                 fixedLengthDays={n}
               />
-            </div>
-            <div className={styles.periodNote}>
-              <InfoIcon size={20} />
-              <span>
-                Same {n} days as your plan. Tactics with no spend in the last year are excluded by default.
-              </span>
             </div>
           </div>
         )}
@@ -622,8 +629,12 @@ function ReviewScreen({
     );
 
   const periodControl = (
-    <div className={styles.channelDropdown}>
-      <button type="button" className={styles.settingsBoxBtn} onClick={() => setPeriodOpen((v) => !v)}>
+    <div className={styles.channelDropdown} ref={periodRef}>
+      <button
+        type="button"
+        className={styles.settingsBoxBtn}
+        onClick={() => setOpenDropdown((v) => (v === "period" ? null : "period"))}
+      >
         <span>{periodLabel(state)}</span>
         <ChevronDownIcon size={16} />
       </button>
@@ -638,8 +649,12 @@ function ReviewScreen({
   );
 
   const ctControl = (
-    <div className={styles.channelDropdown}>
-      <button type="button" className={styles.settingsBoxBtn} onClick={() => setCtOpen((v) => !v)}>
+    <div className={styles.channelDropdown} ref={ctRef}>
+      <button
+        type="button"
+        className={styles.settingsBoxBtn}
+        onClick={() => setOpenDropdown((v) => (v === "ct" ? null : "ct"))}
+      >
         <span>{conversionTypeLabel}</span>
         <ChevronDownIcon size={16} />
       </button>
