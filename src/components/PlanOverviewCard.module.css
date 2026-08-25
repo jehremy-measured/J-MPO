@@ -104,6 +104,7 @@
   flex: 1;
   min-height: 0;
   display: flex;
+  contain: size;
 }
 
 .svg {
@@ -120,7 +121,7 @@
 
 .yTick,
 .xTick {
-  font-size: 7px;
+  font-size: 11px;
   fill: var(--gray-800);
   font-family: var(--font-inter);
 }

@@ -1,6 +1,7 @@
 import { useId, useMemo, useState, type ReactNode } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget } from "../mpo/types";
+import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
 type Props = {
@@ -87,11 +88,7 @@ function buildWeeklyProjection(
   });
 }
 
-const VB_WIDTH = 520;
-const VB_HEIGHT = 128;
-const MARGIN = { top: 14, right: 16, bottom: 22, left: 60 };
-const PLOT_WIDTH = VB_WIDTH - MARGIN.left - MARGIN.right;
-const PLOT_HEIGHT = VB_HEIGHT - MARGIN.top - MARGIN.bottom;
+const MARGIN = { top: 16, right: 16, bottom: 28, left: 56 };
 
 export function PlanOverviewCard({
   planStart,
@@ -103,6 +100,12 @@ export function PlanOverviewCard({
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const [chartWrapRef, { width: VB_WIDTH, height: VB_HEIGHT }] = useElementSize<HTMLDivElement>({
+    width: 640,
+    height: 260,
+  });
+  const PLOT_WIDTH = Math.max(1, VB_WIDTH - MARGIN.left - MARGIN.right);
+  const PLOT_HEIGHT = Math.max(1, VB_HEIGHT - MARGIN.top - MARGIN.bottom);
 
   const weeks = useMemo(
     () => buildWeeklyProjection(planStart, planEnd, incrementalSales, totalBudget),
@@ -158,11 +161,10 @@ export function PlanOverviewCard({
                 Budget
               </span>
             </div>
-            <div className={styles.chartWrap}>
+            <div className={styles.chartWrap} ref={chartWrapRef}>
               <svg
                 className={styles.svg}
                 viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
-                preserveAspectRatio="none"
                 role="img"
                 aria-label="Line chart of projected incremental sales and budget by week"
               >

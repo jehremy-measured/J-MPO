@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from "react";
 import { EditIcon } from "./icons/BuildPlanIcons";
+import { useElementSize } from "../hooks/useElementSize";
 import styles from "./CurveAndGoal.module.css";
 
 type Goal = {
@@ -146,13 +147,7 @@ const LEFT_AXIS_MAX = 300_000;
 const RIGHT_AXIS_MAX = 5;
 const GRID_STEPS = [0, 0.25, 0.5, 0.75, 1];
 
-const VB_WIDTH = 560;
-const VB_HEIGHT = 148;
-const MARGIN = { top: 12, right: 72, bottom: 28, left: 72 };
-const PLOT_WIDTH = VB_WIDTH - MARGIN.left - MARGIN.right;
-const PLOT_HEIGHT = VB_HEIGHT - MARGIN.top - MARGIN.bottom;
-const PLOT_BOTTOM = MARGIN.top + PLOT_HEIGHT;
-const PLOT_CENTER_Y = MARGIN.top + PLOT_HEIGHT / 2;
+const MARGIN = { top: 16, right: 72, bottom: 32, left: 72 };
 
 const LEGEND = [
   { label: "Incremental Sales", color: "var(--blue-700)" },
@@ -164,6 +159,14 @@ const LEGEND = [
 export function CurveAndGoal() {
   const [values, setValues] = useState(DEFAULT_VALUES);
   const gradientId = useId();
+  const [chartSvgWrapRef, { width: VB_WIDTH, height: VB_HEIGHT }] = useElementSize<HTMLDivElement>({
+    width: 700,
+    height: 260,
+  });
+  const PLOT_WIDTH = Math.max(1, VB_WIDTH - MARGIN.left - MARGIN.right);
+  const PLOT_HEIGHT = Math.max(1, VB_HEIGHT - MARGIN.top - MARGIN.bottom);
+  const PLOT_BOTTOM = MARGIN.top + PLOT_HEIGHT;
+  const PLOT_CENTER_Y = MARGIN.top + PLOT_HEIGHT / 2;
 
   const xFor = (spend: number) => MARGIN.left + (spend / SPEND_DOMAIN_MAX) * PLOT_WIDTH;
   const yForSales = (v: number) => PLOT_BOTTOM - (v / LEFT_AXIS_MAX) * PLOT_HEIGHT;
@@ -254,10 +257,10 @@ export function CurveAndGoal() {
               ))}
             </div>
 
+            <div className={styles.chartSvgWrap} ref={chartSvgWrapRef}>
             <svg
               className={styles.svg}
               viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
-              preserveAspectRatio="none"
               role="img"
               aria-label="Diminishing return curve of incremental sales and incremental ROAS by media spend"
             >
@@ -343,6 +346,7 @@ export function CurveAndGoal() {
                 Media Spend
               </text>
             </svg>
+            </div>
           </div>
         </div>
       </div>
