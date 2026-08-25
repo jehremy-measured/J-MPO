@@ -27,8 +27,9 @@ function primaryKindFor(target: PlanTarget): "bar" | "threshold" {
   return target === "incremental-roas" || target === "incremental-cpo" ? "threshold" : "bar";
 }
 
-/** Sales gets a 2-decimal compact figure ("$8.36M") to match the headline treatment; the other
- * metrics keep their natural formatting (plain integer orders, $X.XX ROAS/CPO). */
+/** Used for the "$X above/below target" subtext, where a compact figure ("$1.14M") reads
+ * better than a long full number; the other metrics keep their natural formatting (plain
+ * integer orders, $X.XX ROAS/CPO). */
 function formatPrimaryValue(target: PlanTarget, value: number): string {
   if (target !== "incremental-sales") {
     if (target === "incremental-orders") return Math.round(value).toLocaleString();
@@ -40,30 +41,58 @@ function formatPrimaryValue(target: PlanTarget, value: number): string {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
+/** Headline stat values always show the full number, unabbreviated. */
+function formatPrimaryDisplayValue(target: PlanTarget, value: number): string {
+  if (target === "incremental-sales") return `$${Math.round(value).toLocaleString()}`;
+  return formatPrimaryValue(target, value);
+}
+
 type BannerVariant = "gap" | "underspend" | "reached";
+
+/** Lowercases the label for mid-sentence use, except acronym words ("ROAS", "CPO") which
+ * stay fully uppercase. */
+function lowercaseLead(label: string): string {
+  return label
+    .split(" ")
+    .map((word) => (word.length > 1 && word === word.toUpperCase() ? word : word.toLowerCase()))
+    .join(" ");
+}
+
+type BannerSegment = { text: string; bold?: boolean };
 
 function computeBannerInfo(
   progress: GoalProgress,
-  kind: "bar" | "threshold"
-): { variant: BannerVariant; tail: string; buttonLabel: string } {
+  kind: "bar" | "threshold",
+  metricLabel: string
+): { variant: BannerVariant; segments: BannerSegment[]; buttonLabel: string } {
   if (progress.pct < 100) {
     return {
       variant: "gap",
-      tail: "achieved in this simulation. Run an optimization to achieve your target.",
+      segments: [
+        { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
+        { text: " achieved in this simulation. Run an optimization to achieve your target." },
+      ],
       buttonLabel: "Optimize",
     };
   }
   if (kind === "threshold") {
-    const direction = progress.isCostMetric ? "Below" : "Above";
+    const direction = progress.isCostMetric ? "below" : "above";
     return {
       variant: "underspend",
-      tail: `achieved in this simulation. ${direction} target means you're underspending. Optimize to find the ideal budget to achieve your target.`,
+      segments: [
+        { text: `An ${direction} target ${lowercaseLead(metricLabel)} means you're ` },
+        { text: "underspending", bold: true },
+        { text: ". Run an optimization to achieve your target with the correct budget." },
+      ],
       buttonLabel: "Optimize",
     };
   }
   return {
     variant: "reached",
-    tail: "achieved in this simulation. Run an optimization to maximize gains further.",
+    segments: [
+      { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
+      { text: " achieved in this simulation. Run an optimization to maximize gains further." },
+    ],
     buttonLabel: "Optimize",
   };
 }
@@ -220,12 +249,15 @@ export function PlanOverviewCard({
       })
     : null;
   const primaryKind = hasTarget ? primaryKindFor(target as PlanTarget) : null;
-  const banner = hasTarget && progress ? computeBannerInfo(progress, primaryKind!) : null;
+  const banner =
+    hasTarget && progress
+      ? computeBannerInfo(progress, primaryKind!, GOAL_METRIC_LABEL[target as PlanTarget])
+      : null;
 
   const metricRows = [
-    { key: "total-budget" as const, label: "Total budget", value: formatCompactCurrency(totalBudget) },
-    { key: "incremental-roas" as const, label: "Incremental ROAS", value: formatPrimaryValue("incremental-roas", incrementalRoas) },
-    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryValue("incremental-sales", incrementalSales) },
+    { key: "total-budget" as const, label: "Total budget", value: formatFullCurrency(totalBudget) },
+    { key: "incremental-roas" as const, label: "Incremental ROAS", value: formatPrimaryDisplayValue("incremental-roas", incrementalRoas) },
+    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryDisplayValue("incremental-sales", incrementalSales) },
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
@@ -260,7 +292,7 @@ export function PlanOverviewCard({
                   <div className={styles.stat}>
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
                     <span className={styles.statValueCol}>
-                      <span className={styles.statValue}>{formatPrimaryValue(target as PlanTarget, progress.actual)}</span>
+                      <span className={styles.statValue}>{formatPrimaryDisplayValue(target as PlanTarget, progress.actual)}</span>
                       <span className={styles.statSubtext}>{primaryDiffLabel}</span>
                     </span>
                   </div>
@@ -269,13 +301,12 @@ export function PlanOverviewCard({
                 {banner && (
                   <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
                     <p className={styles.goalBannerText}>
-                      <strong>
-                        {progress.pctLabel} of {GOAL_METRIC_LABEL[target as PlanTarget].toLowerCase()} target
-                      </strong>{" "}
-                      {banner.tail}
+                      {banner.segments.map((segment, i) =>
+                        segment.bold ? <strong key={i}>{segment.text}</strong> : <span key={i}>{segment.text}</span>
+                      )}
                     </p>
                     <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
-                      <SparkleIcon size={14} variant="fill" />
+                      <SparkleIcon size={18} variant="fill" />
                       {banner.buttonLabel}
                     </button>
                   </div>
@@ -487,12 +518,16 @@ export function PlanOverviewCard({
                   </div>
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-                    {chartView === "cumulative" ? "Cumulative Sales" : "Incremental Sales"}{" "}
+                    <span className={styles.tooltipRowLabel}>
+                      {chartView === "cumulative" ? "Cumulative Sales" : "Incremental Sales"}
+                    </span>
                     <strong>{formatFullCurrency(hit.sales)}</strong>
                   </div>
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-                    {chartView === "cumulative" ? "Cumulative Budget" : "Budget"}{" "}
+                    <span className={styles.tooltipRowLabel}>
+                      {chartView === "cumulative" ? "Cumulative Budget" : "Budget"}
+                    </span>
                     <strong>{formatFullCurrency(hit.budget)}</strong>
                   </div>
                 </div>

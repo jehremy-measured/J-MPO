@@ -217,7 +217,7 @@ export function MpoPage() {
                     <span className={styles.syncText}>Updated 2 hours ago</span>
                     <span className={styles.syncDivider} aria-hidden />
                     <button type="button" className={styles.syncRefreshBtn}>
-                      <MaterialIcon name="autorenew" size={20} />
+                      <MaterialIcon name="autorenew" size={18} />
                       Refresh
                     </button>
                   </div>

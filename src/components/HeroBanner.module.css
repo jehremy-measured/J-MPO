@@ -70,7 +70,7 @@
   justify-content: center;
   gap: 7px;
   height: 32px;
-  padding: 0 8px 0 12px;
+  padding: 0 12px 0 8px;
   border-radius: var(--radius-sm);
   background: var(--gray-1000);
   color: var(--gray-000);
