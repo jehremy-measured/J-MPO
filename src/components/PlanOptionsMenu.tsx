@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { ChevronDownIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
+import { ChevronDownIcon, DownloadIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./PlanOptionsMenu.module.css";
 
@@ -11,6 +11,7 @@ type Props = {
   onRenameRequest?: () => void;
   onToggleSharePlan?: (id: string) => void;
   onDuplicatePlan?: (id: string) => void;
+  onExportPlan?: () => void;
   onDeletePlan?: (id: string) => void;
 };
 
@@ -21,6 +22,7 @@ export function PlanOptionsMenu({
   onRenameRequest,
   onToggleSharePlan,
   onDuplicatePlan,
+  onExportPlan,
   onDeletePlan,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -36,7 +38,7 @@ export function PlanOptionsMenu({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onDeletePlan) return null;
+  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan) return null;
 
   const handleRename = () => {
     setMenuOpen(false);
@@ -51,6 +53,11 @@ export function PlanOptionsMenu({
   const handleDuplicate = () => {
     setMenuOpen(false);
     onDuplicatePlan?.(planId);
+  };
+
+  const handleExport = () => {
+    setMenuOpen(false);
+    onExportPlan?.();
   };
 
   const handleDelete = () => {
@@ -84,6 +91,11 @@ export function PlanOptionsMenu({
           {onDuplicatePlan && (
             <button type="button" onClick={handleDuplicate}>
               <DuplicateIcon size={20} /> Duplicate
+            </button>
+          )}
+          {onExportPlan && (
+            <button type="button" onClick={handleExport}>
+              <DownloadIcon size={20} /> Export
             </button>
           )}
           {onDeletePlan && (

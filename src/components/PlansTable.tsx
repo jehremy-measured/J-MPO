@@ -5,6 +5,7 @@ import { Checkbox } from "./Checkbox";
 import { ConfirmDialog } from "./ConfirmDialog";
 import {
   ChevronDownIcon,
+  DownloadIcon,
   DuplicateIcon,
   EditIcon,
   MoreIcon,
@@ -47,7 +48,7 @@ const TARGET_LABEL: Record<PlanTarget, string> = {
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 const CURRENT_USER_INITIALS = "JH";
 
-function downloadPlansCsv(plansToExport: Plan[]) {
+export function downloadPlansCsv(plansToExport: Plan[]) {
   const header = ["Plan name", "Type", "Created by", "Last updated", "Target"];
   const rows = plansToExport.map((plan) => [
     plan.label,
@@ -370,6 +371,15 @@ export function PlansTable({
                         >
                           <DuplicateIcon size={20} /> Duplicate
                         </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOpenMenuId(null);
+                            downloadPlansCsv([plan]);
+                          }}
+                        >
+                          <DownloadIcon size={20} /> Export
+                        </button>
                         <button type="button" className={styles.dangerItem} onClick={() => handleDelete(plan)}>
                           <TrashIcon size={20} /> Delete
                         </button>
@@ -399,7 +409,7 @@ export function PlansTable({
               Share
             </button>
             <button type="button" className={styles.bulkBtn} onClick={handleDownloadSelected}>
-              Download
+              Export
             </button>
             <div className={styles.moreWrap} ref={footerMenuRef}>
               <button

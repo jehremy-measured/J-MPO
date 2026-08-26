@@ -9,7 +9,7 @@ import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
-import { PlansTable } from "../components/PlansTable";
+import { PlansTable, downloadPlansCsv } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
@@ -236,6 +236,7 @@ export function MpoPage() {
                       onRenameRequest={startRenameTitle}
                       onToggleSharePlan={state.toggleSharePlan}
                       onDuplicatePlan={state.duplicatePlan}
+                      onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                       onDeletePlan={handleDeleteActivePlan}
                     />
                   )}
