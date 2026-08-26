@@ -8,6 +8,7 @@ import {
   includedTotal,
   parsePlanRevision,
   periodLabel,
+  planSummaryRows,
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
@@ -32,9 +33,10 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
-  kind?: "download-card" | "plan-card";
+  kind?: "download-card" | "plan-card" | "plan-ready-card";
   subtext?: string;
   planState?: BuildPlanState;
+  rows?: { label: string; value: string }[];
 };
 
 type Prompt =
@@ -81,6 +83,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onEditInMainFlow: (state: BuildPlanState) => void;
+  onCreatePlan: (state: BuildPlanState) => void;
   startSignal?: StartSignal | null;
 };
 
@@ -89,13 +92,12 @@ const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
   spend: "Optimize a plan",
 };
 
-export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: Props) {
+export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, startSignal }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileAttachRef = useRef<HTMLInputElement>(null);
   const chatsMenuRef = useRef<HTMLDivElement>(null);
-  const onEditInMainFlowRef = useRef(onEditInMainFlow);
   const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
@@ -112,10 +114,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
 
   useEffect(() => {
-    onEditInMainFlowRef.current = onEditInMainFlow;
-  }, [onEditInMainFlow]);
-
-  useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
 
@@ -124,9 +122,10 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
       items: {
         role: "mia" | "user";
         text: string;
-        kind?: "download-card" | "plan-card";
+        kind?: "download-card" | "plan-card" | "plan-ready-card";
         subtext?: string;
         planState?: BuildPlanState;
+        rows?: { label: string; value: string }[];
       }[]
     ) => {
       setMessages((prev) => [
@@ -138,6 +137,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
           kind: item.kind,
           subtext: item.subtext,
           planState: item.planState,
+          rows: item.rows,
         })),
       ]);
     },
@@ -205,17 +205,17 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
     if (!loadingReviewState) return;
     const reviewState = loadingReviewState;
     const timer = window.setTimeout(() => {
-      onEditInMainFlowRef.current(reviewState);
       setLoadingReviewState(null);
       setLastPlanState(reviewState);
       appendMessages([
-        { role: "mia", text: "Your plan is ready — reviewing it on the left." },
+        { role: "mia", text: "Your plan is ready." },
         {
           role: "mia",
-          kind: "plan-card",
+          kind: "plan-ready-card",
           text: `${periodLabel(reviewState)} plan`,
           subtext: `${includedCount(reviewState)} tactics · ${currencyFormatter.format(includedTotal(reviewState))}`,
           planState: reviewState,
+          rows: planSummaryRows(reviewState),
         },
       ]);
     }, 5000);
@@ -525,6 +525,44 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
                 <ChevronRightIcon size={20} />
               </span>
             </button>
+          ) : msg.kind === "plan-ready-card" ? (
+            <div key={msg.id} className={styles.readyCard}>
+              <div className={styles.readyCardHeader}>
+                <span className={styles.planCardIcon} aria-hidden>
+                  <FileIcon size={20} />
+                </span>
+                <span className={styles.planCardBody}>
+                  <span className={styles.planCardTitle}>{msg.text}</span>
+                  <span className={styles.planCardSub}>{msg.subtext}</span>
+                </span>
+              </div>
+              {msg.rows && (
+                <dl className={styles.readyCardRows}>
+                  {msg.rows.map((row) => (
+                    <div className={styles.readyCardRow} key={row.label}>
+                      <dt>{row.label}</dt>
+                      <dd>{row.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <div className={styles.readyCardActions}>
+                <button
+                  type="button"
+                  className={styles.rcBtn}
+                  onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
+                >
+                  Review plan
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
+                  onClick={() => msg.planState && onCreatePlan(msg.planState)}
+                >
+                  Create plan
+                </button>
+              </div>
+            </div>
           ) : msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}

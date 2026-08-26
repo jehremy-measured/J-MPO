@@ -209,6 +209,22 @@ export function targetLabel(state: BuildPlanState): string {
   return formatTargetLabel(state.target, state.targetValue);
 }
 
+/** Condensed label/value pairs summarizing every input that went into a plan — used by Mia's
+ * "plan is ready" card, which shows this in place of auto-opening the full review screen. */
+export function planSummaryRows(state: BuildPlanState): { label: string; value: string }[] {
+  const { label: ctLabel, attrLabels } = ctSummary(state);
+  const conversionTypeLabel = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel;
+  const rows = [
+    { label: "Planning period", value: periodLabel(state) },
+    { label: "Conversion type", value: conversionTypeLabel },
+    { label: "Channels", value: channelFilterLabel(state) },
+  ];
+  if (state.target) rows.push({ label: "Target", value: targetLabel(state) });
+  rows.push({ label: "Tactics", value: `${includedCount(state)} of ${BUILD_TACTICS.length}` });
+  rows.push({ label: "Budget", value: currencyFormatter.format(includedTotal(state)) });
+  return rows;
+}
+
 /** Default value for the target field: last year's actuals for this exact period, or the latest
  * comparable period when last year isn't covered by the data we have. */
 export function referenceTargetDefault(state: BuildPlanState, target: Exclude<PlanTarget, null>): number {

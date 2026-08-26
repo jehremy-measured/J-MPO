@@ -15,7 +15,7 @@ import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
-import { applyMethodChoice, budgetFromWindow, channelsPresent } from "../mpo/buildPlan/logic";
+import { applyMethodChoice, budgetFromWindow, buildPlanToCreatePlanInput, channelsPresent } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { CreatePlanInput, PlanKind } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
@@ -76,14 +76,15 @@ export function MpoPage() {
     setMiaStart({ token: Date.now(), planType });
   };
 
-  const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState) => {
+  const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState, modeOverride?: "create" | "edit") => {
+    const mode = modeOverride ?? buildPlanMode;
     const finish = () => {
       const result = state.createPlan(input);
       setPlanBuildStates((prev) => ({ ...prev, [result.id]: { ...rawState, screen: "review" } }));
       setViewMode("detail");
     };
 
-    if (buildPlanMode === "edit") {
+    if (mode === "edit") {
       setBuildPlanOpen(false);
       finish();
       return;
@@ -312,6 +313,7 @@ export function MpoPage() {
           open={miaOpen}
           onClose={() => setMiaOpen(false)}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
+          onCreatePlan={(seed) => handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create")}
           startSignal={miaStart}
         />
       </div>
