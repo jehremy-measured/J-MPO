@@ -6,6 +6,7 @@ import {
   downloadBudgetTemplate,
   includedCount,
   includedTotal,
+  parsePlanRevision,
   periodLabel,
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
@@ -105,6 +106,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   const lastStartTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
+  const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [settingUp, setSettingUp] = useState(false);
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
@@ -157,6 +159,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
     setFlowActive(false);
     setUploadState(null);
     setLoadingReviewState(null);
+    setLastPlanState(null);
     setMessages([]);
     setDraft("");
     setIsTyping(false);
@@ -170,6 +173,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
       if (userText) appendMessages([{ role: "user", text: userText }]);
       setUploadState(null);
       setLoadingReviewState(null);
+      setLastPlanState(null);
       setDraft("");
       setPresetPlanType(planType ?? null);
       setSettingUp(true);
@@ -203,6 +207,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
     const timer = window.setTimeout(() => {
       onEditInMainFlowRef.current(reviewState);
       setLoadingReviewState(null);
+      setLastPlanState(reviewState);
       appendMessages([
         { role: "mia", text: "Your plan is ready — reviewing it on the left." },
         {
@@ -222,6 +227,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
       setFlowActive(false);
       setUploadState(null);
       setLoadingReviewState(null);
+      setLastPlanState(null);
       setDraft("");
       setIsTyping(false);
       setSettingUp(false);
@@ -300,6 +306,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   const handleFetchReady = (nextState: BuildPlanState) => {
     setFlowActive(false);
     onEditInMainFlow(nextState);
+    setLastPlanState(nextState);
     appendMessages([
       { role: "mia", text: "Pick your source period and review your budget in the panel on the left." },
     ]);
@@ -327,6 +334,28 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
       ...prev,
       { id: `user-${Date.now()}`, role: "user", text: trimmed },
     ]);
+
+    const revision = lastPlanState ? parsePlanRevision(trimmed, lastPlanState) : null;
+    if (revision) {
+      setIsTyping(true);
+      window.setTimeout(() => {
+        setIsTyping(false);
+        onEditInMainFlow(revision.state);
+        setLastPlanState(revision.state);
+        appendMessages([
+          { role: "mia", text: revision.summary },
+          {
+            role: "mia",
+            kind: "plan-card",
+            text: `${periodLabel(revision.state)} plan (revised)`,
+            subtext: `${includedCount(revision.state)} tactics · ${currencyFormatter.format(includedTotal(revision.state))}`,
+            planState: revision.state,
+          },
+        ]);
+      }, 650);
+      return;
+    }
+
     setIsTyping(true);
     window.setTimeout(() => {
       setIsTyping(false);

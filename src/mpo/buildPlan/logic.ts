@@ -7,6 +7,7 @@ import {
   CHANNEL_COLORS,
   CT_LOOKUP,
   DAILY_RATE,
+  currencyFormatter,
   REFERENCE_CPO,
   REFERENCE_DAILY_INCREMENTAL_ORDERS,
   REFERENCE_DAILY_INCREMENTAL_SALES,
@@ -229,6 +230,85 @@ export function referenceTargetDefault(state: BuildPlanState, target: Exclude<Pl
   return priorYearCovered
     ? REFERENCE_INCREMENTAL_SALES
     : Math.round(REFERENCE_DAILY_INCREMENTAL_SALES * planDays);
+}
+
+export type PlanRevision = { state: BuildPlanState; summary: string };
+
+const TARGET_MATCHERS: { re: RegExp; target: Exclude<PlanTarget, null> }[] = [
+  { re: /\broas\b/i, target: "incremental-roas" },
+  { re: /\bcpo\b/i, target: "incremental-cpo" },
+  { re: /\border(s)?\b/i, target: "incremental-orders" },
+  { re: /\bsales?\b/i, target: "incremental-sales" },
+];
+
+/** Parses a bare number with an optional $ prefix and/or k/m/b scale suffix, e.g. "1,200",
+ * "$1.2m", "50000". Used for target values, which aren't always dollar amounts. */
+function parseNumericAmount(text: string): number | null {
+  const m = text.match(/\$?\s*([\d][\d,]*(?:\.\d+)?)\s*(k|m|b)?\b/i);
+  if (!m) return null;
+  const raw = parseFloat(m[1].replace(/,/g, ""));
+  if (isNaN(raw)) return null;
+  const suffix = m[2]?.toLowerCase();
+  if (suffix === "k") return raw * 1_000;
+  if (suffix === "m") return raw * 1_000_000;
+  if (suffix === "b") return raw * 1_000_000_000;
+  return raw;
+}
+
+/** Same as parseNumericAmount, but requires a $ sign or k/m/b suffix so a stray bare number in
+ * the message (e.g. a percentage) isn't mistaken for a new budget total. */
+function parseCurrencyAmount(text: string): number | null {
+  const m = text.match(/\$\s*([\d][\d,]*(?:\.\d+)?)\s*(k|m|b)?\b|\b([\d][\d,]*(?:\.\d+)?)\s*(k|m|b)\b/i);
+  if (!m) return null;
+  const numStr = m[1] ?? m[3];
+  const suffix = (m[2] ?? m[4])?.toLowerCase();
+  const raw = parseFloat(numStr.replace(/,/g, ""));
+  if (isNaN(raw)) return null;
+  if (suffix === "k") return raw * 1_000;
+  if (suffix === "m") return raw * 1_000_000;
+  if (suffix === "b") return raw * 1_000_000_000;
+  return raw;
+}
+
+/** Best-effort parse of a plain-English follow-up sent after a plan already exists, e.g.
+ * "change target to inc sales $1.2M" or "set budget to $2M" — Mia's chat-driven plan revision.
+ * Returns null when the message doesn't look like a target/budget change so the caller can fall
+ * back to its generic chat reply instead. */
+export function parsePlanRevision(text: string, state: BuildPlanState): PlanRevision | null {
+  const lower = text.toLowerCase();
+  const wantsBudget = /\bbudget\b/.test(lower);
+  const targetMatch = TARGET_MATCHERS.find((m) => m.re.test(lower));
+  const wantsTarget = (/\btarget\b/.test(lower) || Boolean(targetMatch)) && !wantsBudget;
+
+  if (wantsTarget && targetMatch) {
+    const amount = parseNumericAmount(lower.replace(/\btarget\b/i, ""));
+    if (amount != null && amount > 0) {
+      const target = targetMatch.target;
+      const targetValue = target === "incremental-roas" || target === "incremental-cpo" ? amount : Math.round(amount);
+      const newState: BuildPlanState = { ...state, target, targetValue };
+      return { state: newState, summary: `Updated your target to ${formatTargetLabel(target, targetValue)}.` };
+    }
+  }
+
+  if (wantsBudget) {
+    const amount = parseCurrencyAmount(lower);
+    if (amount != null && amount > 0) {
+      const currentTotal = includedTotal(state);
+      const scale = currentTotal > 0 ? amount / currentTotal : 0;
+      const budget = { ...state.budget };
+      const overridden = { ...state.overridden };
+      BUILD_TACTICS.forEach((t) => {
+        if (state.included[t.id] && budget[t.id] != null) {
+          budget[t.id] = Math.round(budget[t.id]! * scale);
+          overridden[t.id] = true;
+        }
+      });
+      const newState: BuildPlanState = { ...state, budget, overridden };
+      return { state: newState, summary: `Updated your budget to ${currencyFormatter.format(amount)}.` };
+    }
+  }
+
+  return null;
 }
 
 function initialsIconDataUri(tactic: BuildTactic): string {
