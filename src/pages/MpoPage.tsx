@@ -301,7 +301,7 @@ export function MpoPage() {
           </main>
           {!sidebarEditPlan && !(buildPlanOpen && buildPlanScreen === "review") && (
             <footer className={styles.footer}>
-              <span>© 2020-2024 Measured All Rights Reserved</span>
+              <span>© 2020-2026 Measured All Rights Reserved</span>
               <span className={styles.footerDivider} aria-hidden />
               <a href="#">Privacy Policy</a>
             </footer>
