@@ -4,8 +4,8 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { BackArrowIcon } from "../components/icons/BuildPlanIcons";
 import { MaterialIcon } from "../components/icons/MaterialIcon";
+import { CloseIcon } from "../components/icons/CloseIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
@@ -147,10 +147,13 @@ export function MpoPage() {
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.target
       : activePlan?.target ?? "incremental-sales";
+  // Plan detail and plan settings both take over the whole page, like a popup — the global
+  // header steps aside while either is open instead of staying pinned above them.
+  const headerHidden = buildPlanOpen || viewMode === "detail";
 
   return (
-    <div className={styles.page} data-node-id="1:33651">
-      <TopNavigation miaOpen={miaOpen} onMiaToggle={() => setMiaOpen((open) => !open)} />
+    <div className={`${styles.page} ${headerHidden ? styles.headerHidden : ""}`} data-node-id="1:33651">
+      {!headerHidden && <TopNavigation miaOpen={miaOpen} onMiaToggle={() => setMiaOpen((open) => !open)} />}
       <div className={styles.body}>
         <div className={styles.contentCol}>
           <main className={styles.main}>
@@ -184,14 +187,6 @@ export function MpoPage() {
             ) : (
               <>
                 <div className={styles.detailHeader}>
-                  <button
-                    type="button"
-                    className={styles.backBtn}
-                    aria-label="Back to plans"
-                    onClick={() => setViewMode("list")}
-                  >
-                    <BackArrowIcon size={20} />
-                  </button>
                   {renamingTitle ? (
                     <input
                       ref={titleInputRef}
@@ -241,6 +236,14 @@ export function MpoPage() {
                       onDeletePlan={handleDeleteActivePlan}
                     />
                   )}
+                  <button
+                    type="button"
+                    className={styles.detailCloseBtn}
+                    aria-label="Close"
+                    onClick={() => setViewMode("list")}
+                  >
+                    <CloseIcon size={20} />
+                  </button>
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (

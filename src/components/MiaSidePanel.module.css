@@ -1,12 +1,12 @@
 .panel {
   position: sticky;
-  top: 48px;
+  top: var(--header-height, 48px);
   z-index: 10;
   flex: 0 0 min(400px, 100vw);
   display: flex;
   flex-direction: column;
   width: min(400px, 100vw);
-  height: calc(100vh - 48px);
+  height: calc(100vh - var(--header-height, 48px));
   align-self: flex-start;
   background: var(--gray-000);
   border-left: 1px solid var(--gray-300-stroke);

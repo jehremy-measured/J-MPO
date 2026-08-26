@@ -1,8 +1,13 @@
 .page {
+  --header-height: 48px;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   background: var(--gray-000);
+}
+
+.headerHidden {
+  --header-height: 0px;
 }
 
 .loadingOverlay {
@@ -120,18 +125,18 @@
   background: var(--gray-200);
 }
 
-.backBtn {
+.detailCloseBtn {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   color: var(--gray-800);
   border-radius: var(--radius-sm);
 }
 
-.backBtn:hover {
+.detailCloseBtn:hover {
   background: var(--gray-200);
   color: var(--gray-1000);
 }
