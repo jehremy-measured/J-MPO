@@ -313,7 +313,15 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   };
 
   const handleFileAttached = (file: File) => {
-    if (!uploadState) return;
+    if (!uploadState) {
+      appendMessages([{ role: "user", text: file.name }]);
+      setIsTyping(true);
+      window.setTimeout(() => {
+        setIsTyping(false);
+        appendMessages([{ role: "mia", text: prototypeReply(file.name) }]);
+      }, 650);
+      return;
+    }
     const reviewState = applyUploadedBudget(uploadState);
     setUploadState(null);
     setIsDragOver(false);
@@ -580,28 +588,25 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
         }}
       >
         <div className={styles.composerBox}>
-          {uploadState && (
-            <>
-              <button
-                type="button"
-                className={styles.attachBtn}
-                aria-label="Attach file"
-                onClick={() => fileAttachRef.current?.click()}
-              >
-                <PlusIcon size={20} />
-              </button>
-              <input
-                ref={fileAttachRef}
-                type="file"
-                accept=".xlsx,.csv"
-                className={styles.visuallyHidden}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) handleFileAttached(file);
-                }}
-              />
-            </>
-          )}
+          <button
+            type="button"
+            className={styles.attachBtn}
+            aria-label="Attach file"
+            disabled={flowActive || settingUp}
+            onClick={() => fileAttachRef.current?.click()}
+          >
+            <PlusIcon size={20} />
+          </button>
+          <input
+            ref={fileAttachRef}
+            type="file"
+            accept=".xlsx,.csv"
+            className={styles.visuallyHidden}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileAttached(file);
+            }}
+          />
           <input
             ref={inputRef}
             type="text"
@@ -610,7 +615,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
             placeholder={placeholder}
             aria-label="Message Mia"
             disabled={flowActive || settingUp}
-            className={uploadState ? styles.inputWithAttach : undefined}
+            className={styles.inputWithAttach}
           />
           <button
             type="submit"

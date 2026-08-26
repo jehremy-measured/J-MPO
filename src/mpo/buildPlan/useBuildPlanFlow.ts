@@ -82,7 +82,12 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }));
   }, []);
 
-  const continueFromCT = useCallback(() => goTo("target"), [goTo]);
+  // The target step only applies to the "optimize spend" flow (solving for a budget that hits
+  // a target outcome) — the "project outcomes" flow starts from a budget instead, so it skips
+  // straight to picking that budget's source.
+  const continueFromCT = useCallback(() => {
+    setState((s) => ({ ...s, screen: s.planType === "spend" ? "target" : "method" }));
+  }, []);
 
   const chooseMethod = useCallback((method: "upload" | "fetch") => {
     setState((s) => applyMethodChoice(s, method));
@@ -168,7 +173,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
         case "target":
           return { ...s, screen: "ct" };
         case "method":
-          return { ...s, screen: "target" };
+          return { ...s, screen: s.planType === "spend" ? "target" : "ct" };
         case "upload":
           return { ...s, screen: "method" };
         case "review":
