@@ -92,6 +92,7 @@ export function BudgetTable({ target }: Props) {
   const showOrders = target === "incremental-orders" || target === "incremental-cpo";
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
   const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
+  const marginalLabel = showOrders ? "Marginal CPO" : "Marginal ROAS";
   const totalBudgetValue = rows.reduce((sum, row) => sum + parseCurrency(row.budget), 0);
   const totalPrimaryValue = rows.reduce(
     (sum, row) => sum + parseCurrency(showOrders ? row.orders : row.sales),
@@ -130,7 +131,7 @@ export function BudgetTable({ target }: Props) {
               <th>Budget</th>
               <th>{primaryLabel}</th>
               <th>{secondaryLabel}</th>
-              <th>Marginal ROAS</th>
+              <th>{marginalLabel}</th>
             </tr>
           </thead>
           <tbody>
