@@ -12,7 +12,7 @@ import { PlansTable, downloadPlansCsv } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
-import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
+import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
 import { applyMethodChoice, budgetFromWindow, buildPlanToCreatePlanInput, channelsPresent } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
@@ -38,7 +38,6 @@ export function MpoPage() {
   const [buildPlanOpen, setBuildPlanOpen] = useState(false);
   const [buildPlanSeed, setBuildPlanSeed] = useState<BuildPlanState | null>(null);
   const [buildPlanKey, setBuildPlanKey] = useState(0);
-  const [buildPlanScreen, setBuildPlanScreen] = useState<BuildScreen | null>(null);
   const [buildPlanMode, setBuildPlanMode] = useState<"create" | "edit">("create");
   const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
@@ -164,7 +163,6 @@ export function MpoPage() {
                 onComplete={handleCreatePlan}
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
-                onScreenChange={setBuildPlanScreen}
                 mode={buildPlanMode}
               />
             ) : viewMode === "list" ? (
@@ -184,7 +182,7 @@ export function MpoPage() {
                 />
               </>
             ) : (
-              <>
+              <div className={styles.detailPopup}>
                 <div className={styles.detailHeader}>
                   {renamingTitle ? (
                     <input
@@ -201,8 +199,23 @@ export function MpoPage() {
                       autoFocus
                     />
                   ) : (
-                    <>
+                    <div className={styles.detailTitleGroup}>
                       <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
+                      {state.activePlanId && (
+                        <PlanOptionsMenu
+                          planId={state.activePlanId}
+                          planLabel={state.activePlanLabel}
+                          shared={activePlan?.shared}
+                          onRenameRequest={startRenameTitle}
+                          onToggleSharePlan={state.toggleSharePlan}
+                          onDuplicatePlan={state.duplicatePlan}
+                          onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
+                          onDeletePlan={handleDeleteActivePlan}
+                          onRefresh={() => {}}
+                          lastUpdatedLabel="Updated 2 hours ago"
+                          variant="chevron"
+                        />
+                      )}
                       {activePlan && (
                         <span
                           className={`${styles.kindBadge} ${
@@ -212,23 +225,9 @@ export function MpoPage() {
                           {KIND_LABEL[activePlan.kind]}
                         </span>
                       )}
-                    </>
+                    </div>
                   )}
                   <div className={styles.detailHeaderActions}>
-                    {state.activePlanId && (
-                      <PlanOptionsMenu
-                        planId={state.activePlanId}
-                        planLabel={state.activePlanLabel}
-                        shared={activePlan?.shared}
-                        onRenameRequest={startRenameTitle}
-                        onToggleSharePlan={state.toggleSharePlan}
-                        onDuplicatePlan={state.duplicatePlan}
-                        onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
-                        onDeletePlan={handleDeleteActivePlan}
-                        onRefresh={() => {}}
-                        lastUpdatedLabel="Updated 2 hours ago"
-                      />
-                    )}
                     <button
                       type="button"
                       className={styles.detailCloseBtn}
@@ -291,10 +290,10 @@ export function MpoPage() {
                   )}
                   <BudgetTable target={currentTarget} />
                 </div>
-              </>
+              </div>
             )}
           </main>
-          {!sidebarEditPlan && !(buildPlanOpen && buildPlanScreen === "review") && (
+          {!sidebarEditPlan && !headerHidden && (
             <footer className={styles.footer}>
               <span>© 2020-2026 Measured All Rights Reserved</span>
               <span className={styles.footerDivider} aria-hidden />

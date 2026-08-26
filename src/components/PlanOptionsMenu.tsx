@@ -15,6 +15,9 @@ type Props = {
   onDeletePlan?: (id: string) => void;
   onRefresh?: () => void;
   lastUpdatedLabel?: string;
+  /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
+   * directly beside a title, opening the menu aligned to its left edge instead of its right. */
+  variant?: "button" | "chevron";
 };
 
 export function PlanOptionsMenu({
@@ -28,6 +31,7 @@ export function PlanOptionsMenu({
   onDeletePlan,
   onRefresh,
   lastUpdatedLabel,
+  variant = "button",
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -82,12 +86,23 @@ export function PlanOptionsMenu({
 
   return (
     <div className={styles.moreWrap} ref={menuRef}>
-      <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>
-        More
-        <ChevronDownIcon size={18} />
-      </button>
+      {variant === "chevron" ? (
+        <button
+          type="button"
+          className={styles.chevronBtn}
+          aria-label="Plan options"
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          <ChevronDownIcon size={18} />
+        </button>
+      ) : (
+        <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>
+          More
+          <ChevronDownIcon size={18} />
+        </button>
+      )}
       {menuOpen && (
-        <div className={styles.moreMenu}>
+        <div className={`${styles.moreMenu} ${variant === "chevron" ? styles.moreMenuLeft : ""}`}>
           {onRenameRequest && (
             <button type="button" onClick={handleRename}>
               <EditIcon size={20} /> Rename

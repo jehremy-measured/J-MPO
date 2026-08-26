@@ -23,6 +23,22 @@
   background: var(--blue-200);
 }
 
+.chevronBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.chevronBtn:hover {
+  background: var(--gray-200);
+  color: var(--gray-1000);
+}
+
 .moreMenu {
   position: absolute;
   right: 0;
@@ -34,6 +50,11 @@
   padding: 6px;
   min-width: 160px;
   z-index: 20;
+}
+
+.moreMenuLeft {
+  left: 0;
+  right: auto;
 }
 
 .moreMenu button {
