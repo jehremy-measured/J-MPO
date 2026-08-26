@@ -1,8 +1,7 @@
 import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
-import { computeGoalProgress, GOAL_METRIC_LABEL, type GoalProgress } from "../mpo/goalProgress";
-import { SparkleIcon } from "./icons/SparkleIcon";
+import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
@@ -47,55 +46,10 @@ function formatPrimaryDisplayValue(target: PlanTarget, value: number): string {
   return formatPrimaryValue(target, value);
 }
 
-type BannerVariant = "gap" | "underspend" | "reached";
-
-/** Lowercases the label for mid-sentence use, except acronym words ("ROAS", "CPO") which
- * stay fully uppercase. */
-function lowercaseLead(label: string): string {
-  return label
-    .split(" ")
-    .map((word) => (word.length > 1 && word === word.toUpperCase() ? word : word.toLowerCase()))
-    .join(" ");
-}
-
-type BannerSegment = { text: string; bold?: boolean };
-
-function computeBannerInfo(
-  progress: GoalProgress,
-  kind: "bar" | "threshold",
-  metricLabel: string
-): { variant: BannerVariant; segments: BannerSegment[]; buttonLabel: string } {
-  if (progress.pct < 100) {
-    return {
-      variant: "gap",
-      segments: [
-        { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
-        { text: " reached in this simulation. Run an optimization to achieve your target." },
-      ],
-      buttonLabel: "Optimize",
-    };
-  }
-  if (kind === "threshold") {
-    const direction = progress.isCostMetric ? "below" : "above";
-    return {
-      variant: "underspend",
-      segments: [
-        { text: `An ${direction} target ${lowercaseLead(metricLabel)} means you're ` },
-        { text: "underspending", bold: true },
-        { text: ". Run an optimization to achieve your target with the correct budget." },
-      ],
-      buttonLabel: "Optimize",
-    };
-  }
-  return {
-    variant: "reached",
-    segments: [
-      { text: `${progress.pctLabel} of ${lowercaseLead(metricLabel)} target`, bold: true },
-      { text: " reached in this simulation. Run an optimization to maximize gains further." },
-    ],
-    buttonLabel: "Optimize",
-  };
-}
+/** Static demo assumption: how much incremental volume running an optimization could
+ * plausibly recover on top of a simulation, since this prototype has no real optimizer to
+ * project an actual figure from. */
+const OPTIMIZATION_UPLIFT_PCT = 0.15;
 
 type WeekPoint = {
   index: number;
@@ -283,10 +237,11 @@ export function PlanOverviewCard({
       })
     : null;
   const primaryKind = hasTarget ? primaryKindFor(target as PlanTarget) : null;
-  const banner =
-    hasTarget && progress
-      ? computeBannerInfo(progress, primaryKind!, GOAL_METRIC_LABEL[target as PlanTarget])
-      : null;
+
+  const optimizeGainAmount = volumeMetric * OPTIMIZATION_UPLIFT_PCT;
+  const optimizeGainLabel = `${formatVolumeFull(optimizeGainAmount, isOrdersFamily)} (${Math.round(
+    OPTIMIZATION_UPLIFT_PCT * 100
+  )}%)`;
 
   // Sales and ROAS are shown together; orders and CPO are shown together — whichever pair
   // the selected target belongs to. The target itself becomes the primary (highlighted) row
@@ -349,20 +304,6 @@ export function PlanOverviewCard({
                     </span>
                   </div>
                 </div>
-
-                {banner && (
-                  <div className={`${styles.goalBanner} ${styles[`goalBanner_${banner.variant}`]}`}>
-                    <p className={styles.goalBannerText}>
-                      {banner.segments.map((segment, i) =>
-                        segment.bold ? <strong key={i}>{segment.text}</strong> : <span key={i}>{segment.text}</span>
-                      )}
-                    </p>
-                    <button type="button" className={styles.goalBannerBtn} onClick={onOptimize}>
-                      <SparkleIcon size={18} variant="fill" />
-                      {banner.buttonLabel}
-                    </button>
-                  </div>
-                )}
               </>
             ) : (
               <>
@@ -647,6 +588,16 @@ export function PlanOverviewCard({
               </tbody>
             </table>
           </div>
+        </div>
+
+        <div className={styles.optimizeBanner}>
+          <p className={styles.optimizeBannerText}>
+            You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong> in
+            incremental {volumeNoun.toLowerCase()} by running an optimization on this plan.
+          </p>
+          <button type="button" className={styles.optimizeBannerLink} onClick={onOptimize}>
+            Optimize
+          </button>
         </div>
       </div>
     </section>
