@@ -27,7 +27,7 @@ export function PlanInfoBar({
   const [compact, setCompact] = useState(false);
 
   const items = [
-    { key: "period", label: "Planning for", value: periodLabel },
+    { key: "period", label: "Planning period", value: periodLabel },
     { key: "conversion", label: "Conversion type", value: conversionType },
     { key: "channels", label: "Channels", value: channelsLabel },
     { key: "tactics", label: "Tactics", value: `${tacticsIncluded} tactics` },
