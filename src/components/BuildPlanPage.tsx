@@ -17,7 +17,6 @@ import {
   periodLabel,
   planDaysFor,
   referenceTargetDefault,
-  targetLabel,
   targetNeedsValue,
   visibleTactics,
 } from "../mpo/buildPlan/logic";
@@ -541,29 +540,25 @@ function ReviewScreen({
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
-  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | "target" | "budget" | null>(
+  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | "budget" | null>(
     null
   );
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
-  const [draftTarget, setDraftTarget] = useState<PlanTarget | null>(state.target);
-  const [draftTargetValue, setDraftTargetValue] = useState<number | null>(state.targetValue);
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
   const ctOpen = openDropdown === "ct";
-  const targetOpen = openDropdown === "target";
   const budgetOpen = openDropdown === "budget";
   const dateRef = useRef<HTMLSpanElement>(null);
   const channelRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
   const ctRef = useRef<HTMLDivElement>(null);
-  const targetRef = useRef<HTMLDivElement>(null);
   const budgetRef = useRef<HTMLDivElement>(null);
   const budgetFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!openDropdown) return;
-    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef, target: targetRef, budget: budgetRef };
+    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef, budget: budgetRef };
     const activeRef = refs[openDropdown];
     const onPointerDown = (e: MouseEvent) => {
       if (activeRef.current && !activeRef.current.contains(e.target as Node)) setOpenDropdown(null);
@@ -571,26 +566,6 @@ function ReviewScreen({
     document.addEventListener("mousedown", onPointerDown);
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [openDropdown]);
-
-  const openTargetEditor = () => {
-    setDraftTarget(state.target);
-    setDraftTargetValue(
-      state.targetValue ?? (state.target ? referenceTargetDefault(state, state.target) : null)
-    );
-    setOpenDropdown("target");
-  };
-
-  const selectDraftTarget = (id: PlanTarget) => {
-    setDraftTarget(id);
-    setDraftTargetValue(referenceTargetDefault(state, id));
-  };
-
-  const saveTargetEdit = () => {
-    if (!draftTarget) return;
-    flow.setTarget(draftTarget);
-    flow.setTargetValue(draftTargetValue);
-    setOpenDropdown(null);
-  };
 
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
@@ -762,58 +737,6 @@ function ReviewScreen({
     </div>
   );
 
-  const targetControl = (
-    <div className={styles.channelDropdown} ref={targetRef}>
-      <button type="button" className={styles.settingsBoxBtn} onClick={targetOpen ? () => setOpenDropdown(null) : openTargetEditor}>
-        <span>{targetLabel(state)}</span>
-        <EditIcon size={16} />
-      </button>
-      {targetOpen && (
-        <div className={`${styles.channelDropdownPanel} ${styles.ctDropdownPanel}`}>
-          <div className={styles.group}>
-            {TARGET_OPTIONS.map((opt) => (
-              <div key={opt.id}>
-                <label className={styles.channelOption}>
-                  <input
-                    type="radio"
-                    name="settings-target"
-                    checked={draftTarget === opt.id}
-                    onChange={() => selectDraftTarget(opt.id)}
-                  />
-                  <span>{opt.label}</span>
-                </label>
-                {draftTarget === opt.id && targetNeedsValue(draftTarget) && (
-                  <div className={styles.targetPopoverValue}>
-                    <TargetValueInput
-                      key={draftTarget}
-                      target={draftTarget}
-                      value={draftTargetValue}
-                      defaultValue={referenceTargetDefault(state, draftTarget)}
-                      onChange={setDraftTargetValue}
-                    />
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className={styles.targetDropdownFooter}>
-            <button type="button" className={styles.btn} onClick={() => setOpenDropdown(null)}>
-              Cancel
-            </button>
-            <button
-              type="button"
-              className={`${styles.btn} ${styles.btnPrimary}`}
-              disabled={!draftTarget || (targetNeedsValue(draftTarget) && !(draftTargetValue! > 0))}
-              onClick={saveTargetEdit}
-            >
-              Save
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-
   return (
     <>
       <div className={styles.settingsBar}>
@@ -828,10 +751,6 @@ function ReviewScreen({
         <div className={styles.settingsField}>
           <span className={styles.settingsLabel}>Channels</span>
           {channelControl}
-        </div>
-        <div className={styles.settingsField}>
-          <span className={styles.settingsLabel}>Target</span>
-          {targetControl}
         </div>
         <div className={styles.settingsField}>
           <span className={styles.settingsLabel}>Budget from</span>

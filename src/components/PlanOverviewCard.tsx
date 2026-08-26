@@ -2,6 +2,7 @@ import { useId, useMemo, useState } from "react";
 import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
@@ -26,9 +27,8 @@ function primaryKindFor(target: PlanTarget): "bar" | "threshold" {
   return target === "incremental-roas" || target === "incremental-cpo" ? "threshold" : "bar";
 }
 
-/** Used for the "$X above/below target" subtext, where a compact figure ("$1.14M") reads
- * better than a long full number; the other metrics keep their natural formatting (plain
- * integer orders, $X.XX ROAS/CPO). */
+/** Compact sales figures ("$1.14M") for contexts that need a short form; the other metrics
+ * keep their natural formatting (plain integer orders, $X.XX ROAS/CPO). */
 function formatPrimaryValue(target: PlanTarget, value: number): string {
   if (target !== "incremental-sales") {
     if (target === "incremental-orders") return Math.round(value).toLocaleString();
@@ -185,25 +185,10 @@ export function PlanOverviewCard({
 
   const chartWeeks = chartView === "cumulative" ? cumulativeWeeks : weeks;
 
-  // The target-pace trendline only makes sense when the target itself shares the volume
-  // metric's own unit (incremental sales/orders) — a ROAS or CPO target is a ratio, not a
-  // point on this axis, so there's nothing sensible to plot for those.
-  const targetIsVolumeMetric = target === "incremental-sales" || target === "incremental-orders";
-  const hasTargetLine = targetIsVolumeMetric && targetValue != null && targetValue > 0;
-  const targetPerWeek = hasTargetLine ? (targetValue as number) / weeks.length : 0;
-  const targetLineWeeks = useMemo(
-    () => chartWeeks.map((_, i) => (chartView === "cumulative" ? targetPerWeek * (i + 1) : targetPerWeek)),
-    [chartWeeks, chartView, targetPerWeek]
-  );
-
   const yMax = useMemo(() => {
-    const peak = Math.max(
-      ...chartWeeks.map((w) => Math.max(w.sales, w.budget)),
-      hasTargetLine ? Math.max(...targetLineWeeks) : 0,
-      1
-    );
+    const peak = Math.max(...chartWeeks.map((w) => Math.max(w.sales, w.budget)), 1);
     return niceCeiling(peak * 1.08);
-  }, [chartWeeks, hasTargetLine, targetLineWeeks]);
+  }, [chartWeeks]);
 
   const xFor = (i: number) => (chartWeeks.length <= 1 ? MARGIN.left + PLOT_WIDTH / 2 : MARGIN.left + (i / (chartWeeks.length - 1)) * PLOT_WIDTH);
   const yFor = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / yMax) * PLOT_HEIGHT;
@@ -219,9 +204,6 @@ export function PlanOverviewCard({
   const salesPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.sales)}`).join(" ");
   const budgetPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.budget)}`).join(" ");
   const areaPath = `${salesPath} L${xFor(chartWeeks.length - 1)},${MARGIN.top + PLOT_HEIGHT} L${xFor(0)},${MARGIN.top + PLOT_HEIGHT} Z`;
-  const targetPath = targetLineWeeks
-    .map((v, i) => `${i === 0 ? "M" : "L"}${pointX(i)},${yFor(v)}`)
-    .join(" ");
 
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
   const labelEvery = Math.max(1, Math.ceil(chartWeeks.length / 6));
@@ -265,17 +247,6 @@ export function PlanOverviewCard({
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
-  // "$X above/below target" reads the raw gap between actual and target, regardless of
-  // which direction counts as "good" for this metric (that framing lives in the banner text).
-  const primaryDiffLabel =
-    hasTarget && progress
-      ? (() => {
-          const diff = progress.actual - (targetValue as number);
-          const formatted = formatPrimaryValue(target as PlanTarget, Math.abs(diff));
-          return `${formatted} ${diff >= 0 ? "above" : "below"} target`;
-        })()
-      : "";
-
   return (
     <section className={styles.section}>
       <div className={styles.card}>
@@ -298,10 +269,7 @@ export function PlanOverviewCard({
                 <div className={styles.primaryStat}>
                   <div className={styles.stat}>
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
-                    <span className={styles.statValueCol}>
-                      <span className={styles.statValue}>{formatPrimaryDisplayValue(target as PlanTarget, progress.actual)}</span>
-                      <span className={styles.statSubtext}>{primaryDiffLabel}</span>
-                    </span>
+                    <span className={styles.statValue}>{formatPrimaryDisplayValue(target as PlanTarget, progress.actual)}</span>
                   </div>
                 </div>
               </>
@@ -331,7 +299,8 @@ export function PlanOverviewCard({
                 You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong>{" "}
                 in incremental {volumeNoun.toLowerCase()} by running an optimization on this plan.
               </p>
-              <button type="button" className={styles.optimizeBannerLink} onClick={onOptimize}>
+              <button type="button" className={styles.optimizeBannerBtn} onClick={onOptimize}>
+                <SparkleIcon size={18} variant="fill" />
                 Optimize
               </button>
             </div>
@@ -366,12 +335,6 @@ export function PlanOverviewCard({
                 <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
                 Budget
               </span>
-              {hasTargetLine && (
-                <span className={styles.legendItem}>
-                  <span className={`${styles.swatch} ${styles.swatchTarget}`} aria-hidden />
-                  Target pace
-                </span>
-              )}
             </div>
             <div className={styles.chartWrap} ref={chartWrapRef}>
               <svg
@@ -379,10 +342,9 @@ export function PlanOverviewCard({
                 viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
                 role="img"
                 aria-label={
-                  (chartView === "cumulative"
+                  chartView === "cumulative"
                     ? `Line chart of projected cumulative incremental ${volumeNoun.toLowerCase()} and budget by week`
-                    : `Bar chart of projected incremental ${volumeNoun.toLowerCase()} and budget by week`) +
-                  (hasTargetLine ? ", with a target pace trendline" : "")
+                    : `Bar chart of projected incremental ${volumeNoun.toLowerCase()} and budget by week`
                 }
               >
                 <defs>
@@ -482,22 +444,6 @@ export function PlanOverviewCard({
                   })
                 )}
 
-                {hasTargetLine && (
-                  <>
-                    <path d={targetPath} className={styles.targetLine} fill="none" />
-                    {chartView === "cumulative" &&
-                      targetLineWeeks.map((v, i) => (
-                        <circle
-                          key={i}
-                          cx={xFor(i)}
-                          cy={yFor(v)}
-                          r={hoverIndex === i ? 5 : 3}
-                          className={styles.targetDot}
-                        />
-                      ))}
-                  </>
-                )}
-
                 {chartWeeks.map((w, i) => {
                   const left =
                     chartView === "weekly"
@@ -521,9 +467,7 @@ export function PlanOverviewCard({
                       fill="transparent"
                       tabIndex={0}
                       role="button"
-                      aria-label={`${w.fullLabel}: incremental ${volumeNoun.toLowerCase()} ${formatVolumeFull(w.sales, isOrdersFamily)}, budget ${formatFullCurrency(w.budget)}${
-                        hasTargetLine ? `, target pace ${formatVolumeFull(targetLineWeeks[i], isOrdersFamily)}` : ""
-                      }`}
+                      aria-label={`${w.fullLabel}: incremental ${volumeNoun.toLowerCase()} ${formatVolumeFull(w.sales, isOrdersFamily)}, budget ${formatFullCurrency(w.budget)}`}
                       onMouseEnter={() => setHoverIndex(i)}
                       onFocus={() => setHoverIndex(i)}
                       onMouseLeave={() => setHoverIndex(null)}
@@ -561,13 +505,6 @@ export function PlanOverviewCard({
                     </span>
                     <strong>{formatFullCurrency(hit.budget)}</strong>
                   </div>
-                  {hasTargetLine && (
-                    <div className={styles.tooltipRow}>
-                      <span className={`${styles.swatch} ${styles.swatchTarget}`} aria-hidden />
-                      <span className={styles.tooltipRowLabel}>Target pace</span>
-                      <strong>{formatVolumeFull(targetLineWeeks[hit.index], isOrdersFamily)}</strong>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
@@ -583,16 +520,14 @@ export function PlanOverviewCard({
                   <th scope="col">Week</th>
                   <th scope="col">Incremental {volumeNoun.toLowerCase()}</th>
                   <th scope="col">Budget</th>
-                  {hasTargetLine && <th scope="col">Target pace</th>}
                 </tr>
               </thead>
               <tbody>
-                {chartWeeks.map((w, i) => (
+                {chartWeeks.map((w) => (
                   <tr key={w.index}>
                     <td>{w.fullLabel}</td>
                     <td>{formatVolumeFull(w.sales, isOrdersFamily)}</td>
                     <td>{formatFullCurrency(w.budget)}</td>
-                    {hasTargetLine && <td>{formatVolumeFull(targetLineWeeks[i], isOrdersFamily)}</td>}
                   </tr>
                 ))}
               </tbody>

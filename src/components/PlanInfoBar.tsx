@@ -1,13 +1,9 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import type { PlanTarget } from "../mpo/types";
-import { formatTargetLabel } from "../mpo/buildPlan/logic";
 import { EditIcon } from "./icons/BuildPlanIcons";
 import styles from "./PlanInfoBar.module.css";
 
 type Props = {
   periodLabel: string;
-  target: PlanTarget;
-  targetValue: number | null;
   conversionType: string;
   channelsLabel: string;
   budgetSourceLabel: string;
@@ -17,8 +13,6 @@ type Props = {
 
 export function PlanInfoBar({
   periodLabel,
-  target,
-  targetValue,
   conversionType,
   channelsLabel,
   budgetSourceLabel,
@@ -37,7 +31,6 @@ export function PlanInfoBar({
     { key: "conversion", label: "Conversion type", value: conversionType },
     { key: "channels", label: "Channels", value: channelsLabel },
     { key: "tactics", label: "Tactics", value: `${tacticsIncluded} tactics` },
-    { key: "target", label: "Target", value: formatTargetLabel(target, targetValue) },
     { key: "budget", label: "Budget from", value: budgetSourceLabel },
   ];
 
@@ -64,7 +57,7 @@ export function PlanInfoBar({
     });
     observer.observe(container);
     return () => observer.disconnect();
-  }, [periodLabel, conversionType, channelsLabel, tacticsIncluded, target, targetValue, budgetSourceLabel]);
+  }, [periodLabel, conversionType, channelsLabel, tacticsIncluded, budgetSourceLabel]);
 
   return (
     <div className={styles.bar} ref={containerRef}>

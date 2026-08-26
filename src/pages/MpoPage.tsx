@@ -247,8 +247,6 @@ export function MpoPage() {
                     <>
                       <PlanInfoBar
                         periodLabel={state.newPlanSummary.planningWindow}
-                        target={state.newPlanSummary.target}
-                        targetValue={state.newPlanSummary.targetValue}
                         conversionType={state.newPlanSummary.conversionType}
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
@@ -272,8 +270,6 @@ export function MpoPage() {
                     <>
                       <PlanInfoBar
                         periodLabel={formatRangeLabel(activePlan.planStart, activePlan.planEnd)}
-                        target={activePlan.target}
-                        targetValue={activePlan.targetValue ?? null}
                         conversionType="Total Orders"
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}

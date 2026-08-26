@@ -86,10 +86,6 @@
   background: var(--green-800);
 }
 
-.swatchTarget {
-  background: var(--orange-600);
-}
-
 .body {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -163,14 +159,24 @@
   font-weight: 600;
 }
 
-.optimizeBannerLink {
+.optimizeBannerBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  gap: 6px;
+  height: 32px;
+  margin: 0 0 0 -8px;
+  padding: 0 12px 0 8px;
+  color: var(--blue-700);
   font-size: 14px;
   font-weight: 500;
-  color: var(--blue-700);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
 }
 
-.optimizeBannerLink:hover {
-  text-decoration: underline;
+.optimizeBannerBtn:hover {
+  background: var(--gray-200);
 }
 
 .stat {
@@ -191,20 +197,6 @@
   font-weight: 600;
   color: var(--gray-1000);
   line-height: 1.3;
-  white-space: nowrap;
-}
-
-.statValueCol {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-}
-
-.statSubtext {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gray-800);
   white-space: nowrap;
 }
 
@@ -267,21 +259,6 @@
 .budgetDot {
   fill: var(--gray-000);
   stroke: var(--green-800);
-  stroke-width: 2;
-  transition: r 0.1s ease;
-}
-
-.targetLine {
-  stroke: var(--orange-600);
-  stroke-width: 2;
-  stroke-dasharray: 2 3;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.targetDot {
-  fill: var(--gray-000);
-  stroke: var(--orange-600);
   stroke-width: 2;
   transition: r 0.1s ease;
 }
