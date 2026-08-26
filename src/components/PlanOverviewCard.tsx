@@ -325,6 +325,16 @@ export function PlanOverviewCard({
                 </div>
               </>
             )}
+
+            <div className={styles.optimizeBanner}>
+              <p className={styles.optimizeBannerText}>
+                You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong>{" "}
+                in incremental {volumeNoun.toLowerCase()} by running an optimization on this plan.
+              </p>
+              <button type="button" className={styles.optimizeBannerLink} onClick={onOptimize}>
+                Optimize
+              </button>
+            </div>
           </div>
 
           <div className={styles.chartCol}>
@@ -588,16 +598,6 @@ export function PlanOverviewCard({
               </tbody>
             </table>
           </div>
-        </div>
-
-        <div className={styles.optimizeBanner}>
-          <p className={styles.optimizeBannerText}>
-            You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong> in
-            incremental {volumeNoun.toLowerCase()} by running an optimization on this plan.
-          </p>
-          <button type="button" className={styles.optimizeBannerLink} onClick={onOptimize}>
-            Optimize
-          </button>
         </div>
       </div>
     </section>
