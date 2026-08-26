@@ -551,16 +551,15 @@
 }
 
 .readyCardRow {
-  display: flex;
+  display: grid;
+  grid-template-columns: 112px 1fr;
   align-items: baseline;
-  justify-content: space-between;
   gap: 12px;
 }
 
 .readyCardRow dt {
   font-size: 12px;
   color: var(--gray-800);
-  flex-shrink: 0;
 }
 
 .readyCardRow dd {
@@ -568,7 +567,7 @@
   font-size: 12.5px;
   font-weight: 500;
   color: var(--gray-1000);
-  text-align: right;
+  text-align: left;
 }
 
 .readyCardActions {

@@ -213,7 +213,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
           role: "mia",
           kind: "plan-ready-card",
           text: `${periodLabel(reviewState)} plan`,
-          subtext: `${includedCount(reviewState)} tactics · ${currencyFormatter.format(includedTotal(reviewState))}`,
           planState: reviewState,
           rows: planSummaryRows(reviewState),
         },
@@ -531,10 +530,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                 <span className={styles.planCardIcon} aria-hidden>
                   <FileIcon size={20} />
                 </span>
-                <span className={styles.planCardBody}>
-                  <span className={styles.planCardTitle}>{msg.text}</span>
-                  <span className={styles.planCardSub}>{msg.subtext}</span>
-                </span>
+                <span className={styles.planCardTitle}>{msg.text}</span>
               </div>
               {msg.rows && (
                 <dl className={styles.readyCardRows}>
