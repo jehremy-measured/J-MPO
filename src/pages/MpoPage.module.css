@@ -74,55 +74,12 @@
   padding: 16px 24px 24px;
 }
 
-.syncPill {
+.detailHeaderActions {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  height: 32px;
+  gap: 12px;
   margin-left: auto;
-}
-
-.syncDot {
-  width: 7px;
-  height: 7px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  background: var(--blue-700);
-}
-
-.syncText {
-  margin-left: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--gray-900);
-  white-space: nowrap;
-}
-
-.syncDivider {
-  width: 1px;
-  height: 18px;
-  margin-left: 12px;
-  flex-shrink: 0;
-  background: var(--gray-400);
-}
-
-.syncRefreshBtn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 12px 0 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--blue-700);
-  border-radius: var(--radius-sm);
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-
-.syncRefreshBtn:hover {
-  background: var(--gray-200);
 }
 
 .detailCloseBtn {

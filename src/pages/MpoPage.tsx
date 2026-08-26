@@ -4,7 +4,6 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { MaterialIcon } from "../components/icons/MaterialIcon";
 import { CloseIcon } from "../components/icons/CloseIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
@@ -215,35 +214,30 @@ export function MpoPage() {
                       )}
                     </>
                   )}
-                  <div className={styles.syncPill}>
-                    <span className={styles.syncDot} aria-hidden />
-                    <span className={styles.syncText}>Updated 2 hours ago</span>
-                    <span className={styles.syncDivider} aria-hidden />
-                    <button type="button" className={styles.syncRefreshBtn}>
-                      <MaterialIcon name="autorenew" size={18} />
-                      Refresh
+                  <div className={styles.detailHeaderActions}>
+                    {state.activePlanId && (
+                      <PlanOptionsMenu
+                        planId={state.activePlanId}
+                        planLabel={state.activePlanLabel}
+                        shared={activePlan?.shared}
+                        onRenameRequest={startRenameTitle}
+                        onToggleSharePlan={state.toggleSharePlan}
+                        onDuplicatePlan={state.duplicatePlan}
+                        onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
+                        onDeletePlan={handleDeleteActivePlan}
+                        onRefresh={() => {}}
+                        lastUpdatedLabel="Updated 2 hours ago"
+                      />
+                    )}
+                    <button
+                      type="button"
+                      className={styles.detailCloseBtn}
+                      aria-label="Close"
+                      onClick={() => setViewMode("list")}
+                    >
+                      <CloseIcon size={20} />
                     </button>
                   </div>
-                  {state.activePlanId && (
-                    <PlanOptionsMenu
-                      planId={state.activePlanId}
-                      planLabel={state.activePlanLabel}
-                      shared={activePlan?.shared}
-                      onRenameRequest={startRenameTitle}
-                      onToggleSharePlan={state.toggleSharePlan}
-                      onDuplicatePlan={state.duplicatePlan}
-                      onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
-                      onDeletePlan={handleDeleteActivePlan}
-                    />
-                  )}
-                  <button
-                    type="button"
-                    className={styles.detailCloseBtn}
-                    aria-label="Close"
-                    onClick={() => setViewMode("list")}
-                  >
-                    <CloseIcon size={20} />
-                  </button>
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (

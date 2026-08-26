@@ -13,6 +13,8 @@ type Props = {
   onDuplicatePlan?: (id: string) => void;
   onExportPlan?: () => void;
   onDeletePlan?: (id: string) => void;
+  onRefresh?: () => void;
+  lastUpdatedLabel?: string;
 };
 
 export function PlanOptionsMenu({
@@ -24,6 +26,8 @@ export function PlanOptionsMenu({
   onDuplicatePlan,
   onExportPlan,
   onDeletePlan,
+  onRefresh,
+  lastUpdatedLabel,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -38,7 +42,8 @@ export function PlanOptionsMenu({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan) return null;
+  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan && !onRefresh)
+    return null;
 
   const handleRename = () => {
     setMenuOpen(false);
@@ -63,6 +68,11 @@ export function PlanOptionsMenu({
   const handleDelete = () => {
     setMenuOpen(false);
     if (onDeletePlan) setConfirmingDelete(true);
+  };
+
+  const handleRefresh = () => {
+    setMenuOpen(false);
+    onRefresh?.();
   };
 
   const confirmDelete = () => {
@@ -102,6 +112,18 @@ export function PlanOptionsMenu({
             <button type="button" className={styles.dangerItem} onClick={handleDelete}>
               <TrashIcon size={20} /> Delete
             </button>
+          )}
+          {onRefresh && (
+            <>
+              <div className={styles.menuDivider} />
+              <button type="button" className={styles.stackedItem} onClick={handleRefresh}>
+                <MaterialIcon name="autorenew" size={20} />
+                <span className={styles.stackedItemText}>
+                  <span className={styles.stackedItemLabel}>Refresh</span>
+                  {lastUpdatedLabel && <span className={styles.stackedItemSub}>{lastUpdatedLabel}</span>}
+                </span>
+              </button>
+            </>
           )}
         </div>
       )}

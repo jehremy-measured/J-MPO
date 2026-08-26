@@ -57,3 +57,36 @@
 .moreMenu button.dangerItem {
   color: #c22a4d;
 }
+
+.menuDivider {
+  height: 1px;
+  margin: 6px 4px;
+  background: var(--gray-300-stroke);
+}
+
+.moreMenu button.stackedItem {
+  height: auto;
+  min-height: 32px;
+  padding: 6px 12px 6px 8px;
+  align-items: flex-start;
+}
+
+.stackedItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stackedItemLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+}
+
+.stackedItemSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray-800);
+  white-space: nowrap;
+}
