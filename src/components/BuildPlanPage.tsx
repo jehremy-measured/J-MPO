@@ -11,6 +11,7 @@ import {
   defaultBudgetFor,
   downloadBudgetTemplate,
   excludeReason,
+  formatAttrLabels,
   includedCount,
   includedTotal,
   periodLabel,
@@ -594,7 +595,7 @@ function ReviewScreen({
   const srcWindow = activeWindow(state);
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
-  const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
+  const conversionTypeLabel = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel;
   const includedVisibleCount = rows.filter((t) => state.included[t.id]).length;
   const allVisibleIncluded = rows.length > 0 && includedVisibleCount === rows.length;
   const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;

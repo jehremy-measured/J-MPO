@@ -3,6 +3,7 @@ import { CT_GROUPS, PLAN_TYPE_OPTIONS, TARGET_OPTIONS } from "../../mpo/buildPla
 import {
   applyMethodChoice,
   ctSummary,
+  formatAttrLabels,
   periodLabel,
   planDaysFor,
   referenceTargetDefault,
@@ -141,7 +142,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
 
   const ctAnswer = () => {
     const { label, attrLabels } = ctSummary(state);
-    return attrLabels.length ? attrLabels.join(" + ") : label;
+    return attrLabels.length ? formatAttrLabels(attrLabels) : label;
   };
 
   return (

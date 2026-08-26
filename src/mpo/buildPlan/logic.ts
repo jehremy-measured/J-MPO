@@ -173,6 +173,14 @@ export function ctSummary(state: BuildPlanState): { label: string; attrLabels: s
   return { label: state.singleCT ? CT_LOOKUP[state.singleCT] ?? "" : "", attrLabels: [] };
 }
 
+/** Combined attributes read as the first selected name plus a "+N" count of the rest,
+ * instead of spelling every selected name out ("New Customers +1" vs "New Customers +
+ * Returning Customers"). */
+export function formatAttrLabels(attrLabels: string[]): string {
+  if (attrLabels.length <= 1) return attrLabels[0] ?? "";
+  return `${attrLabels[0]} +${attrLabels.length - 1}`;
+}
+
 export function periodLabel(state: BuildPlanState): string {
   return formatRangeLabel(state.planStart, state.planEnd);
 }
@@ -245,7 +253,7 @@ function planKindFor(state: BuildPlanState): PlanKind {
 export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInput {
   const included = BUILD_TACTICS.filter((t) => state.included[t.id]);
   const { label: ctLabel, attrLabels } = ctSummary(state);
-  const conversionType = attrLabels.length ? attrLabels.join(" + ") : ctLabel;
+  const conversionType = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel;
 
   const tactics: Tactic[] = included.map((t) => {
     const budget = state.budget[t.id] ?? 0;

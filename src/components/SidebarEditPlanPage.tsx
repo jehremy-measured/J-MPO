@@ -11,6 +11,7 @@ import {
   ctSummary,
   downloadBudgetTemplate,
   excludeReason,
+  formatAttrLabels,
   formatTargetLabel,
   includedCount,
   includedTotal,
@@ -57,7 +58,7 @@ export function SidebarEditPlanPage({ plan, onExit }: Props) {
   const someVisibleIncluded = includedVisibleCount > 0 && includedVisibleCount < rows.length;
   const allChannels = channelsPresent();
   const { label: ctLabel, attrLabels } = ctSummary(state);
-  const conversionTypeLabel = attrLabels.length ? attrLabels.join(" + ") : ctLabel || "Not set";
+  const conversionTypeLabel = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel || "Not set";
 
   const SECTIONS: { key: SectionKey; label: string; icon: string; summary: string }[] = [
     {
