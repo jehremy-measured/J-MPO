@@ -95,6 +95,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   const fileAttachRef = useRef<HTMLInputElement>(null);
   const chatsMenuRef = useRef<HTMLDivElement>(null);
   const onEditInMainFlowRef = useRef(onEditInMainFlow);
+  const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
@@ -111,6 +112,10 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
   useEffect(() => {
     onEditInMainFlowRef.current = onEditInMainFlow;
   }, [onEditInMainFlow]);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   const appendMessages = useCallback(
     (
@@ -228,7 +233,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (flowActive) cancelCreateFlow();
-      else onClose();
+      else onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
     inputRef.current?.focus();
@@ -236,7 +241,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, startSignal }: P
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, onClose, flowActive, cancelCreateFlow]);
+  }, [open, flowActive, cancelCreateFlow]);
 
   useEffect(() => {
     if (!chatsMenuOpen) return;

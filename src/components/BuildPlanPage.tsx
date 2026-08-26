@@ -540,7 +540,9 @@ function ReviewScreen({
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
-  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | "target" | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<"date" | "channel" | "period" | "ct" | "target" | "budget" | null>(
+    null
+  );
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
   const [draftTarget, setDraftTarget] = useState<PlanTarget | null>(state.target);
   const [draftTargetValue, setDraftTargetValue] = useState<number | null>(state.targetValue);
@@ -549,15 +551,18 @@ function ReviewScreen({
   const periodOpen = openDropdown === "period";
   const ctOpen = openDropdown === "ct";
   const targetOpen = openDropdown === "target";
+  const budgetOpen = openDropdown === "budget";
   const dateRef = useRef<HTMLSpanElement>(null);
   const channelRef = useRef<HTMLDivElement>(null);
   const periodRef = useRef<HTMLDivElement>(null);
   const ctRef = useRef<HTMLDivElement>(null);
   const targetRef = useRef<HTMLDivElement>(null);
+  const budgetRef = useRef<HTMLDivElement>(null);
+  const budgetFileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!openDropdown) return;
-    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef, target: targetRef };
+    const refs = { date: dateRef, channel: channelRef, period: periodRef, ct: ctRef, target: targetRef, budget: budgetRef };
     const activeRef = refs[openDropdown];
     const onPointerDown = (e: MouseEvent) => {
       if (activeRef.current && !activeRef.current.contains(e.target as Node)) setOpenDropdown(null);
@@ -617,6 +622,10 @@ function ReviewScreen({
     </div>
   );
 
+  // Re-uploading from the popover marks the source "upload-ready" the same way the wizard's
+  // own upload step does — display the last real filename in that case instead of the sentinel.
+  const uploadedFilename = state.source === "upload-ready" ? "budget_plan.xlsx" : state.source;
+
   const budgetControl =
     state.method === "fetch" ? (
       <span className={styles.dateDropdown} ref={dateRef}>
@@ -646,9 +655,51 @@ function ReviewScreen({
         )}
       </span>
     ) : (
-      <strong className={styles.fileInlineName} title={state.source}>
-        {state.source}
-      </strong>
+      <div className={styles.channelDropdown} ref={budgetRef}>
+        <button
+          type="button"
+          className={styles.settingsBoxBtn}
+          onClick={() => setOpenDropdown((v) => (v === "budget" ? null : "budget"))}
+        >
+          <span title={uploadedFilename}>{uploadedFilename}</span>
+          <EditIcon size={16} />
+        </button>
+        {budgetOpen && (
+          <div className={`${styles.channelDropdownPanel} ${styles.budgetPopoverPanel}`}>
+            <div className={styles.templateRow}>
+              <div className={styles.ti}>
+                <FileIcon size={18} />
+              </div>
+              <div className={styles.tt}>
+                <strong>{BUDGET_TEMPLATE_FILENAME}</strong>
+                <span>{BUILD_TACTICS.length} tactics · Tactic, Channel, Budget columns</span>
+              </div>
+              <button type="button" className={`${styles.btn} ${styles.btnIconLeft}`} onClick={downloadBudgetTemplate}>
+                <DownloadIcon size={20} /> Download
+              </button>
+            </div>
+            <div
+              className={`${styles.dropzone} ${styles.dropzoneFilled}`}
+              onClick={() => budgetFileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+            >
+              <input
+                ref={budgetFileInputRef}
+                type="file"
+                accept=".xlsx,.csv"
+                className={styles.visuallyHidden}
+                onChange={() => flow.markUploadFilled()}
+              />
+              <div className={styles.dzIcon}>
+                <CheckIcon size={20} />
+              </div>
+              <div className={styles.dzTitle}>{uploadedFilename} uploaded</div>
+              <div className={styles.dzSub}>9 of 9 tactics matched · click to replace</div>
+            </div>
+          </div>
+        )}
+      </div>
     );
 
   const periodControl = (
@@ -783,33 +834,35 @@ function ReviewScreen({
         </div>
         <div className={styles.settingsField}>
           <span className={styles.settingsLabel}>Budget from</span>
-          {budgetControl}
-        </div>
-        {state.method === "upload" && (
-          <div className={styles.moreWrap}>
-            <button
-              type="button"
-              className={styles.plainIconBtn}
-              aria-label="More options"
-              onClick={() => setMoreOpen(!moreOpen)}
-            >
-              <MoreIcon size={20} />
-            </button>
-            {moreOpen && (
-              <div className={styles.moreMenu}>
+          <div className={styles.settingsFieldRow}>
+            {budgetControl}
+            {state.method === "upload" && (
+              <div className={styles.moreWrap}>
                 <button
                   type="button"
-                  onClick={() => {
-                    downloadBudgetTemplate();
-                    setMoreOpen(false);
-                  }}
+                  className={styles.plainIconBtn}
+                  aria-label="More options"
+                  onClick={() => setMoreOpen(!moreOpen)}
                 >
-                  Download template
+                  <MoreIcon size={20} />
                 </button>
+                {moreOpen && (
+                  <div className={styles.moreMenu}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        downloadBudgetTemplate();
+                        setMoreOpen(false);
+                      }}
+                    >
+                      Download template
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
-        )}
+        </div>
       </div>
       <Card
       footer={

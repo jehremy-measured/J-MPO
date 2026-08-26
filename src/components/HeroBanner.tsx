@@ -6,15 +6,16 @@ import styles from "./HeroBanner.module.css";
 type Props = {
   onSimulate?: () => void;
   onOptimize?: () => void;
+  onWatchTutorial?: () => void;
 };
 
-export function HeroBanner({ onSimulate, onOptimize }: Props) {
+export function HeroBanner({ onSimulate, onOptimize, onWatchTutorial }: Props) {
   return (
     <section className={styles.banner} data-node-id="1:33654">
       <img src={assets.heroVectorLeft} alt="" className={styles.waveLeft} aria-hidden />
       <img src={assets.heroVectorRight} alt="" className={styles.waveRight} aria-hidden />
 
-      <button type="button" className={styles.tutorialBtn}>
+      <button type="button" className={styles.tutorialBtn} onClick={onWatchTutorial}>
         <PlayIcon size={20} />
         Watch tutorial
       </button>

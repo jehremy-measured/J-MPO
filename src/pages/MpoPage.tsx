@@ -48,6 +48,11 @@ export function MpoPage() {
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
+  // Demo-only toggle: the plans list starts empty; "Watch tutorial" flips it to the seeded
+  // demo plans and back, until a real plan is created — then all plans show regardless.
+  const [demoPlansVisible, setDemoPlansVisible] = useState(false);
+  const [hasCreatedPlan, setHasCreatedPlan] = useState(false);
+  const visiblePlans = hasCreatedPlan ? state.plans : demoPlansVisible ? state.plans : [];
   const [creatingPlanPhase, setCreatingPlanPhase] = useState<"creating" | "simulating" | null>(null);
 
   useEffect(() => {
@@ -86,6 +91,7 @@ export function MpoPage() {
 
     setBuildPlanOpen(false);
     setCreatingPlanPhase("creating");
+    setHasCreatedPlan(true);
     setTimeout(() => setCreatingPlanPhase("simulating"), 1500);
     setTimeout(() => {
       finish();
@@ -163,9 +169,10 @@ export function MpoPage() {
                 <HeroBanner
                   onSimulate={() => startMiaFlow("outcomes")}
                   onOptimize={() => startMiaFlow("spend")}
+                  onWatchTutorial={() => setDemoPlansVisible((v) => !v)}
                 />
                 <PlansTable
-                  plans={state.plans}
+                  plans={visiblePlans}
                   onOpenPlan={openPlan}
                   onDuplicatePlan={state.duplicatePlan}
                   onDeletePlan={state.deletePlan}

@@ -122,6 +122,16 @@ function formatFullCurrency(value: number): string {
   return `$${Math.round(value).toLocaleString()}`;
 }
 
+/** The chart's y-axis is shared between budget (always $) and the plotted volume metric,
+ * which is a plain count instead of currency when that metric is orders. */
+function formatAxisTick(value: number, isOrdersFamily: boolean): string {
+  return isOrdersFamily ? Math.round(value).toLocaleString() : formatCompactCurrency(value);
+}
+
+function formatVolumeFull(value: number, isOrdersFamily: boolean): string {
+  return isOrdersFamily ? Math.round(value).toLocaleString() : formatFullCurrency(value);
+}
+
 const NICE_STEPS = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
 
 /** Rounds a max value up to a "nice" number so axis gridlines land on clean increments
@@ -196,9 +206,15 @@ export function PlanOverviewCard({
   const PLOT_WIDTH = Math.max(1, VB_WIDTH - MARGIN.left - MARGIN.right);
   const PLOT_HEIGHT = Math.max(1, VB_HEIGHT - MARGIN.top - MARGIN.bottom);
 
+  // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
+  // Forecast column's secondary metric row) follows whichever pair the target belongs to.
+  const isOrdersFamily = target === "incremental-orders" || target === "incremental-cpo";
+  const volumeMetric = isOrdersFamily ? incrementalOrders : incrementalSales;
+  const volumeNoun = isOrdersFamily ? "Orders" : "Sales";
+
   const weeks = useMemo(
-    () => buildWeeklyProjection(planStart, planEnd, incrementalSales, totalBudget),
-    [planStart, planEnd, incrementalSales, totalBudget]
+    () => buildWeeklyProjection(planStart, planEnd, volumeMetric, totalBudget),
+    [planStart, planEnd, volumeMetric, totalBudget]
   );
 
   // Cumulative view runs a prefix sum over each week's own figures, so week N shows weeks
@@ -254,10 +270,25 @@ export function PlanOverviewCard({
       ? computeBannerInfo(progress, primaryKind!, GOAL_METRIC_LABEL[target as PlanTarget])
       : null;
 
+  // Sales and ROAS are shown together; orders and CPO are shown together — whichever pair
+  // the selected target belongs to. The target itself becomes the primary (highlighted) row
+  // below, so only its family partner needs to appear here.
+  const rawValueFor: Record<PlanTarget, number> = {
+    "incremental-sales": incrementalSales,
+    "incremental-roas": incrementalRoas,
+    "incremental-orders": incrementalOrders,
+    "incremental-cpo": cpo,
+  };
+  const family: PlanTarget[] = isOrdersFamily
+    ? ["incremental-orders", "incremental-cpo"]
+    : ["incremental-sales", "incremental-roas"];
   const metricRows = [
     { key: "total-budget" as const, label: "Total budget", value: formatFullCurrency(totalBudget) },
-    { key: "incremental-roas" as const, label: "Incremental ROAS", value: formatPrimaryDisplayValue("incremental-roas", incrementalRoas) },
-    { key: "incremental-sales" as const, label: "Incremental Sales", value: formatPrimaryDisplayValue("incremental-sales", incrementalSales) },
+    ...family.map((key) => ({
+      key,
+      label: GOAL_METRIC_LABEL[key],
+      value: formatPrimaryDisplayValue(key, rawValueFor[key]),
+    })),
   ];
   const secondaryMetricRows = hasTarget ? metricRows.filter((r) => r.key !== target) : metricRows;
 
@@ -279,7 +310,10 @@ export function PlanOverviewCard({
           <div className={styles.statsCol}>
             {hasTarget && progress && primaryKind ? (
               <>
-                <h2 className={styles.colTitle}>Forecast</h2>
+                <div className={styles.statsHeader}>
+                  <h2 className={styles.colTitle}>Forecast</h2>
+                  <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
+                </div>
 
                 {secondaryMetricRows.map((row) => (
                   <div className={styles.stat} key={row.key}>
@@ -314,7 +348,10 @@ export function PlanOverviewCard({
               </>
             ) : (
               <>
-                <h2 className={styles.colTitle}>Forecast</h2>
+                <div className={styles.statsHeader}>
+                  <h2 className={styles.colTitle}>Forecast</h2>
+                  <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
+                </div>
                 <div className={styles.stat}>
                   <div className={styles.statLabel}>Total budget</div>
                   <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
@@ -354,7 +391,7 @@ export function PlanOverviewCard({
             <div className={styles.legend}>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-                Incremental Sales
+                Incremental {volumeNoun}
               </span>
               <span className={styles.legendItem}>
                 <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
@@ -368,8 +405,8 @@ export function PlanOverviewCard({
                 role="img"
                 aria-label={
                   chartView === "cumulative"
-                    ? "Line chart of projected cumulative incremental sales and budget by week"
-                    : "Bar chart of projected incremental sales and budget by week"
+                    ? `Line chart of projected cumulative incremental ${volumeNoun.toLowerCase()} and budget by week`
+                    : `Bar chart of projected incremental ${volumeNoun.toLowerCase()} and budget by week`
                 }
               >
                 <defs>
@@ -391,7 +428,7 @@ export function PlanOverviewCard({
                         className={styles.gridline}
                       />
                       <text x={MARGIN.left - 10} y={y} className={styles.yTick} textAnchor="end" dominantBaseline="middle">
-                        {formatCompactCurrency(yMax * step)}
+                        {formatAxisTick(yMax * step, isOrdersFamily)}
                       </text>
                     </g>
                   );
@@ -492,7 +529,7 @@ export function PlanOverviewCard({
                       fill="transparent"
                       tabIndex={0}
                       role="button"
-                      aria-label={`${w.fullLabel}: incremental sales ${formatFullCurrency(w.sales)}, budget ${formatFullCurrency(w.budget)}`}
+                      aria-label={`${w.fullLabel}: incremental ${volumeNoun.toLowerCase()} ${formatVolumeFull(w.sales, isOrdersFamily)}, budget ${formatFullCurrency(w.budget)}`}
                       onMouseEnter={() => setHoverIndex(i)}
                       onFocus={() => setHoverIndex(i)}
                       onMouseLeave={() => setHoverIndex(null)}
@@ -519,9 +556,9 @@ export function PlanOverviewCard({
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
                     <span className={styles.tooltipRowLabel}>
-                      {chartView === "cumulative" ? "Cumulative Sales" : "Incremental Sales"}
+                      {chartView === "cumulative" ? `Cumulative ${volumeNoun}` : `Incremental ${volumeNoun}`}
                     </span>
-                    <strong>{formatFullCurrency(hit.sales)}</strong>
+                    <strong>{formatVolumeFull(hit.sales, isOrdersFamily)}</strong>
                   </div>
                   <div className={styles.tooltipRow}>
                     <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
@@ -537,13 +574,13 @@ export function PlanOverviewCard({
             <table className={styles.srOnly}>
               <caption>
                 {chartView === "cumulative"
-                  ? "Projected cumulative incremental sales and budget by week"
-                  : "Projected incremental sales and budget by week"}
+                  ? `Projected cumulative incremental ${volumeNoun.toLowerCase()} and budget by week`
+                  : `Projected incremental ${volumeNoun.toLowerCase()} and budget by week`}
               </caption>
               <thead>
                 <tr>
                   <th scope="col">Week</th>
-                  <th scope="col">Incremental sales</th>
+                  <th scope="col">Incremental {volumeNoun.toLowerCase()}</th>
                   <th scope="col">Budget</th>
                 </tr>
               </thead>
@@ -551,7 +588,7 @@ export function PlanOverviewCard({
                 {chartWeeks.map((w) => (
                   <tr key={w.index}>
                     <td>{w.fullLabel}</td>
-                    <td>{formatFullCurrency(w.sales)}</td>
+                    <td>{formatVolumeFull(w.sales, isOrdersFamily)}</td>
                     <td>{formatFullCurrency(w.budget)}</td>
                   </tr>
                 ))}
