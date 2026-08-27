@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { CloseIcon } from "./icons/CloseIcon";
-import { WeeklyProjectionChart } from "./WeeklyProjectionChart";
+import { MaterialIcon } from "./icons/MaterialIcon";
+import {
+  WeeklyProjectionChart,
+  buildWeeklyProjection,
+  toCumulativeWeeks,
+  formatFullCurrency,
+  formatVolumeFull,
+} from "./WeeklyProjectionChart";
 import chartStyles from "./PlanOverviewCard.module.css";
 import styles from "./TacticChartModal.module.css";
 
@@ -32,6 +39,26 @@ export function TacticChartModal({
   const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
 
   if (!open) return null;
+
+  const handleExport = () => {
+    const weeks = buildWeeklyProjection(planStart, planEnd, volumeMetric, totalBudget);
+    const exportWeeks = chartView === "cumulative" ? toCumulativeWeeks(weeks) : weeks;
+    const header = ["Week", `Incremental ${volumeNoun}`, "Budget"];
+    const rows = exportWeeks.map((w) => [
+      w.fullLabel,
+      formatVolumeFull(w.sales, isOrdersFamily),
+      formatFullCurrency(w.budget),
+    ]);
+    const csv = [header, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${tacticName} - projections by week.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
   return (
     <div className={styles.overlay} onMouseDown={onClose}>
@@ -66,6 +93,10 @@ export function TacticChartModal({
                 Weekly
               </button>
             </div>
+            <button type="button" className={styles.exportBtn} onClick={handleExport}>
+              <MaterialIcon name="file_upload" size={18} />
+              Export
+            </button>
             <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
               <CloseIcon size={20} />
             </button>

@@ -40,9 +40,15 @@
   width: 220px;
   height: 32px;
   padding: 0 12px;
+  border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: var(--gray-100);
   color: var(--gray-800);
+}
+
+.search:focus-within {
+  outline: 2px solid var(--blue-200);
+  border-color: var(--blue-700);
 }
 
 .search input {

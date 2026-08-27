@@ -48,6 +48,25 @@
   gap: 12px;
 }
 
+.exportBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  background: var(--blue-100);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.exportBtn:hover {
+  background: var(--blue-200);
+}
+
 .closeBtn {
   display: flex;
   align-items: center;

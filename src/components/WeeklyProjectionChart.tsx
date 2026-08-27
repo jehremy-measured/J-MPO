@@ -70,7 +70,7 @@ function niceCeiling(value: number): number {
 
 /** Synthesizes a plausible week-by-week split of the plan totals: spend paced evenly across
  * the flight, incremental sales ramping up over the first few weeks as delivery optimizes. */
-function buildWeeklyProjection(
+export function buildWeeklyProjection(
   planStart: Date,
   planEnd: Date,
   totalSales: number,
@@ -102,6 +102,18 @@ function buildWeeklyProjection(
       sales: (salesWeights[i] / salesWeightSum) * totalSales,
       budget: (days / dayLengthSum) * totalBudget,
     };
+  });
+}
+
+/** Runs a prefix sum over each week's own figures, so week N shows weeks 1..N combined
+ * instead of just that week's slice. */
+export function toCumulativeWeeks(weeks: WeekPoint[]): WeekPoint[] {
+  let salesSum = 0;
+  let budgetSum = 0;
+  return weeks.map((w) => {
+    salesSum += w.sales;
+    budgetSum += w.budget;
+    return { ...w, sales: salesSum, budget: budgetSum };
   });
 }
 
@@ -138,17 +150,7 @@ export function WeeklyProjectionChart({
     [planStart, planEnd, volumeMetric, totalBudget]
   );
 
-  // Cumulative view runs a prefix sum over each week's own figures, so week N shows weeks
-  // 1..N combined instead of just that week's slice.
-  const cumulativeWeeks = useMemo(() => {
-    let salesSum = 0;
-    let budgetSum = 0;
-    return weeks.map((w) => {
-      salesSum += w.sales;
-      budgetSum += w.budget;
-      return { ...w, sales: salesSum, budget: budgetSum };
-    });
-  }, [weeks]);
+  const cumulativeWeeks = useMemo(() => toCumulativeWeeks(weeks), [weeks]);
 
   const chartWeeks = chartView === "cumulative" ? cumulativeWeeks : weeks;
 

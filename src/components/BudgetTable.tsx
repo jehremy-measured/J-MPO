@@ -75,16 +75,12 @@ const rows: TacticRow[] = [
   },
 ];
 
-const TOTALS = {
-  budget: "$9,394,384",
-  sales: "$12.34",
-  roas: "$9.11",
-  orders: "209,875",
-  cpo: "$44.76",
-};
-
 function parseCurrency(value: string): number {
   return Number(value.replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function formatCurrency(value: number): string {
+  return `$${Math.round(value).toLocaleString()}`;
 }
 
 function formatPercentOfTotal(value: string, total: number): string {
@@ -103,6 +99,11 @@ export function BudgetTable({ target, planStart, planEnd }: Props) {
     (sum, row) => sum + parseCurrency(showOrders ? row.orders : row.sales),
     0
   );
+  // Budget and the primary volume metric sum directly across tactics; ROAS/CPO are ratios, so
+  // the aggregate is recomputed from the summed totals rather than averaged row by row.
+  const aggregateSecondaryValue = showOrders
+    ? totalBudgetValue / (totalPrimaryValue || 1)
+    : totalPrimaryValue / (totalBudgetValue || 1);
 
   return (
     <section className={styles.section} data-node-id="1:34016">
@@ -145,13 +146,13 @@ export function BudgetTable({ target, planStart, planEnd }: Props) {
                 <strong>Total</strong>
               </td>
               <td>
-                <strong>{TOTALS.budget}</strong>
+                <strong>{formatCurrency(totalBudgetValue)}</strong>
               </td>
               <td>
-                <strong>{showOrders ? TOTALS.orders : TOTALS.sales}</strong>
+                <strong>{showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}</strong>
               </td>
               <td>
-                <strong>{showOrders ? TOTALS.cpo : TOTALS.roas}</strong>
+                <strong>${aggregateSecondaryValue.toFixed(2)}</strong>
               </td>
               <td />
             </tr>
