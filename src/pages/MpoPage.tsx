@@ -48,9 +48,10 @@ export function MpoPage() {
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
-  // Demo-only toggle: the plans list starts empty; "Watch tutorial" flips it to the seeded
-  // demo plans and back, until a real plan is created — then all plans show regardless.
-  const [demoPlansVisible, setDemoPlansVisible] = useState(false);
+  // Demo-only toggle: the seeded demo plans show by default; "Watch tutorial" can still hide
+  // and reveal them for a live walkthrough, until a real plan is created — then all plans show
+  // regardless.
+  const [demoPlansVisible, setDemoPlansVisible] = useState(true);
   const [hasCreatedPlan, setHasCreatedPlan] = useState(false);
   const visiblePlans = hasCreatedPlan ? state.plans : demoPlansVisible ? state.plans : [];
   const [creatingPlan, setCreatingPlan] = useState(false);

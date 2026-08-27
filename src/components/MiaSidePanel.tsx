@@ -20,7 +20,6 @@ import {
   DownloadIcon,
   ExpandIcon,
   FileIcon,
-  ThinkingSpinnerIcon,
 } from "./icons/BuildPlanIcons";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
@@ -625,9 +624,11 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
         )}
 
         {settingUp && (
-          <div className={styles.loadingRow}>
-            <span className={styles.spinner} aria-hidden />
-            <p className={styles.miaText}>Setting up the flow for a new plan…</p>
+          <div className={styles.thinkingRow}>
+            <span className={styles.thinkingChevron} aria-hidden>
+              <ChevronDownIcon size={14} />
+            </span>
+            <span className={styles.thinkingText}>Setting up the flow for a new plan…</span>
           </div>
         )}
 
@@ -649,21 +650,20 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
         )}
 
         {loadingReviewState && (
-          <div className={styles.loadingRow}>
-            <span className={styles.spinner} aria-hidden />
-            <p className={styles.miaText}>Loading your plan for review…</p>
+          <div className={styles.thinkingRow}>
+            <span className={styles.thinkingChevron} aria-hidden>
+              <ChevronDownIcon size={14} />
+            </span>
+            <span className={styles.thinkingText}>Loading your plan for review…</span>
           </div>
         )}
 
         {isTyping && (
           <div className={styles.thinkingRow}>
-            <span className={styles.thinkingIcon} aria-hidden>
-              <ThinkingSpinnerIcon size={14} />
+            <span className={styles.thinkingChevron} aria-hidden>
+              <ChevronDownIcon size={14} />
             </span>
             <span className={styles.thinkingText}>Thinking...</span>
-            <span className={styles.thinkingChevron} aria-hidden>
-              <ChevronRightIcon size={14} />
-            </span>
           </div>
         )}
       </div>
@@ -676,25 +676,6 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
         }}
       >
         <div className={styles.composerBox}>
-          <button
-            type="button"
-            className={styles.attachBtn}
-            aria-label="Attach file"
-            disabled={flowActive || settingUp}
-            onClick={() => fileAttachRef.current?.click()}
-          >
-            <PlusIcon size={20} />
-          </button>
-          <input
-            ref={fileAttachRef}
-            type="file"
-            accept=".xlsx,.csv"
-            className={styles.visuallyHidden}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) handleFileAttached(file);
-            }}
-          />
           <input
             ref={inputRef}
             type="text"
@@ -703,16 +684,41 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
             placeholder={placeholder}
             aria-label="Message Mia"
             disabled={flowActive || settingUp}
-            className={styles.inputWithAttach}
+            className={styles.composerInput}
           />
-          <button
-            type="submit"
-            className={styles.sendIconBtn}
-            disabled={!canSend}
-            aria-label="Send message"
-          >
-            <SendIcon size={20} />
-          </button>
+          <div className={styles.composerToolbar}>
+            <button
+              type="button"
+              className={styles.attachBtn}
+              aria-label="Attach file"
+              disabled={flowActive || settingUp}
+              onClick={() => fileAttachRef.current?.click()}
+            >
+              <PlusIcon size={18} />
+            </button>
+            <input
+              ref={fileAttachRef}
+              type="file"
+              accept=".xlsx,.csv"
+              className={styles.visuallyHidden}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleFileAttached(file);
+              }}
+            />
+            <button type="button" className={styles.mentionBtn} aria-label="Mention" disabled={flowActive || settingUp}>
+              @
+            </button>
+            <span className={styles.composerSpacer} />
+            <button
+              type="submit"
+              className={styles.sendIconBtn}
+              disabled={!canSend}
+              aria-label="Send message"
+            >
+              <SendIcon size={16} />
+            </button>
+          </div>
         </div>
       </form>
       <p className={styles.disclaimer}>AI can make mistakes. Please double-check responses.</p>

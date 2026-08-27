@@ -279,14 +279,6 @@
   animation: bubbleIn 0.18s ease-out;
 }
 
-.thinkingIcon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--gray-600);
-  animation: spin 1.4s linear infinite;
-}
-
 .thinkingText {
   flex: 1;
   font-family: var(--font-inter);
@@ -318,7 +310,8 @@
 }
 
 .composerBox {
-  position: relative;
+  display: flex;
+  flex-direction: column;
   width: 100%;
   background: var(--gray-000);
   border: 1px solid var(--blue-300);
@@ -332,71 +325,80 @@
   box-shadow: 0 1px 6px rgba(47, 95, 189, 0.2);
 }
 
-.composerBox input {
+.composerInput {
   width: 100%;
   min-width: 0;
-  height: 42px;
-  padding: 0 44px 0 12px;
+  height: 34px;
+  padding: 10px 12px 0;
   font-family: var(--font-inter);
   font-size: 14px;
   background: transparent;
   border: none;
-  border-radius: var(--radius-lg);
 }
 
-.composerBox input:focus {
+.composerInput:focus {
   outline: none;
 }
 
-.composerBox input:disabled {
+.composerInput:disabled {
   color: var(--gray-600);
 }
 
+.composerToolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px 8px;
+}
+
+.composerSpacer {
+  flex: 1;
+}
+
 .sendIconBtn {
-  position: absolute;
-  top: 50%;
-  right: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  margin-top: -15px;
-  color: var(--blue-600);
+  width: 28px;
+  height: 28px;
+  color: var(--gray-000);
+  background: var(--blue-600);
   border-radius: var(--radius-sm);
 }
 
 .sendIconBtn:not(:disabled):hover {
-  color: var(--blue-700);
-  background: var(--blue-100);
+  background: var(--blue-700);
 }
 
 .sendIconBtn:disabled {
-  opacity: 0.35;
+  color: var(--gray-600);
+  background: var(--gray-300);
   cursor: not-allowed;
 }
 
-.attachBtn {
-  position: absolute;
-  top: 50%;
-  left: 6px;
+.attachBtn,
+.mentionBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 30px;
-  margin-top: -15px;
+  width: 28px;
+  height: 28px;
   color: var(--gray-700);
+  font-size: 15px;
+  font-weight: 500;
   border-radius: var(--radius-sm);
 }
 
-.attachBtn:hover {
+.attachBtn:hover,
+.mentionBtn:hover {
   color: var(--blue-700);
   background: var(--blue-100);
 }
 
-.composerBox input.inputWithAttach {
-  padding-left: 44px;
+.attachBtn:disabled,
+.mentionBtn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
 }
 
 .visuallyHidden {
@@ -622,28 +624,3 @@
   border-color: #254f9e;
 }
 
-.loadingRow {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.loadingRow .miaText {
-  margin: 0;
-}
-
-.spinner {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  border: 2px solid var(--gray-300);
-  border-top-color: var(--blue-700);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
