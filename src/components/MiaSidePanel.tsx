@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState, type DragEvent } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type DragEvent } from "react";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { currencyFormatter } from "../mpo/buildPlan/data";
 import {
@@ -74,6 +74,57 @@ function shouldStartCreatePlanFlow(text: string): boolean {
     lower.includes("start a new plan") ||
     lower.includes("build a plan") ||
     lower.includes("build my plan")
+  );
+}
+
+let measureCanvas: HTMLCanvasElement | null = null;
+function measureTextWidth(text: string, font: string): number {
+  measureCanvas ??= document.createElement("canvas");
+  const ctx = measureCanvas.getContext("2d");
+  if (!ctx) return 0;
+  ctx.font = font;
+  return ctx.measureText(text).width;
+}
+
+/** Renders the ready card's "from <filename>" subtext, collapsing the middle of the filename
+ * into ".." — but only as much as needed to fit on one line, and only when the full name would
+ * actually overflow; short names render untouched. */
+function BudgetSourceSubtext({ text }: { text: string }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [display, setDisplay] = useState(text);
+
+  useLayoutEffect(() => {
+    setDisplay(text);
+  }, [text]);
+
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || display !== text || el.scrollWidth <= el.clientWidth) return;
+
+    const match = text.match(/^(from )(.+)$/);
+    if (!match) return;
+    const [, prefix, fileName] = match;
+    const dotIdx = fileName.lastIndexOf(".");
+    const base = dotIdx > 0 ? fileName.slice(0, dotIdx) : fileName;
+    const ext = dotIdx > 0 ? fileName.slice(dotIdx + 1) : "";
+    const font = getComputedStyle(el).font;
+    const available = el.clientWidth;
+
+    for (let keep = base.length - 1; keep >= 1; keep--) {
+      const candidateName = ext ? `${base.slice(0, keep)}..${ext}` : `${base.slice(0, keep)}..`;
+      const candidate = `${prefix}${candidateName}`;
+      if (measureTextWidth(candidate, font) <= available) {
+        setDisplay(candidate);
+        return;
+      }
+    }
+    setDisplay(`${prefix}${base.slice(0, 1)}..${ext}`);
+  }, [display, text]);
+
+  return (
+    <span ref={ref} className={styles.readyCardRowSubtext}>
+      {display}
+    </span>
   );
 }
 
@@ -539,7 +590,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                       <dt>{row.label}</dt>
                       <dd>
                         <span className={styles.readyCardRowValue}>{row.value}</span>
-                        {row.subtext && <span className={styles.readyCardRowSubtext}>{row.subtext}</span>}
+                        {row.subtext && <BudgetSourceSubtext text={row.subtext} />}
                       </dd>
                     </div>
                   ))}
