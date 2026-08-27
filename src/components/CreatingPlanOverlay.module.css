@@ -71,6 +71,7 @@
 .steps {
   display: flex;
   flex-direction: column;
+  align-items: center;
   align-self: stretch;
   gap: 14px;
 }
