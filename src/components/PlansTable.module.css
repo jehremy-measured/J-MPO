@@ -294,11 +294,6 @@
   color: var(--green-800);
 }
 
-.targetCell {
-  color: var(--gray-800);
-  font-size: 13.5px;
-}
-
 .menuCol {
   width: 44px;
   text-align: right;

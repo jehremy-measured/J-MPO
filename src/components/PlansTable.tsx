@@ -278,7 +278,6 @@ export function PlansTable({
               <th>Type</th>
               <th>Created by</th>
               <th>Last updated</th>
-              <th>Target</th>
               <th className={styles.menuCol} />
             </tr>
           </thead>
@@ -337,7 +336,6 @@ export function PlansTable({
                 </td>
                 <td>{plan.createdBy}</td>
                 <td>{formatShortDate(plan.lastEdited)}</td>
-                <td className={styles.targetCell}>{TARGET_LABEL[plan.target]}</td>
                 <td className={styles.menuCol} onClick={(e) => e.stopPropagation()}>
                   <div className={styles.moreWrap} ref={plan.id === openMenuId ? menuRef : undefined}>
                     <button
