@@ -548,7 +548,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                   className={styles.rcBtn}
                   onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
                 >
-                  Review plan
+                  Review
                 </button>
                 <button
                   type="button"

@@ -5,6 +5,7 @@ import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { CloseIcon } from "../components/icons/CloseIcon";
+import { SparkleIcon } from "../components/icons/SparkleIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
@@ -160,6 +161,19 @@ export function MpoPage() {
   return (
     <div className={`${styles.page} ${headerHidden ? styles.headerHidden : ""}`} data-node-id="1:33651">
       {!headerHidden && <TopNavigation miaOpen={miaOpen} onMiaToggle={() => setMiaOpen((open) => !open)} />}
+      {headerHidden && !miaOpen && (
+        <button
+          type="button"
+          className={styles.miaFloatingTab}
+          onClick={() => setMiaOpen(true)}
+          aria-label="Ask Mia"
+          aria-expanded={miaOpen}
+          aria-controls="mia-side-panel"
+        >
+          <SparkleIcon size={18} variant="fill" />
+          <span>Ask Mia</span>
+        </button>
+      )}
       <div className={styles.body}>
         <div className={styles.contentCol}>
           <main className={styles.main}>
