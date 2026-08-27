@@ -49,16 +49,6 @@ export const CT_GROUPS: ConversionTypeGroup[] = [
       { id: "total", name: "Total Orders", desc: "All conversion sources", group: "rollup", rollupOf: ["online", "instore", "retail"] },
     ],
   },
-  {
-    group: "attribute",
-    label: "Attributes",
-    selectionType: "multi",
-    items: [
-      { id: "newcust", name: "New Customers", desc: "First-time buyers", group: "attribute" },
-      { id: "return", name: "Returning Customers", desc: "Repeat buyers", group: "attribute" },
-      { id: "subs", name: "Subscription Orders", desc: "Recurring revenue", group: "attribute" },
-    ],
-  },
 ];
 
 export const CT_LOOKUP: Record<string, string> = {};
