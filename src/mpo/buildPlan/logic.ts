@@ -103,12 +103,12 @@ export function channelFilterLabel(state: BuildPlanState): string {
 /** Pure state transition for landing an uploaded budget — shared by the hook action and any
  * caller that needs the resulting state synchronously (e.g. a caller that computes the
  * post-upload state ahead of a delay, before handing off to another view). */
-export function applyUploadedBudget(state: BuildPlanState): BuildPlanState {
+export function applyUploadedBudget(state: BuildPlanState, fileName?: string): BuildPlanState {
   const budget = budgetFromUpload();
   return {
     ...state,
     budget,
-    source: "budget_plan.xlsx",
+    source: fileName || BUDGET_TEMPLATE_FILENAME,
     included: defaultIncludes("upload", budget),
     query: "",
     channels: channelsPresent(),
@@ -211,17 +211,21 @@ export function targetLabel(state: BuildPlanState): string {
 
 /** Condensed label/value pairs summarizing every input that went into a plan — used by Mia's
  * "plan is ready" card, which shows this in place of auto-opening the full review screen. */
-export function planSummaryRows(state: BuildPlanState): { label: string; value: string }[] {
+export function planSummaryRows(state: BuildPlanState): { label: string; value: string; subtext?: string }[] {
   const { label: ctLabel, attrLabels } = ctSummary(state);
   const conversionTypeLabel = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel;
-  const rows = [
+  const rows: { label: string; value: string; subtext?: string }[] = [
     { label: "Planning period", value: periodLabel(state) },
     { label: "Conversion type", value: conversionTypeLabel },
     { label: "Channels", value: channelFilterLabel(state) },
   ];
   if (state.target) rows.push({ label: "Target", value: targetLabel(state) });
   rows.push({ label: "Tactics", value: `${includedCount(state)} of ${BUILD_TACTICS.length}` });
-  rows.push({ label: "Budget", value: currencyFormatter.format(includedTotal(state)) });
+  rows.push({
+    label: "Budget",
+    value: currencyFormatter.format(includedTotal(state)),
+    subtext: state.method === "upload" ? `Fetched from ${state.source}` : undefined,
+  });
   return rows;
 }
 

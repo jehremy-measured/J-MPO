@@ -182,8 +182,14 @@ const LULUS_REF_DAYS = 32;
 export const DAILY_RATE: Record<string, number> = {};
 BUILD_TACTICS.forEach((t) => (DAILY_RATE[t.id] = LULUS_REF_TOTAL[t.id] / LULUS_REF_DAYS));
 
-/** budget_plan.xlsx as "uploaded" — Lulus's reference-period spend by tactic. */
-export const XLS_BUDGET: Record<string, number | null> = { ...LULUS_REF_TOTAL };
+/** budget_plan.xlsx as "uploaded" — Lulus's reference-period spend by tactic. A few of the
+ * smallest-spend tactics are left blank, as they would be in a manually-filled sheet. */
+export const XLS_BUDGET: Record<string, number | null> = {
+  ...LULUS_REF_TOTAL,
+  google_pla: null,
+  affiliate_other: null,
+  youtube_ppc_acquisition_vac: null,
+};
 
 const ANCHOR = new Date(2026, 7, 10); // Aug 10, 2026 — day before the planning period starts
 

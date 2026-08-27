@@ -36,7 +36,7 @@ type Message = {
   kind?: "download-card" | "plan-card" | "plan-ready-card";
   subtext?: string;
   planState?: BuildPlanState;
-  rows?: { label: string; value: string }[];
+  rows?: { label: string; value: string; subtext?: string }[];
 };
 
 type Prompt =
@@ -125,7 +125,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
         kind?: "download-card" | "plan-card" | "plan-ready-card";
         subtext?: string;
         planState?: BuildPlanState;
-        rows?: { label: string; value: string }[];
+        rows?: { label: string; value: string; subtext?: string }[];
       }[]
     ) => {
       setMessages((prev) => [
@@ -208,7 +208,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
       setLoadingReviewState(null);
       setLastPlanState(reviewState);
       appendMessages([
-        { role: "mia", text: "Your plan is ready." },
+        { role: "mia", text: "Your plan is ready for review." },
         {
           role: "mia",
           kind: "plan-ready-card",
@@ -321,10 +321,10 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
       }, 650);
       return;
     }
-    const reviewState = applyUploadedBudget(uploadState);
+    const reviewState = applyUploadedBudget(uploadState, file.name);
     setUploadState(null);
     setIsDragOver(false);
-    appendMessages([{ role: "user", text: file.name || "budget_plan.xlsx" }]);
+    appendMessages([{ role: "user", text: file.name || BUDGET_TEMPLATE_FILENAME }]);
     setLoadingReviewState(reviewState);
   };
 
@@ -537,7 +537,10 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                   {msg.rows.map((row) => (
                     <div className={styles.readyCardRow} key={row.label}>
                       <dt>{row.label}</dt>
-                      <dd>{row.value}</dd>
+                      <dd>
+                        <span className={styles.readyCardRowValue}>{row.value}</span>
+                        {row.subtext && <span className={styles.readyCardRowSubtext}>{row.subtext}</span>}
+                      </dd>
                     </div>
                   ))}
                 </dl>
@@ -548,7 +551,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                   className={styles.rcBtn}
                   onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
                 >
-                  Review
+                  Edit
                 </button>
                 <button
                   type="button"
