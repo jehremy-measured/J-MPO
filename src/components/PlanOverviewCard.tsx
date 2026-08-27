@@ -297,7 +297,7 @@ export function PlanOverviewCard({
             <div className={styles.optimizeBanner}>
               <p className={styles.optimizeBannerText}>
                 You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong>{" "}
-                in incremental {volumeNoun.toLowerCase()} by running an optimization on this plan.
+                in incremental {volumeNoun.toLowerCase()} by optimizing this plan.
               </p>
               <button type="button" className={styles.optimizeBannerBtn} onClick={onOptimize}>
                 <SparkleIcon size={18} variant="fill" />
