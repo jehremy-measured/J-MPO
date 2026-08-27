@@ -58,6 +58,10 @@
   fill: var(--orange-600);
 }
 
+.actualSpendBar {
+  fill: var(--purple-600);
+}
+
 .legend {
   display: flex;
   align-items: center;
@@ -92,6 +96,10 @@
 
 .swatchActual {
   background: var(--orange-600);
+}
+
+.swatchActualSpend {
+  background: var(--purple-600);
 }
 
 .body {
@@ -270,6 +278,13 @@
   stroke-linejoin: round;
 }
 
+.actualSpendLine {
+  stroke: var(--purple-600);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .salesDot {
   fill: var(--gray-000);
   stroke: var(--blue-700);
@@ -287,6 +302,13 @@
 .actualDot {
   fill: var(--gray-000);
   stroke: var(--orange-600);
+  stroke-width: 2;
+  transition: r 0.1s ease;
+}
+
+.actualSpendDot {
+  fill: var(--gray-000);
+  stroke: var(--purple-600);
   stroke-width: 2;
   transition: r 0.1s ease;
 }
