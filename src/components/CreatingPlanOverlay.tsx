@@ -3,12 +3,7 @@ import logoMark from "../assets/brand/measured-logo-mark.svg";
 import { CheckIcon } from "./icons/BuildPlanIcons";
 import styles from "./CreatingPlanOverlay.module.css";
 
-const STEPS = [
-  "Reading tactic-level budgets",
-  "Calculating weekly projections",
-  "Blending incremental sales & ROAS",
-  "Assembling your Plan Breakdown",
-];
+const STEPS = ["Reading tactic-level budgets", "Calculating weekly projections"];
 
 /** Step checkmarks pop in on a fixed schedule spread across the overlay's total on-screen
  * duration, independent of any real async work — this is a static prototype. */
