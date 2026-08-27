@@ -11,6 +11,11 @@ type Props = {
   volumeNoun: string;
   isOrdersFamily: boolean;
   title?: string;
+  /** Hides the title + view toggle row, for callers that render their own toggle elsewhere
+   * (e.g. in a popup header) and drive the view via chartView/onChartViewChange instead. */
+  hideHeader?: boolean;
+  chartView?: "cumulative" | "weekly";
+  onChartViewChange?: (view: "cumulative" | "weekly") => void;
 };
 
 type WeekPoint = {
@@ -107,10 +112,15 @@ export function WeeklyProjectionChart({
   volumeNoun,
   isOrdersFamily,
   title = "Projections by Week",
+  hideHeader = false,
+  chartView: controlledChartView,
+  onChartViewChange,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
+  const [uncontrolledChartView, setUncontrolledChartView] = useState<"cumulative" | "weekly">("cumulative");
+  const chartView = controlledChartView ?? uncontrolledChartView;
+  const setChartView = onChartViewChange ?? setUncontrolledChartView;
   const [chartWrapRef, { width: VB_WIDTH, height: VB_HEIGHT }] = useElementSize<HTMLDivElement>({
     width: 640,
     height: 260,
@@ -164,25 +174,27 @@ export function WeeklyProjectionChart({
 
   return (
     <div className={styles.chartCol}>
-      <div className={styles.chartHeader}>
-        <h2 className={styles.colTitle}>{title}</h2>
-        <div className={styles.viewToggle}>
-          <button
-            type="button"
-            className={chartView === "cumulative" ? styles.viewActive : ""}
-            onClick={() => setChartView("cumulative")}
-          >
-            Cumulative
-          </button>
-          <button
-            type="button"
-            className={chartView === "weekly" ? styles.viewActive : ""}
-            onClick={() => setChartView("weekly")}
-          >
-            Weekly
-          </button>
+      {!hideHeader && (
+        <div className={styles.chartHeader}>
+          <h2 className={styles.colTitle}>{title}</h2>
+          <div className={styles.viewToggle}>
+            <button
+              type="button"
+              className={chartView === "cumulative" ? styles.viewActive : ""}
+              onClick={() => setChartView("cumulative")}
+            >
+              Cumulative
+            </button>
+            <button
+              type="button"
+              className={chartView === "weekly" ? styles.viewActive : ""}
+              onClick={() => setChartView("weekly")}
+            >
+              Weekly
+            </button>
+          </div>
         </div>
-      </div>
+      )}
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />

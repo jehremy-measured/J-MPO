@@ -41,6 +41,13 @@
   color: var(--gray-800);
 }
 
+.headerActions {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 12px;
+}
+
 .closeBtn {
   display: flex;
   align-items: center;
@@ -58,6 +65,6 @@
 }
 
 .chartHost {
-  display: flex;
+  display: grid;
   height: 340px;
 }

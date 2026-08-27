@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { CloseIcon } from "./icons/CloseIcon";
 import { WeeklyProjectionChart } from "./WeeklyProjectionChart";
+import chartStyles from "./PlanOverviewCard.module.css";
 import styles from "./TacticChartModal.module.css";
 
 type Props = {
@@ -27,6 +29,8 @@ export function TacticChartModal({
   isOrdersFamily,
   onClose,
 }: Props) {
+  const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
+
   if (!open) return null;
 
   return (
@@ -45,9 +49,27 @@ export function TacticChartModal({
             </h3>
             <p className={styles.subtitle}>{channel}</p>
           </div>
-          <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
-            <CloseIcon size={20} />
-          </button>
+          <div className={styles.headerActions}>
+            <div className={chartStyles.viewToggle}>
+              <button
+                type="button"
+                className={chartView === "cumulative" ? chartStyles.viewActive : ""}
+                onClick={() => setChartView("cumulative")}
+              >
+                Cumulative
+              </button>
+              <button
+                type="button"
+                className={chartView === "weekly" ? chartStyles.viewActive : ""}
+                onClick={() => setChartView("weekly")}
+              >
+                Weekly
+              </button>
+            </div>
+            <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
+              <CloseIcon size={20} />
+            </button>
+          </div>
         </div>
         <div className={styles.chartHost}>
           <WeeklyProjectionChart
@@ -57,6 +79,9 @@ export function TacticChartModal({
             volumeMetric={volumeMetric}
             volumeNoun={volumeNoun}
             isOrdersFamily={isOrdersFamily}
+            hideHeader
+            chartView={chartView}
+            onChartViewChange={setChartView}
           />
         </div>
       </div>
