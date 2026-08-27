@@ -102,7 +102,7 @@ export function BudgetTable({ target }: Props) {
   return (
     <section className={styles.section} data-node-id="1:34016">
       <div className={styles.header}>
-        <h2>Budget Recommendations</h2>
+        <h2>Plan Breakdown</h2>
         <div className={styles.headerControls}>
           <div className={styles.viewToggle}>
             <button type="button">Segments</button>

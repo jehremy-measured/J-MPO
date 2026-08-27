@@ -255,7 +255,7 @@ export function PlanOverviewCard({
             {hasTarget && progress && primaryKind ? (
               <>
                 <div className={styles.statsHeader}>
-                  <h2 className={styles.colTitle}>Forecast</h2>
+                  <h2 className={styles.colTitle}>Plan Summary</h2>
                   <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
                 </div>
 
@@ -276,7 +276,7 @@ export function PlanOverviewCard({
             ) : (
               <>
                 <div className={styles.statsHeader}>
-                  <h2 className={styles.colTitle}>Forecast</h2>
+                  <h2 className={styles.colTitle}>Plan Summary</h2>
                   <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
                 </div>
                 <div className={styles.stat}>
@@ -308,7 +308,7 @@ export function PlanOverviewCard({
 
           <div className={styles.chartCol}>
             <div className={styles.chartHeader}>
-              <h2 className={styles.colTitle}>Weekly Forecast</h2>
+              <h2 className={styles.colTitle}>Projections by Week</h2>
               <div className={styles.viewToggle}>
                 <button
                   type="button"
