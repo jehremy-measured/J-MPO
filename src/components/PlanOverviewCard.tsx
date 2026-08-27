@@ -17,6 +17,9 @@ type Props = {
   incrementalOrders?: number;
   cpo?: number;
   onOptimize?: () => void;
+  /** Forces the chart's Actual overlay off, even for an in-flight plan — e.g. right after
+   * creating a plan, before it's had any real time to accrue actuals against. */
+  allowActual?: boolean;
 };
 
 /** incremental-sales/orders read as a magnitude to climb toward (0..target); incremental-roas/cpo
@@ -60,6 +63,7 @@ export function PlanOverviewCard({
   incrementalOrders = 0,
   cpo = 0,
   onOptimize,
+  allowActual = true,
 }: Props) {
   // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
   // Forecast column's secondary metric row) follows whichever pair the target belongs to.
@@ -171,6 +175,7 @@ export function PlanOverviewCard({
             volumeMetric={volumeMetric}
             volumeNoun={volumeNoun}
             isOrdersFamily={isOrdersFamily}
+            allowActual={allowActual}
           />
         </div>
       </div>

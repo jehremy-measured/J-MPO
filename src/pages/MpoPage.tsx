@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
+import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
@@ -52,7 +53,7 @@ export function MpoPage() {
   const [demoPlansVisible, setDemoPlansVisible] = useState(false);
   const [hasCreatedPlan, setHasCreatedPlan] = useState(false);
   const visiblePlans = hasCreatedPlan ? state.plans : demoPlansVisible ? state.plans : [];
-  const [creatingPlanPhase, setCreatingPlanPhase] = useState<"creating" | "simulating" | null>(null);
+  const [creatingPlan, setCreatingPlan] = useState(false);
 
   useEffect(() => {
     if (renamingTitle) titleInputRef.current?.select();
@@ -90,12 +91,11 @@ export function MpoPage() {
     }
 
     setBuildPlanOpen(false);
-    setCreatingPlanPhase("creating");
+    setCreatingPlan(true);
     setHasCreatedPlan(true);
-    setTimeout(() => setCreatingPlanPhase("simulating"), 1500);
     setTimeout(() => {
       finish();
-      setCreatingPlanPhase(null);
+      setCreatingPlan(false);
     }, 3000);
   };
 
@@ -154,6 +154,9 @@ export function MpoPage() {
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.planEnd
       : activePlan?.planEnd ?? new Date();
+  // The plan-ready summary shown right after creation hasn't had any real time to accrue
+  // actuals against, even if its dates happen to already be in-flight.
+  const isNewlyCreatedPlan = !!(state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId);
   // Plan detail and plan settings both take over the whole page, like a popup — the global
   // header steps aside while either is open instead of staying pinned above them.
   const headerHidden = buildPlanOpen || viewMode === "detail";
@@ -282,6 +285,7 @@ export function MpoPage() {
                         incrementalOrders={state.totals.orders}
                         cpo={state.totals.cpo}
                         onOptimize={() => startMiaFlow("spend")}
+                        allowActual={!isNewlyCreatedPlan}
                       />
                     </>
                   ) : activePlan?.kind === "simulation" ? (
@@ -310,7 +314,12 @@ export function MpoPage() {
                   ) : (
                     <CurveAndGoal />
                   )}
-                  <BudgetTable target={currentTarget} planStart={currentPlanStart} planEnd={currentPlanEnd} />
+                  <BudgetTable
+                    target={currentTarget}
+                    planStart={currentPlanStart}
+                    planEnd={currentPlanEnd}
+                    allowActual={!isNewlyCreatedPlan}
+                  />
                 </div>
               </div>
             )}
@@ -338,14 +347,7 @@ export function MpoPage() {
         totalSales={state.totals.sales}
         blendedRoas={state.totals.roas}
       />
-      {creatingPlanPhase && (
-        <div className={styles.loadingOverlay} role="status" aria-live="polite">
-          <span className={styles.loadingSpinner} aria-hidden />
-          <p className={styles.loadingText}>
-            {creatingPlanPhase === "creating" ? "Creating your plan.." : "Running simulations.."}
-          </p>
-        </div>
-      )}
+      {creatingPlan && <CreatingPlanOverlay />}
     </div>
   );
 }

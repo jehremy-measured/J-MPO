@@ -22,6 +22,7 @@ type Props = {
   volumeNoun: string;
   isOrdersFamily: boolean;
   onClose: () => void;
+  allowActual?: boolean;
 };
 
 export function TacticChartModal({
@@ -35,6 +36,7 @@ export function TacticChartModal({
   volumeNoun,
   isOrdersFamily,
   onClose,
+  allowActual = true,
 }: Props) {
   const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
 
@@ -114,6 +116,7 @@ export function TacticChartModal({
             chartView={chartView}
             onChartViewChange={setChartView}
             noSidePadding
+            allowActual={allowActual}
           />
         </div>
       </div>

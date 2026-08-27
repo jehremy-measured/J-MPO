@@ -9,6 +9,8 @@ type Props = {
   target: PlanTarget;
   planStart: Date;
   planEnd: Date;
+  /** Forces the tactic popup chart's Actual overlay off — e.g. right after creating a plan. */
+  allowActual?: boolean;
 };
 
 type TacticRow = {
@@ -88,7 +90,7 @@ function formatPercentOfTotal(value: string, total: number): string {
   return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
 }
 
-export function BudgetTable({ target, planStart, planEnd }: Props) {
+export function BudgetTable({ target, planStart, planEnd, allowActual = true }: Props) {
   const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
   const showOrders = target === "incremental-orders" || target === "incremental-cpo";
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
@@ -212,6 +214,7 @@ export function BudgetTable({ target, planStart, planEnd }: Props) {
         volumeNoun={showOrders ? "Orders" : "Sales"}
         isOrdersFamily={showOrders}
         onClose={() => setActiveTactic(null)}
+        allowActual={allowActual}
       />
     </section>
   );

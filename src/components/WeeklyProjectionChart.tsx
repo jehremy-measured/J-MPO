@@ -19,6 +19,10 @@ type Props = {
   /** Drops the chart wrap's side and bottom padding, for hosts (like a popup) that already
    * provide their own outer padding around the whole chart. */
   noSidePadding?: boolean;
+  /** By default the Actual overlay auto-shows for in-flight plans (today falls within
+   * planStart..planEnd). Pass false to force it off — e.g. right after creating a plan, before
+   * it's had any real time to accrue actuals against. */
+  allowActual?: boolean;
 };
 
 type WeekPoint = {
@@ -155,6 +159,7 @@ export function WeeklyProjectionChart({
   chartView: controlledChartView,
   onChartViewChange,
   noSidePadding = false,
+  allowActual = true,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -181,7 +186,7 @@ export function WeeklyProjectionChart({
   // In-flight plans (today falls within the plan's own date range) get an Actual overlay;
   // plans that haven't started yet, or already ended before today, don't.
   const today = useMemo(() => new Date(), []);
-  const isInFlight = !isBefore(today, planStart) && !isAfter(today, planEnd);
+  const isInFlight = allowActual && !isBefore(today, planStart) && !isAfter(today, planEnd);
   const actualWeeks = useMemo(
     () => (isInFlight ? buildActualWeeks(weeks, today) : []),
     [isInFlight, weeks, today]

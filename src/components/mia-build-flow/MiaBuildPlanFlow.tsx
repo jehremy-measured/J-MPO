@@ -312,7 +312,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                 </div>
                 <div>
                   <h4>Upload budget</h4>
-                  <p>Add tactic-wise budgets in an xls file and upload</p>
+                  <p>Add tactic-wise budgets in an xls file</p>
                 </div>
               </button>
               <button
