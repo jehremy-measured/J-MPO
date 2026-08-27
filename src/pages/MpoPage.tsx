@@ -145,6 +145,14 @@ export function MpoPage() {
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.target
       : activePlan?.target ?? "incremental-sales";
+  const currentPlanStart =
+    state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
+      ? state.newPlanSummary.planStart
+      : activePlan?.planStart ?? new Date();
+  const currentPlanEnd =
+    state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
+      ? state.newPlanSummary.planEnd
+      : activePlan?.planEnd ?? new Date();
   // Plan detail and plan settings both take over the whole page, like a popup — the global
   // header steps aside while either is open instead of staying pinned above them.
   const headerHidden = buildPlanOpen || viewMode === "detail";
@@ -288,7 +296,7 @@ export function MpoPage() {
                   ) : (
                     <CurveAndGoal />
                   )}
-                  <BudgetTable target={currentTarget} />
+                  <BudgetTable target={currentTarget} planStart={currentPlanStart} planEnd={currentPlanEnd} />
                 </div>
               </div>
             )}

@@ -1,10 +1,14 @@
+import { useState } from "react";
 import type { PlanTarget } from "../mpo/types";
 import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
+import { TacticChartModal } from "./TacticChartModal";
 import styles from "./BudgetTable.module.css";
 
 type Props = {
   target: PlanTarget;
+  planStart: Date;
+  planEnd: Date;
 };
 
 type TacticRow = {
@@ -88,7 +92,8 @@ function formatPercentOfTotal(value: string, total: number): string {
   return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
 }
 
-export function BudgetTable({ target }: Props) {
+export function BudgetTable({ target, planStart, planEnd }: Props) {
+  const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
   const showOrders = target === "incremental-orders" || target === "incremental-cpo";
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
   const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
@@ -161,7 +166,12 @@ export function BudgetTable({ target }: Props) {
                       <div className={styles.tacticName}>{row.name}</div>
                       <div className={styles.tacticChannel}>{row.channel}</div>
                     </div>
-                    <button type="button" className={styles.sparkline} aria-label={`View return curve for ${row.name}`}>
+                    <button
+                      type="button"
+                      className={styles.sparkline}
+                      aria-label={`View projections by week for ${row.name}`}
+                      onClick={() => setActiveTactic(row)}
+                    >
                       <ReturnCurveIcon size={20} />
                     </button>
                   </div>
@@ -189,6 +199,19 @@ export function BudgetTable({ target }: Props) {
           </tbody>
         </table>
       </div>
+
+      <TacticChartModal
+        open={activeTactic != null}
+        tacticName={activeTactic?.name ?? ""}
+        channel={activeTactic?.channel ?? ""}
+        planStart={planStart}
+        planEnd={planEnd}
+        totalBudget={activeTactic ? parseCurrency(activeTactic.budget) : 0}
+        volumeMetric={activeTactic ? parseCurrency(showOrders ? activeTactic.orders : activeTactic.sales) : 0}
+        volumeNoun={showOrders ? "Orders" : "Sales"}
+        isOrdersFamily={showOrders}
+        onClose={() => setActiveTactic(null)}
+      />
     </section>
   );
 }
