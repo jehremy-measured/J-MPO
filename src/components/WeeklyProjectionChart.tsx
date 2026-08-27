@@ -256,7 +256,7 @@ export function WeeklyProjectionChart({
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-          Projected i{volumeNoun}
+          Projected Incremental {volumeNoun}
         </span>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
@@ -266,7 +266,7 @@ export function WeeklyProjectionChart({
           <>
             <span className={styles.legendItem}>
               <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
-              Actual i{volumeNoun}
+              Actual Incremental {volumeNoun}
             </span>
             <span className={styles.legendItem}>
               <span className={`${styles.swatch} ${styles.swatchActualSpend}`} aria-hidden />
@@ -488,7 +488,7 @@ export function WeeklyProjectionChart({
             <div className={styles.tooltipRow}>
               <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
               <span className={styles.tooltipRowLabel}>
-                {chartView === "cumulative" ? `Projected cumulative ${volumeNoun}` : `Projected i${volumeNoun}`}
+                {chartView === "cumulative" ? `Projected cumulative ${volumeNoun}` : `Projected Incremental ${volumeNoun}`}
               </span>
               <strong>{formatVolumeFull(hit.sales, isOrdersFamily)}</strong>
             </div>
@@ -503,7 +503,7 @@ export function WeeklyProjectionChart({
               <div className={styles.tooltipRow}>
                 <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>
-                  {chartView === "cumulative" ? `Actual cumulative ${volumeNoun}` : `Actual i${volumeNoun}`}
+                  {chartView === "cumulative" ? `Actual cumulative ${volumeNoun}` : `Actual Incremental ${volumeNoun}`}
                 </span>
                 <strong>{formatVolumeFull(hitActual.sales, isOrdersFamily)}</strong>
               </div>
@@ -530,9 +530,9 @@ export function WeeklyProjectionChart({
         <thead>
           <tr>
             <th scope="col">Week</th>
-            <th scope="col">Projected i{volumeNoun.toLowerCase()}</th>
+            <th scope="col">Projected incremental {volumeNoun.toLowerCase()}</th>
             <th scope="col">Planned budget</th>
-            {showActual && <th scope="col">Actual i{volumeNoun.toLowerCase()}</th>}
+            {showActual && <th scope="col">Actual incremental {volumeNoun.toLowerCase()}</th>}
             {showActual && <th scope="col">Actual spend</th>}
           </tr>
         </thead>
