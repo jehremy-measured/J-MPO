@@ -82,6 +82,7 @@ export function TacticChartModal({
             hideHeader
             chartView={chartView}
             onChartViewChange={setChartView}
+            noSidePadding
           />
         </div>
       </div>

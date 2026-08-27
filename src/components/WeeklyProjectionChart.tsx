@@ -16,6 +16,9 @@ type Props = {
   hideHeader?: boolean;
   chartView?: "cumulative" | "weekly";
   onChartViewChange?: (view: "cumulative" | "weekly") => void;
+  /** Drops the chart wrap's side and bottom padding, for hosts (like a popup) that already
+   * provide their own outer padding around the whole chart. */
+  noSidePadding?: boolean;
 };
 
 type WeekPoint = {
@@ -115,6 +118,7 @@ export function WeeklyProjectionChart({
   hideHeader = false,
   chartView: controlledChartView,
   onChartViewChange,
+  noSidePadding = false,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -205,7 +209,10 @@ export function WeeklyProjectionChart({
           Budget
         </span>
       </div>
-      <div className={styles.chartWrap} ref={chartWrapRef}>
+      <div
+        className={`${styles.chartWrap} ${noSidePadding ? styles.chartWrapTight : ""}`}
+        ref={chartWrapRef}
+      >
         <svg
           className={styles.svg}
           viewBox={`0 0 ${VB_WIDTH} ${VB_HEIGHT}`}
