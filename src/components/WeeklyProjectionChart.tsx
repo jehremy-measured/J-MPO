@@ -1,5 +1,5 @@
 import { useId, useMemo, useState } from "react";
-import { addDays, daysBetweenInclusive } from "../mpo/buildPlan/dateUtils";
+import { addDays, daysBetweenInclusive, isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
 import { useElementSize } from "../hooks/useElementSize";
 import styles from "./PlanOverviewCard.module.css";
 
@@ -27,6 +27,8 @@ type WeekPoint = {
   fullLabel: string;
   sales: number;
   budget: number;
+  start: Date;
+  days: number;
 };
 
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -101,6 +103,8 @@ export function buildWeeklyProjection(
       fullLabel: `${formatAxisDate(weekStart)} – ${formatAxisDate(weekEnd)}`,
       sales: (salesWeights[i] / salesWeightSum) * totalSales,
       budget: (days / dayLengthSum) * totalBudget,
+      start: weekStart,
+      days,
     };
   });
 }
@@ -115,6 +119,26 @@ export function toCumulativeWeeks(weeks: WeekPoint[]): WeekPoint[] {
     budgetSum += w.budget;
     return { ...w, sales: salesSum, budget: budgetSum };
   });
+}
+
+/** Deterministic per-week variance so the actual-vs-projected line looks organic without
+ * jittering on every re-render. */
+const ACTUAL_VARIANCE = [0.93, 1.07, 0.98, 1.11, 0.9, 1.05, 1.02, 0.96, 1.09, 0.94, 1.03, 0.99, 1.06];
+
+/** Synthesizes an "actual" weekly volume trend for demo purposes: weeks that have fully
+ * elapsed get a plausible variance on the projected figure, the in-progress week (if any) is
+ * prorated by how much of it has elapsed, and weeks that haven't started yet are dropped
+ * entirely so the actual line stops at today instead of running ahead of it. */
+export function buildActualWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
+  const result: WeekPoint[] = [];
+  for (const w of weeks) {
+    if (isBefore(today, w.start)) break;
+    const elapsedDays = Math.min(w.days, daysBetweenInclusive(w.start, today));
+    const fraction = elapsedDays / w.days;
+    const variance = ACTUAL_VARIANCE[w.index % ACTUAL_VARIANCE.length];
+    result.push({ ...w, sales: w.sales * variance * fraction });
+  }
+  return result;
 }
 
 const MARGIN = { top: 16, right: 16, bottom: 28, left: 56 };
@@ -154,10 +178,27 @@ export function WeeklyProjectionChart({
 
   const chartWeeks = chartView === "cumulative" ? cumulativeWeeks : weeks;
 
+  // In-flight plans (today falls within the plan's own date range) get an Actual overlay;
+  // plans that haven't started yet, or already ended before today, don't.
+  const today = useMemo(() => new Date(), []);
+  const isInFlight = !isBefore(today, planStart) && !isAfter(today, planEnd);
+  const actualWeeks = useMemo(
+    () => (isInFlight ? buildActualWeeks(weeks, today) : []),
+    [isInFlight, weeks, today]
+  );
+  const cumulativeActualWeeks = useMemo(() => toCumulativeWeeks(actualWeeks), [actualWeeks]);
+  const chartActualWeeks = chartView === "cumulative" ? cumulativeActualWeeks : actualWeeks;
+  const showActual = actualWeeks.length > 0;
+  const actualByIndex = useMemo(() => new Map(chartActualWeeks.map((w) => [w.index, w])), [chartActualWeeks]);
+
   const yMax = useMemo(() => {
-    const peak = Math.max(...chartWeeks.map((w) => Math.max(w.sales, w.budget)), 1);
+    const peak = Math.max(
+      ...chartWeeks.map((w) => Math.max(w.sales, w.budget)),
+      ...chartActualWeeks.map((w) => w.sales),
+      1
+    );
     return niceCeiling(peak * 1.08);
-  }, [chartWeeks]);
+  }, [chartWeeks, chartActualWeeks]);
 
   const xFor = (i: number) => (chartWeeks.length <= 1 ? MARGIN.left + PLOT_WIDTH / 2 : MARGIN.left + (i / (chartWeeks.length - 1)) * PLOT_WIDTH);
   const yFor = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / yMax) * PLOT_HEIGHT;
@@ -173,10 +214,12 @@ export function WeeklyProjectionChart({
   const salesPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.sales)}`).join(" ");
   const budgetPath = chartWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(i)},${yFor(w.budget)}`).join(" ");
   const areaPath = `${salesPath} L${xFor(chartWeeks.length - 1)},${MARGIN.top + PLOT_HEIGHT} L${xFor(0)},${MARGIN.top + PLOT_HEIGHT} Z`;
+  const actualPath = chartActualWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(w.index)},${yFor(w.sales)}`).join(" ");
 
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
   const labelEvery = Math.max(1, Math.ceil(chartWeeks.length / 6));
   const hit = hoverIndex != null ? chartWeeks[hoverIndex] : null;
+  const hitActual = hoverIndex != null ? actualByIndex.get(hoverIndex) : undefined;
 
   return (
     <div className={styles.chartCol}>
@@ -210,6 +253,12 @@ export function WeeklyProjectionChart({
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
           Budget
         </span>
+        {showActual && (
+          <span className={styles.legendItem}>
+            <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
+            Actual
+          </span>
+        )}
       </div>
       <div
         className={`${styles.chartWrap} ${noSidePadding ? styles.chartWrapTight : ""}`}
@@ -270,6 +319,7 @@ export function WeeklyProjectionChart({
               <path d={areaPath} fill={`url(#${gradientId})`} stroke="none" />
               <path d={budgetPath} className={styles.budgetLine} fill="none" />
               <path d={salesPath} className={styles.salesLine} fill="none" />
+              {showActual && <path d={actualPath} className={styles.actualLine} fill="none" />}
 
               {hit && (
                 <line
@@ -287,14 +337,29 @@ export function WeeklyProjectionChart({
                   <circle cx={xFor(i)} cy={yFor(w.sales)} r={hoverIndex === i ? 5 : 3} className={styles.salesDot} />
                 </g>
               ))}
+
+              {showActual && chartActualWeeks.map((w) => (
+                <circle
+                  key={`actual-${w.index}`}
+                  cx={xFor(w.index)}
+                  cy={yFor(w.sales)}
+                  r={hoverIndex === w.index ? 5 : 3}
+                  className={styles.actualDot}
+                />
+              ))}
             </>
           ) : (
             chartWeeks.map((w, i) => {
-              const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
+              const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
+              const barCount = showActual ? 3 : 2;
+              const barWidth = Math.max(2, Math.min(barCount === 3 ? 16 : 22, bandWidth * (barCount === 3 ? 0.13 : 0.18)));
               const gap = Math.max(2, barWidth * 0.3);
               const center = bandCenter(i);
-              const salesX = center - barWidth - gap / 2;
-              const budgetX = center + gap / 2;
+              const groupWidth = barWidth * barCount + gap * (barCount - 1);
+              const groupStart = center - groupWidth / 2;
+              const salesX = groupStart;
+              const budgetX = groupStart + barWidth + gap;
+              const actualX = groupStart + (barWidth + gap) * 2;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
@@ -317,6 +382,16 @@ export function WeeklyProjectionChart({
                     rx={2}
                     className={styles.budgetBar}
                   />
+                  {actualForWeek && (
+                    <rect
+                      x={actualX}
+                      y={yFor(actualForWeek.sales)}
+                      width={barWidth}
+                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
+                      rx={2}
+                      className={styles.actualBar}
+                    />
+                  )}
                 </g>
               );
             })
@@ -335,6 +410,10 @@ export function WeeklyProjectionChart({
                 : i === chartWeeks.length - 1
                 ? VB_WIDTH - MARGIN.right
                 : (xFor(i) + xFor(i + 1)) / 2;
+            const actualForWeek = actualByIndex.get(w.index);
+            const actualLabel = actualForWeek
+              ? `, actual ${formatVolumeFull(actualForWeek.sales, isOrdersFamily)}`
+              : "";
             return (
               <rect
                 key={w.index}
@@ -345,7 +424,7 @@ export function WeeklyProjectionChart({
                 fill="transparent"
                 tabIndex={0}
                 role="button"
-                aria-label={`${w.fullLabel}: incremental ${volumeNoun.toLowerCase()} ${formatVolumeFull(w.sales, isOrdersFamily)}, budget ${formatFullCurrency(w.budget)}`}
+                aria-label={`${w.fullLabel}: incremental ${volumeNoun.toLowerCase()} ${formatVolumeFull(w.sales, isOrdersFamily)}, budget ${formatFullCurrency(w.budget)}${actualLabel}`}
                 onMouseEnter={() => setHoverIndex(i)}
                 onFocus={() => setHoverIndex(i)}
                 onMouseLeave={() => setHoverIndex(null)}
@@ -383,6 +462,15 @@ export function WeeklyProjectionChart({
               </span>
               <strong>{formatFullCurrency(hit.budget)}</strong>
             </div>
+            {hitActual && (
+              <div className={styles.tooltipRow}>
+                <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
+                <span className={styles.tooltipRowLabel}>
+                  {chartView === "cumulative" ? `Actual ${volumeNoun}` : `Actual ${volumeNoun}`}
+                </span>
+                <strong>{formatVolumeFull(hitActual.sales, isOrdersFamily)}</strong>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -398,6 +486,7 @@ export function WeeklyProjectionChart({
             <th scope="col">Week</th>
             <th scope="col">Incremental {volumeNoun.toLowerCase()}</th>
             <th scope="col">Budget</th>
+            {showActual && <th scope="col">Actual {volumeNoun.toLowerCase()}</th>}
           </tr>
         </thead>
         <tbody>
@@ -406,6 +495,9 @@ export function WeeklyProjectionChart({
               <td>{w.fullLabel}</td>
               <td>{formatVolumeFull(w.sales, isOrdersFamily)}</td>
               <td>{formatFullCurrency(w.budget)}</td>
+              {showActual && (
+                <td>{actualByIndex.has(w.index) ? formatVolumeFull(actualByIndex.get(w.index)!.sales, isOrdersFamily) : "—"}</td>
+              )}
             </tr>
           ))}
         </tbody>

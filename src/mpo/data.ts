@@ -26,6 +26,18 @@ export const PLANS: Plan[] = [
     shared: true,
   },
   {
+    id: "sim-q3-inflight",
+    label: "Q3 2026 quarterly simulation",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 20),
+    target: "incremental-sales",
+    targetValue: 24_000_000,
+    planStart: new Date(2026, 6, 1),
+    planEnd: new Date(2026, 8, 30),
+    shared: false,
+  },
+  {
     id: "sim-default-copy",
     label: "Q3 2026 media simulation (copy)",
     kind: "simulation",
