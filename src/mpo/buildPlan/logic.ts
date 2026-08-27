@@ -209,6 +209,19 @@ export function targetLabel(state: BuildPlanState): string {
   return formatTargetLabel(state.target, state.targetValue);
 }
 
+/** Shortens a filename to fit on one line in the ready card's subtext, keeping the extension
+ * intact and collapsing the middle of the base name into "..", e.g. "budget_lulus.xls" ->
+ * "budget_lu..xls". Short names pass through unchanged. */
+export function truncateFileName(name: string, maxLen = 14): string {
+  const dotIdx = name.lastIndexOf(".");
+  if (dotIdx <= 0) return name.length <= maxLen ? name : `${name.slice(0, maxLen - 2)}..`;
+  const base = name.slice(0, dotIdx);
+  const ext = name.slice(dotIdx + 1);
+  if (base.length + 2 + ext.length <= maxLen) return name;
+  const keep = Math.max(1, maxLen - 2 - ext.length);
+  return `${base.slice(0, keep)}..${ext}`;
+}
+
 /** Condensed label/value pairs summarizing every input that went into a plan — used by Mia's
  * "plan is ready" card, which shows this in place of auto-opening the full review screen. */
 export function planSummaryRows(state: BuildPlanState): { label: string; value: string; subtext?: string }[] {
@@ -224,7 +237,7 @@ export function planSummaryRows(state: BuildPlanState): { label: string; value: 
   rows.push({
     label: "Budget",
     value: currencyFormatter.format(includedTotal(state)),
-    subtext: state.method === "upload" ? `Fetched from ${state.source}` : undefined,
+    subtext: state.method === "upload" ? `from ${truncateFileName(state.source)}` : undefined,
   });
   return rows;
 }
