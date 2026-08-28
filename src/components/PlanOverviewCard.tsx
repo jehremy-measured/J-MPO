@@ -1,3 +1,5 @@
+import { useState } from "react";
+import { isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { SparkleIcon } from "./icons/SparkleIcon";
@@ -52,6 +54,37 @@ function formatPrimaryDisplayValue(target: PlanTarget, value: number): string {
  * project an actual figure from. */
 const OPTIMIZATION_UPLIFT_PCT = 0.15;
 
+/** Sits at the right end of the "Plan Summary" title, mirroring the invisible spacer it
+ * replaces so the header's height/alignment doesn't shift. Disabled (not just visually, but
+ * non-interactive) until the plan has actually accrued some real days to compare against. */
+function CompareActualsToggle({
+  available,
+  checked,
+  onChange,
+}: {
+  available: boolean;
+  checked: boolean;
+  onChange: (next: boolean) => void;
+}) {
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={available && checked}
+      aria-label="Compare with actuals"
+      title={available ? undefined : "Actuals aren't available yet for this period"}
+      disabled={!available}
+      className={`${styles.actualsToggle} ${available && checked ? styles.actualsToggleOn : ""}`}
+      onClick={() => onChange(!checked)}
+    >
+      <span className={styles.actualsToggleTrack} aria-hidden>
+        <span className={styles.actualsToggleThumb} />
+      </span>
+      <span className={styles.actualsToggleLabel}>Compare actuals</span>
+    </button>
+  );
+}
+
 export function PlanOverviewCard({
   planStart,
   planEnd,
@@ -65,6 +98,12 @@ export function PlanOverviewCard({
   onOptimize,
   allowActual = true,
 }: Props) {
+  // Actuals only exist once the plan is in-flight (mirrors WeeklyProjectionChart's own
+  // gating) — the toggle stays disabled until there's real data for it to compare against.
+  const today = new Date();
+  const actualsAvailable = allowActual && !isBefore(today, planStart) && !isAfter(today, planEnd);
+  const [compareActuals, setCompareActuals] = useState(true);
+
   // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
   // Forecast column's secondary metric row) follows whichever pair the target belongs to.
   const isOrdersFamily = target === "incremental-orders" || target === "incremental-cpo";
@@ -118,7 +157,11 @@ export function PlanOverviewCard({
               <>
                 <div className={styles.statsHeader}>
                   <h2 className={styles.colTitle}>Plan Summary</h2>
-                  <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
+                  <CompareActualsToggle
+                    available={actualsAvailable}
+                    checked={compareActuals}
+                    onChange={setCompareActuals}
+                  />
                 </div>
 
                 {secondaryMetricRows.map((row) => (
@@ -139,7 +182,11 @@ export function PlanOverviewCard({
               <>
                 <div className={styles.statsHeader}>
                   <h2 className={styles.colTitle}>Plan Summary</h2>
-                  <span className={styles.invisibleSpacerBtn} aria-hidden="true" />
+                  <CompareActualsToggle
+                    available={actualsAvailable}
+                    checked={compareActuals}
+                    onChange={setCompareActuals}
+                  />
                 </div>
                 <div className={styles.stat}>
                   <div className={styles.statLabel}>Total budget</div>
@@ -176,6 +223,7 @@ export function PlanOverviewCard({
             volumeNoun={volumeNoun}
             isOrdersFamily={isOrdersFamily}
             allowActual={allowActual}
+            showActuals={compareActuals}
           />
         </div>
       </div>

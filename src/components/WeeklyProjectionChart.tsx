@@ -23,6 +23,10 @@ type Props = {
    * planStart..planEnd). Pass false to force it off — e.g. right after creating a plan, before
    * it's had any real time to accrue actuals against. */
   allowActual?: boolean;
+  /** Lets a caller with its own "Compare with actuals" toggle control whether the Actual
+   * series render, on top of the allowActual/in-flight gating above. Defaults to true so
+   * callers without such a toggle keep the previous always-on-when-available behavior. */
+  showActuals?: boolean;
 };
 
 type WeekPoint = {
@@ -163,6 +167,7 @@ export function WeeklyProjectionChart({
   onChartViewChange,
   noSidePadding = false,
   allowActual = true,
+  showActuals = true,
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -196,7 +201,7 @@ export function WeeklyProjectionChart({
   );
   const cumulativeActualWeeks = useMemo(() => toCumulativeWeeks(actualWeeks), [actualWeeks]);
   const chartActualWeeks = chartView === "cumulative" ? cumulativeActualWeeks : actualWeeks;
-  const showActual = actualWeeks.length > 0;
+  const showActual = actualWeeks.length > 0 && showActuals;
   const actualByIndex = useMemo(() => new Map(chartActualWeeks.map((w) => [w.index, w])), [chartActualWeeks]);
 
   const yMax = useMemo(() => {
