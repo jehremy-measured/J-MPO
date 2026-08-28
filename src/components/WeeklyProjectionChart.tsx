@@ -352,32 +352,30 @@ export function WeeklyProjectionChart({
                 />
               )}
 
-              {chartWeeks.map((w, i) => (
-                <g key={w.index}>
-                  <circle cx={xFor(i)} cy={yFor(w.budget)} r={hoverIndex === i ? 5 : 3} className={styles.budgetDot} />
-                  <circle cx={xFor(i)} cy={yFor(w.sales)} r={hoverIndex === i ? 5 : 3} className={styles.salesDot} />
+              {hit && (
+                <g>
+                  <circle cx={xFor(hit.index)} cy={yFor(hit.budget)} r={5} className={styles.budgetDot} />
+                  <circle cx={xFor(hit.index)} cy={yFor(hit.sales)} r={5} className={styles.salesDot} />
                 </g>
-              ))}
+              )}
 
-              {showActual && chartActualWeeks.map((w) => (
+              {showActual && hitActual && (
                 <circle
-                  key={`actual-${w.index}`}
-                  cx={xFor(w.index)}
-                  cy={yFor(w.sales)}
-                  r={hoverIndex === w.index ? 5 : 3}
+                  cx={xFor(hitActual.index)}
+                  cy={yFor(hitActual.sales)}
+                  r={5}
                   className={styles.actualDot}
                 />
-              ))}
+              )}
 
-              {showActual && chartActualWeeks.map((w) => (
+              {showActual && hitActual && (
                 <circle
-                  key={`actual-spend-${w.index}`}
-                  cx={xFor(w.index)}
-                  cy={yFor(w.budget)}
-                  r={hoverIndex === w.index ? 5 : 3}
+                  cx={xFor(hitActual.index)}
+                  cy={yFor(hitActual.budget)}
+                  r={5}
                   className={styles.actualSpendDot}
                 />
-              ))}
+              )}
             </>
           ) : (
             chartWeeks.map((w, i) => {
