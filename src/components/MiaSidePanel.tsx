@@ -27,15 +27,18 @@ import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
 
 const SETUP_DELAY_MS = 1600;
+const CONSTRAINTS_DELAY_MS = 2000;
+
+type SummaryRow = { label: string; value: string; subtext?: string; ai?: boolean };
 
 type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
-  kind?: "download-card" | "plan-card" | "plan-ready-card";
+  kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card";
   subtext?: string;
   planState?: BuildPlanState;
-  rows?: { label: string; value: string; subtext?: string }[];
+  rows?: SummaryRow[];
 };
 
 type Prompt =
@@ -128,6 +131,7 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 }
 
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
+type OptimizeSignal = { token: number; rows: SummaryRow[] };
 
 type Props = {
   open: boolean;
@@ -135,6 +139,12 @@ type Props = {
   onEditInMainFlow: (state: BuildPlanState) => void;
   onCreatePlan: (state: BuildPlanState) => void;
   startSignal?: StartSignal | null;
+  /** Triggers the lighter "optimize an existing plan" flow — skips the guided create-plan
+   * wizard entirely and goes straight to a constraints-setting loading state, then a review
+   * card summarizing the plan Mia is about to optimize. */
+  optimizeSignal?: OptimizeSignal | null;
+  onEditConstraints?: () => void;
+  onOptimizePlan?: () => void;
 };
 
 const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
@@ -142,7 +152,16 @@ const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
   spend: "Optimize a plan",
 };
 
-export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, startSignal }: Props) {
+export function MiaSidePanel({
+  open,
+  onClose,
+  onEditInMainFlow,
+  onCreatePlan,
+  startSignal,
+  optimizeSignal,
+  onEditConstraints,
+  onOptimizePlan,
+}: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -156,11 +175,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
   const [flowKey, setFlowKey] = useState(0);
   const [presetPlanType, setPresetPlanType] = useState<StartSignal["planType"] | null>(null);
   const lastStartTokenRef = useRef<number | null>(null);
+  const lastOptimizeTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [settingUp, setSettingUp] = useState(false);
+  const [settingConstraints, setSettingConstraints] = useState(false);
+  const [pendingOptimizeRows, setPendingOptimizeRows] = useState<SummaryRow[] | null>(null);
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -172,10 +194,10 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
       items: {
         role: "mia" | "user";
         text: string;
-        kind?: "download-card" | "plan-card" | "plan-ready-card";
+        kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card";
         subtext?: string;
         planState?: BuildPlanState;
-        rows?: { label: string; value: string; subtext?: string }[];
+        rows?: SummaryRow[];
       }[]
     ) => {
       setMessages((prev) => [
@@ -214,6 +236,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
     setDraft("");
     setIsTyping(false);
     setSettingUp(false);
+    setSettingConstraints(false);
+    setPendingOptimizeRows(null);
     setChatsMenuOpen(false);
     setPresetPlanType(null);
   }, []);
@@ -238,6 +262,28 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
     startCreateFlow(PLAN_TYPE_START_LABEL[startSignal.planType], startSignal.planType);
   }, [open, startSignal, startCreateFlow]);
 
+  const startOptimizeFlow = useCallback(
+    (rows: SummaryRow[]) => {
+      appendMessages([{ role: "user", text: "Optimize this plan" }]);
+      setFlowActive(false);
+      setUploadState(null);
+      setLoadingReviewState(null);
+      setLastPlanState(null);
+      setDraft("");
+      setPresetPlanType(null);
+      setPendingOptimizeRows(rows);
+      setSettingConstraints(true);
+    },
+    [appendMessages]
+  );
+
+  useEffect(() => {
+    if (!open || !optimizeSignal || optimizeSignal.token === lastOptimizeTokenRef.current) return;
+    lastOptimizeTokenRef.current = optimizeSignal.token;
+    setMessages([]);
+    startOptimizeFlow(optimizeSignal.rows);
+  }, [open, optimizeSignal, startOptimizeFlow]);
+
   useEffect(() => {
     if (!settingUp) return;
     const timer = window.setTimeout(() => {
@@ -250,6 +296,33 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
     }, SETUP_DELAY_MS);
     return () => window.clearTimeout(timer);
   }, [settingUp, appendMessages]);
+
+  useEffect(() => {
+    if (!settingConstraints) return;
+    const rows = pendingOptimizeRows ?? [];
+    const timer = window.setTimeout(() => {
+      setSettingConstraints(false);
+      setPendingOptimizeRows(null);
+      appendMessages([
+        { role: "mia", text: "Your plan is ready to optimize." },
+        {
+          role: "mia",
+          kind: "optimize-ready-card",
+          text: "Plan ready for optimization",
+          rows: [
+            ...rows,
+            {
+              label: "Constraints",
+              value: "Set by AI",
+              subtext: "10 anchored, 23 with upper/lower limits",
+              ai: true,
+            },
+          ],
+        },
+      ]);
+    }, CONSTRAINTS_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [settingConstraints, pendingOptimizeRows, appendMessages]);
 
   useEffect(() => {
     if (!loadingReviewState) return;
@@ -280,6 +353,8 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
       setDraft("");
       setIsTyping(false);
       setSettingUp(false);
+      setSettingConstraints(false);
+      setPendingOptimizeRows(null);
       setChatsMenuOpen(false);
       setPresetPlanType(null);
       return;
@@ -438,12 +513,14 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
 
   const placeholder = settingUp
     ? "Setting up your plan…"
-    : flowActive
-      ? "Finish the setup above"
-      : uploadState
-        ? "Attach your budget file…"
-        : "Type your message…";
-  const canSend = !flowActive && !settingUp && draft.trim().length > 0;
+    : settingConstraints
+      ? "Setting constraints using AI…"
+      : flowActive
+        ? "Finish the setup above"
+        : uploadState
+          ? "Attach your budget file…"
+          : "Type your message…";
+  const canSend = !flowActive && !settingUp && !settingConstraints && draft.trim().length > 0;
 
   const handleDragOver = (e: DragEvent) => {
     if (!uploadState) return;
@@ -512,7 +589,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
       </div>
 
       <div className={styles.messages} ref={messagesContainerRef}>
-        {!flowActive && !settingUp && messages.length === 0 && (
+        {!flowActive && !settingUp && !settingConstraints && messages.length === 0 && (
           <div className={styles.welcome}>
             <span className={styles.welcomeAvatar} aria-hidden>
               <SparkleIcon size={26} />
@@ -612,6 +689,54 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                 </button>
               </div>
             </div>
+          ) : msg.kind === "optimize-ready-card" ? (
+            <div key={msg.id} className={styles.readyCard}>
+              <div className={styles.readyCardHeader}>
+                <span className={styles.planCardIcon} aria-hidden>
+                  <FileIcon size={20} />
+                </span>
+                <span className={styles.planCardTitle}>{msg.text}</span>
+              </div>
+              {msg.rows && (
+                <dl className={styles.readyCardRows}>
+                  {msg.rows.map((row) => (
+                    <div className={styles.readyCardRow} key={row.label}>
+                      <dt>{row.label}</dt>
+                      <dd>
+                        {row.ai ? (
+                          <span className={styles.readyCardRowValueAi}>
+                            <span className={styles.readyCardAiIcon} aria-hidden>
+                              <SparkleIcon size={12} variant="fill" />
+                            </span>
+                            {row.value}
+                          </span>
+                        ) : (
+                          <span className={styles.readyCardRowValue}>{row.value}</span>
+                        )}
+                        {row.subtext &&
+                          (row.ai ? (
+                            <span className={styles.readyCardRowSubtextWrap}>{row.subtext}</span>
+                          ) : (
+                            <BudgetSourceSubtext text={row.subtext} />
+                          ))}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
+              <div className={styles.readyCardActions}>
+                <button type="button" className={styles.rcBtn} onClick={() => onEditConstraints?.()}>
+                  Edit constraints
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
+                  onClick={() => onOptimizePlan?.()}
+                >
+                  Optimize plan
+                </button>
+              </div>
+            </div>
           ) : msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}
@@ -629,6 +754,15 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
               <ChevronDownIcon size={14} />
             </span>
             <span className={styles.thinkingText}>Setting up the flow for a new plan…</span>
+          </div>
+        )}
+
+        {settingConstraints && (
+          <div className={styles.thinkingRow}>
+            <span className={styles.thinkingChevron} aria-hidden>
+              <ChevronDownIcon size={14} />
+            </span>
+            <span className={styles.thinkingText}>Setting constraints using AI…</span>
           </div>
         )}
 
@@ -683,7 +817,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive || settingUp}
+            disabled={flowActive || settingUp || settingConstraints}
             className={styles.composerInput}
           />
           <div className={styles.composerToolbar}>
@@ -691,7 +825,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
               type="button"
               className={styles.attachBtn}
               aria-label="Attach file"
-              disabled={flowActive || settingUp}
+              disabled={flowActive || settingUp || settingConstraints}
               onClick={() => fileAttachRef.current?.click()}
             >
               <PlusIcon size={18} />
@@ -706,7 +840,7 @@ export function MiaSidePanel({ open, onClose, onEditInMainFlow, onCreatePlan, st
                 if (file) handleFileAttached(file);
               }}
             />
-            <button type="button" className={styles.mentionBtn} aria-label="Mention" disabled={flowActive || settingUp}>
+            <button type="button" className={styles.mentionBtn} aria-label="Mention" disabled={flowActive || settingUp || settingConstraints}>
               @
             </button>
             <span className={styles.composerSpacer} />

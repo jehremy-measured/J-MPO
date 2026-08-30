@@ -16,9 +16,15 @@ import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
-import { applyMethodChoice, budgetFromWindow, buildPlanToCreatePlanInput, channelsPresent } from "../mpo/buildPlan/logic";
+import {
+  applyMethodChoice,
+  budgetFromWindow,
+  buildPlanToCreatePlanInput,
+  channelsPresent,
+  formatTargetLabel,
+} from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import type { CreatePlanInput, PlanKind } from "../mpo/types";
+import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
 
@@ -33,6 +39,32 @@ function channelsLabelFor(count: number): string {
   return `${count} channel${count === 1 ? "" : "s"}`;
 }
 
+type OptimizeRow = { label: string; value: string; subtext?: string };
+
+/** Summarizes an existing plan for the "Optimize this plan" review card Mia shows before
+ * handing off to the (not-yet-built) real optimizer — same shape as the guided create-plan
+ * flow's summary rows, minus anything upload-specific, since there's no BuildPlanState here. */
+function buildOptimizeRows(
+  planStart: Date,
+  planEnd: Date,
+  conversionType: string,
+  channelsLabel: string,
+  tacticsCount: number,
+  target: PlanTarget,
+  targetValue: number | null,
+  totalBudget: number
+): OptimizeRow[] {
+  const rows: OptimizeRow[] = [
+    { label: "Planning period", value: formatRangeLabel(planStart, planEnd) },
+    { label: "Conversion type", value: conversionType },
+    { label: "Channels", value: channelsLabel },
+  ];
+  if (target) rows.push({ label: "Target", value: formatTargetLabel(target, targetValue) });
+  rows.push({ label: "Tactics", value: `${tacticsCount} tactics` });
+  rows.push({ label: "Budget", value: formatBudget(totalBudget) });
+  return rows;
+}
+
 /** MPO 1 screen — interactive prototype (Figma node 1:33651) */
 export function MpoPage() {
   const state = useMpoState();
@@ -44,6 +76,7 @@ export function MpoPage() {
   const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
+  const [optimizeSignal, setOptimizeSignal] = useState<{ token: number; rows: OptimizeRow[] } | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
@@ -75,6 +108,11 @@ export function MpoPage() {
   const startMiaFlow = (planType: "outcomes" | "spend") => {
     setMiaOpen(true);
     setMiaStart({ token: Date.now(), planType });
+  };
+
+  const startOptimizeFlow = (rows: OptimizeRow[]) => {
+    setMiaOpen(true);
+    setOptimizeSignal({ token: Date.now(), rows });
   };
 
   const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState, modeOverride?: "create" | "edit") => {
@@ -285,7 +323,20 @@ export function MpoPage() {
                         targetValue={state.newPlanSummary.targetValue}
                         incrementalOrders={state.totals.orders}
                         cpo={state.totals.cpo}
-                        onOptimize={() => startMiaFlow("spend")}
+                        onOptimize={() =>
+                          startOptimizeFlow(
+                            buildOptimizeRows(
+                              state.newPlanSummary!.planStart,
+                              state.newPlanSummary!.planEnd,
+                              state.newPlanSummary!.conversionType,
+                              channelsLabelFor(state.channelCount),
+                              state.tactics.length,
+                              state.newPlanSummary!.target,
+                              state.newPlanSummary!.targetValue,
+                              state.totals.budget
+                            )
+                          )
+                        }
                         allowActual={!isNewlyCreatedPlan}
                       />
                     </>
@@ -309,7 +360,20 @@ export function MpoPage() {
                         targetValue={activePlan.targetValue}
                         incrementalOrders={state.totals.orders}
                         cpo={state.totals.cpo}
-                        onOptimize={() => startMiaFlow("spend")}
+                        onOptimize={() =>
+                          startOptimizeFlow(
+                            buildOptimizeRows(
+                              activePlan.planStart,
+                              activePlan.planEnd,
+                              "Total Orders",
+                              channelsLabelFor(state.channelCount),
+                              state.tactics.length,
+                              activePlan.target,
+                              activePlan.targetValue ?? null,
+                              state.totals.budget
+                            )
+                          )
+                        }
                       />
                     </>
                   ) : (
@@ -339,6 +403,12 @@ export function MpoPage() {
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
           onCreatePlan={(seed) => handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create")}
           startSignal={miaStart}
+          optimizeSignal={optimizeSignal}
+          onEditConstraints={() => {
+            const planId = state.newPlanSummary?.planId ?? activePlan?.id;
+            if (planId) openPlanForEdit(planId);
+          }}
+          onOptimizePlan={() => state.notify(`Optimized "${state.activePlanLabel}" with Mia`)}
         />
       </div>
       <PrototypeBar
