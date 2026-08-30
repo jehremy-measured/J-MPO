@@ -1,8 +1,9 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput } from "../../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS } from "../../mpo/buildPlan/data";
 import {
   activeWindow,
+  allocationDelta,
   buildPlanToCreatePlanInput,
   ctSummary,
   currentWindows,
@@ -24,6 +25,7 @@ import {
   HistoryIcon,
   InfoIcon,
   UploadIcon,
+  WalletIcon,
 } from "../icons/BuildPlanIcons";
 import { SparkleIcon } from "../icons/SparkleIcon";
 import styles from "./MiaBuildPlanFlow.module.css";
@@ -71,6 +73,46 @@ function BackLink({ onClick }: { onClick: () => void }) {
     <button type="button" className={styles.backLink} onClick={onClick}>
       Back
     </button>
+  );
+}
+
+function BudgetInput({
+  id,
+  value,
+  onChange,
+}: {
+  id?: string;
+  value: number | null;
+  onChange: (value: number | null) => void;
+}) {
+  const [text, setText] = useState(value != null ? value.toLocaleString("en-US") : "");
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setText(value != null ? value.toLocaleString("en-US") : "");
+  }, [value, focused]);
+
+  return (
+    <div className={styles.binputWrap}>
+      <span className={styles.dol}>$</span>
+      <input
+        id={id}
+        className={styles.binput}
+        inputMode="numeric"
+        value={text}
+        onFocus={() => setFocused(true)}
+        onChange={(e) => {
+          setText(e.target.value);
+          const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+          onChange(isNaN(n) ? null : n);
+        }}
+        onBlur={() => {
+          setFocused(false);
+          const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+          setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+        }}
+      />
+    </div>
   );
 }
 
@@ -210,11 +252,50 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
                   <p>Use a prior period's actual spend.</p>
                 </div>
               </button>
+              <button
+                type="button"
+                className={styles.methodCard}
+                onClick={() => commit("Add budget", "Total budget only", () => flow.chooseMethod("total"))}
+              >
+                <div className={styles.methodIcon}>
+                  <WalletIcon size={18} />
+                </div>
+                <div>
+                  <h4>Total budget only</h4>
+                  <p>No tactic-wise numbers yet — enter one total.</p>
+                </div>
+              </button>
             </div>
           </div>
           <div className={styles.turnActions}>
             <BackLink onClick={goBack} />
             <span />
+          </div>
+        </MiaTurn>
+      )}
+
+      {state.screen === "total" && (
+        <MiaTurn>
+          <p className={styles.q}>What's your total budget?</p>
+          <p className={styles.qDesc}>We'll split it across tactics using recent activity as a guide — fully editable next.</p>
+          <div className={styles.turnContent}>
+            <div className={styles.field}>
+              <label htmlFor="mia-total-input">Total budget</label>
+              <BudgetInput id="mia-total-input" value={state.totalBudget} onChange={flow.setTotalBudget} />
+            </div>
+          </div>
+          <div className={styles.turnActions}>
+            <BackLink onClick={goBack} />
+            <button
+              type="button"
+              className={`${styles.btn} ${styles.btnPrimary}`}
+              disabled={!state.totalBudget}
+              onClick={() =>
+                commit("What's your total budget?", currencyFormatter.format(state.totalBudget ?? 0), flow.continueFromTotal)
+              }
+            >
+              Continue
+            </button>
           </div>
         </MiaTurn>
       )}
@@ -330,7 +411,7 @@ export function MiaBuildPlanFlow({ onComplete, onEdit }: Props) {
         </MiaTurn>
       )}
 
-      {state.screen === "review" && (state.method === "upload" || windowConfirmed) && (
+      {state.screen === "review" && (state.method !== "fetch" || windowConfirmed) && (
         <SummaryTurn state={state} onEdit={() => onEdit(state)} onCreate={flow.completePlan} />
       )}
 
@@ -372,7 +453,14 @@ function SummaryTurn({
               Total budget
               <span className={styles.finc}>{rows.length} of {BUILD_TACTICS.length} included</span>
             </span>
-            <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+            {state.method === "total" ? (
+              <span className={`${styles.fval} ${allocationDelta(state) !== 0 ? styles.fvalWarn : ""}`}>
+                {currencyFormatter.format(includedTotal(state))}
+                <span className={styles.ftarget}> of {currencyFormatter.format(state.totalBudget ?? 0)}</span>
+              </span>
+            ) : (
+              <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+            )}
           </div>
         </div>
       </div>

@@ -1,8 +1,9 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { CreatePlanInput } from "../mpo/types";
 import { BUILD_TACTICS, CT_GROUPS } from "../mpo/buildPlan/data";
 import {
   activeWindow,
+  allocationDelta,
   buildPlanToCreatePlanInput,
   channelsPresent,
   ctSummary,
@@ -30,6 +31,7 @@ import {
   MoreIcon,
   SearchIcon,
   UploadIcon,
+  WalletIcon,
 } from "./icons/BuildPlanIcons";
 import { CloseIcon } from "./icons/CloseIcon";
 import styles from "./BuildPlanPage.module.css";
@@ -76,30 +78,40 @@ function BackLink({ onClick }: { onClick: () => void }) {
 }
 
 function BudgetInput({
+  id,
   value,
   disabled,
   onChange,
 }: {
+  id?: string;
   value: number | null;
   disabled: boolean;
   onChange: (value: number | null) => void;
 }) {
   const [text, setText] = useState(value != null ? value.toLocaleString("en-US") : "");
+  const [focused, setFocused] = useState(false);
+
+  useEffect(() => {
+    if (!focused) setText(value != null ? value.toLocaleString("en-US") : "");
+  }, [value, focused]);
 
   return (
     <div className={styles.binputWrap}>
       <span className={styles.dol}>$</span>
       <input
+        id={id}
         className={styles.binput}
         inputMode="numeric"
         disabled={disabled}
         value={text}
+        onFocus={() => setFocused(true)}
         onChange={(e) => {
           setText(e.target.value);
           const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
           onChange(isNaN(n) ? null : n);
         }}
         onBlur={() => {
+          setFocused(false);
           const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
           setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
         }}
@@ -219,6 +231,39 @@ export function BuildPlanPage({ onComplete, onExit, initialState }: Props) {
               <h3>Fetch from past period</h3>
               <p>Use a prior period's actual spend as your starting budget.</p>
             </button>
+            <button type="button" className={styles.methodCard} onClick={() => flow.chooseMethod("total")}>
+              <div className={styles.methodIcon}>
+                <WalletIcon size={22} />
+              </div>
+              <h3>Total budget only</h3>
+              <p>No tactic-wise numbers yet — enter one total and we'll split it for you.</p>
+            </button>
+          </div>
+        </Card>
+      )}
+
+      {state.screen === "total" && (
+        <Card
+          eyebrow="Add budget · Total"
+          title="What's your total budget?"
+          desc="We'll split it across tactics using recent activity as a starting point — every row stays editable on the next screen."
+          footer={
+            <>
+              <BackLink onClick={flow.back} />
+              <button
+                type="button"
+                className={`${styles.btn} ${styles.btnPrimary} ${styles.btnLg}`}
+                disabled={!state.totalBudget}
+                onClick={flow.continueFromTotal}
+              >
+                Split across tactics
+              </button>
+            </>
+          }
+        >
+          <div className={styles.field}>
+            <label htmlFor="total-budget-input">Total budget for this period</label>
+            <BudgetInput id="total-budget-input" value={state.totalBudget} disabled={false} onChange={flow.setTotalBudget} />
           </div>
         </Card>
       )}
@@ -353,6 +398,27 @@ function ReviewScreen({
             </span>
           </div>
         </div>
+      ) : state.method === "total" ? (
+        <div className={styles.srcPanel}>
+          <div className={styles.periodBar}>
+            <span className={styles.pbIco}>
+              <WalletIcon size={20} />
+            </span>
+            <label htmlFor="total-select">Total budget</label>
+            <BudgetInput value={state.totalBudget} disabled={false} onChange={flow.setTotalBudget} />
+            <button type="button" className={styles.btn} onClick={flow.reallocateTotal}>
+              Reallocate
+            </button>
+          </div>
+          <div className={styles.periodNote}>
+            <InfoIcon size={16} />
+            <span>
+              Split across tactics using recent activity as a guide. Editing a row locks it in —
+              Reallocate spreads what's left across the rest to match your total. Tactics with no
+              spend in the last year are excluded by default.
+            </span>
+          </div>
+        </div>
       ) : (
         <div className={styles.fileRow}>
           <div className={styles.ti}>
@@ -460,7 +526,14 @@ function ReviewScreen({
           <span className={styles.flabel}>
             Total budget <span className={styles.finc}>· {includedCount(state)} of {BUILD_TACTICS.length} included</span>
           </span>
-          <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+          {state.method === "total" ? (
+            <span className={`${styles.fval} ${allocationDelta(state) !== 0 ? styles.fvalWarn : ""}`}>
+              {currencyFormatter.format(includedTotal(state))}
+              <span className={styles.ftarget}> of {currencyFormatter.format(state.totalBudget ?? 0)}</span>
+            </span>
+          ) : (
+            <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+          )}
         </div>
       </div>
     </Card>

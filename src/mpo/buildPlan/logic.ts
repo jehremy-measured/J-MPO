@@ -46,6 +46,41 @@ export function budgetFromUpload(): Record<string, number | null> {
   return budget;
 }
 
+/** Split an amount across tactics, weighted by recent daily spend (even split if no signal). */
+function allocateTotalBudget(amount: number, tacticIds: string[]): Record<string, number> {
+  const out: Record<string, number> = {};
+  if (tacticIds.length === 0) return out;
+  const weights = tacticIds.map((id) => DAILY_RATE[id] ?? 0);
+  const weightSum = weights.reduce((a, b) => a + b, 0);
+  const raw = tacticIds.map((_, i) => (weightSum > 0 ? (amount * weights[i]) / weightSum : amount / tacticIds.length));
+  const rounded = raw.map((v) => Math.max(0, Math.round(v)));
+  const roundingError = amount - rounded.reduce((a, b) => a + b, 0);
+  if (rounded.length > 0) rounded[rounded.length - 1] = Math.max(0, rounded[rounded.length - 1] + roundingError);
+  tacticIds.forEach((id, i) => (out[id] = rounded[i]));
+  return out;
+}
+
+/**
+ * Split a single total budget across tactics for brands with no tactic-wise numbers.
+ * Hand-edited (overridden) tactics keep their value; the rest share what's left,
+ * weighted by recent daily spend, so re-running after an edit only moves the remainder.
+ */
+export function budgetFromTotal(state: BuildPlanState): { budget: Record<string, number | null> } {
+  const total = state.totalBudget ?? 0;
+  const budget = { ...state.budget };
+  BUILD_TACTICS.forEach((t) => {
+    if (t.dormant && !state.overridden[t.id]) budget[t.id] = 0;
+  });
+  const overriddenSum = BUILD_TACTICS.reduce(
+    (sum, t) => sum + (state.overridden[t.id] ? budget[t.id] ?? 0 : 0),
+    0
+  );
+  const remainderIds = BUILD_TACTICS.filter((t) => !state.overridden[t.id] && !t.dormant).map((t) => t.id);
+  const allocation = allocateTotalBudget(Math.max(0, total - overriddenSum), remainderIds);
+  remainderIds.forEach((id) => (budget[id] = allocation[id]));
+  return { budget };
+}
+
 export function defaultIncludes(
   method: BuildPlanState["method"],
   budget: Record<string, number | null>
@@ -103,8 +138,13 @@ export function excludeReason(
   const tactic = BUILD_TACTICS.find((t) => t.id === tacticId);
   const v = state.budget[tacticId];
   if (state.method === "upload" && (v == null || v === 0)) return "no-budget-in-file";
-  if (state.method === "fetch" && tactic?.dormant) return "no-spend-12mo";
+  if ((state.method === "fetch" || state.method === "total") && tactic?.dormant) return "no-spend-12mo";
   return null;
+}
+
+/** Target minus what's actually allocated across included tactics — nonzero after a manual edit unbalances a total-budget plan. */
+export function allocationDelta(state: BuildPlanState): number {
+  return (state.totalBudget ?? 0) - includedTotal(state);
 }
 
 export function ctSummary(state: BuildPlanState): { label: string; attrLabels: string[] } {
@@ -155,7 +195,11 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
 
   const targetBudget = Math.max(500_000, includedTotal(state));
   const referencePeriod =
-    state.method === "fetch" ? activeWindow(state).label : state.source || "Uploaded budget";
+    state.method === "fetch"
+      ? activeWindow(state).label
+      : state.method === "total"
+        ? "Total budget, split by tactic"
+        : state.source || "Uploaded budget";
   const label = periodLabel(state);
 
   return {

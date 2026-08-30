@@ -22,9 +22,9 @@ export type BuildTactic = {
   dormant?: boolean;
 };
 
-export type BuildMethod = "upload" | "fetch" | null;
+export type BuildMethod = "upload" | "fetch" | "total" | null;
 
-export type BuildScreen = "period" | "ct" | "method" | "upload" | "review" | "done";
+export type BuildScreen = "period" | "ct" | "method" | "upload" | "total" | "review" | "done";
 
 export type PastWindow = {
   id: string;
@@ -43,6 +43,7 @@ export type BuildPlanState = {
   method: BuildMethod;
   source: string;
   win: string;
+  totalBudget: number | null;
   budget: Record<string, number | null>;
   overridden: Record<string, boolean>;
   included: Record<string, boolean>;

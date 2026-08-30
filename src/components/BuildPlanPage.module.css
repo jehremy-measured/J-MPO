@@ -767,6 +767,16 @@
   color: var(--gray-1000);
 }
 
+.ftarget {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--gray-800);
+}
+
+.fvalWarn {
+  color: #8b5300;
+}
+
 .emptyRow {
   padding: 28px 20px;
   text-align: center;

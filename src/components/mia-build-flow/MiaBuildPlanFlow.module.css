@@ -488,6 +488,61 @@
   color: var(--gray-1000);
 }
 
+.ftarget {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gray-800);
+}
+
+.fvalWarn {
+  color: #8b5300;
+}
+
+/* Total budget input */
+.field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.binputWrap {
+  position: relative;
+  width: 140px;
+}
+
+.binputWrap .dol {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13.5px;
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+.binput {
+  width: 100%;
+  font-size: 14px;
+  text-align: right;
+  padding: 9px 10px 9px 20px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-1000);
+}
+
+.binput:focus {
+  outline: 2px solid var(--blue-200);
+  border-color: var(--blue-700);
+}
+
 /* Done */
 .doneWrap {
   text-align: center;

@@ -1,6 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { DEFAULT_PLAN_END, DEFAULT_PLAN_START } from "./data";
-import { budgetFromUpload, budgetFromWindow, defaultIncludes } from "./logic";
+import { budgetFromTotal, budgetFromUpload, budgetFromWindow, defaultIncludes } from "./logic";
 import type { BuildPlanState, BuildScreen } from "./types";
 
 function initialState(): BuildPlanState {
@@ -13,6 +13,7 @@ function initialState(): BuildPlanState {
     method: null,
     source: "",
     win: "w0",
+    totalBudget: null,
     budget: {},
     overridden: {},
     included: {},
@@ -52,7 +53,7 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
 
   const continueFromCT = useCallback(() => goTo("method"), [goTo]);
 
-  const chooseMethod = useCallback((method: "upload" | "fetch") => {
+  const chooseMethod = useCallback((method: "upload" | "fetch" | "total") => {
     setState((s) => {
       const reset: BuildPlanState = {
         ...s,
@@ -61,12 +62,16 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
         budget: {},
         win: "w0",
         source: "",
+        totalBudget: null,
         included: {},
         query: "",
         channel: "All",
       };
       if (method === "upload") {
         return { ...reset, screen: "upload" };
+      }
+      if (method === "total") {
+        return { ...reset, screen: "total" };
       }
       const { budget } = budgetFromWindow(reset);
       return { ...reset, budget, included: defaultIncludes("fetch", budget), screen: "review" };
@@ -97,6 +102,25 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       const next = { ...s, win, overridden: {} };
       const { budget } = budgetFromWindow(next);
       return { ...next, budget };
+    });
+  }, []);
+
+  const setTotalBudget = useCallback((totalBudget: number | null) => {
+    setState((s) => ({ ...s, totalBudget }));
+  }, []);
+
+  const continueFromTotal = useCallback(() => {
+    setState((s) => {
+      const { budget } = budgetFromTotal(s);
+      return { ...s, budget, included: defaultIncludes("total", budget), screen: "review" };
+    });
+  }, []);
+
+  /** Redistribute whatever's left after hand-edited rows across the rest, to match the entered total. */
+  const reallocateTotal = useCallback(() => {
+    setState((s) => {
+      const { budget } = budgetFromTotal(s);
+      return { ...s, budget };
     });
   }, []);
 
@@ -133,8 +157,13 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
           return { ...s, screen: "ct" };
         case "upload":
           return { ...s, screen: "method" };
+        case "total":
+          return { ...s, screen: "method" };
         case "review":
-          return { ...s, screen: s.method === "upload" ? "upload" : "method" };
+          return {
+            ...s,
+            screen: s.method === "upload" ? "upload" : s.method === "total" ? "total" : "method",
+          };
         default:
           return s;
       }
@@ -159,6 +188,9 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       markUploadFilled,
       continueFromUpload,
       changeWindow,
+      setTotalBudget,
+      continueFromTotal,
+      reallocateTotal,
       reupload,
       setQuery,
       setChannel,
@@ -179,6 +211,9 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
       markUploadFilled,
       continueFromUpload,
       changeWindow,
+      setTotalBudget,
+      continueFromTotal,
+      reallocateTotal,
       reupload,
       setQuery,
       setChannel,
