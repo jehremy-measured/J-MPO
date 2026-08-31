@@ -38,7 +38,7 @@ export function TacticChartModal({
   onClose,
   allowActual = true,
 }: Props) {
-  const [chartView, setChartView] = useState<"cumulative" | "weekly">("cumulative");
+  const [chartView, setChartView] = useState<"cumulative" | "weekly">("weekly");
 
   if (!open) return null;
 
@@ -82,17 +82,17 @@ export function TacticChartModal({
             <div className={chartStyles.viewToggle}>
               <button
                 type="button"
-                className={chartView === "cumulative" ? chartStyles.viewActive : ""}
-                onClick={() => setChartView("cumulative")}
-              >
-                Cumulative
-              </button>
-              <button
-                type="button"
                 className={chartView === "weekly" ? chartStyles.viewActive : ""}
                 onClick={() => setChartView("weekly")}
               >
                 Weekly
+              </button>
+              <button
+                type="button"
+                className={chartView === "cumulative" ? chartStyles.viewActive : ""}
+                onClick={() => setChartView("cumulative")}
+              >
+                Cumulative
               </button>
             </div>
             <button type="button" className={styles.exportBtn} onClick={handleExport}>

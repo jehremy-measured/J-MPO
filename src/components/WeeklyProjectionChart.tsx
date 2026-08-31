@@ -152,7 +152,15 @@ export function buildActualWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
   return result;
 }
 
-const MARGIN = { top: 16, right: 16, bottom: 28, left: 56 };
+const MARGIN_BASE = { top: 16, right: 16, bottom: 28, left: 56 };
+
+function formatRoasTick(value: number): string {
+  return `$${Math.round(value)}`;
+}
+
+export function formatRoasFull(value: number): string {
+  return `$${value.toFixed(2)}`;
+}
 
 export function WeeklyProjectionChart({
   planStart,
@@ -171,9 +179,12 @@ export function WeeklyProjectionChart({
 }: Props) {
   const gradientId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
-  const [uncontrolledChartView, setUncontrolledChartView] = useState<"cumulative" | "weekly">("cumulative");
+  const [uncontrolledChartView, setUncontrolledChartView] = useState<"cumulative" | "weekly">("weekly");
   const chartView = controlledChartView ?? uncontrolledChartView;
   const setChartView = onChartViewChange ?? setUncontrolledChartView;
+  // The weekly view overlays an Incremental ROAS trendline with its own right-side axis, which
+  // needs a bit more margin than the cumulative view's plain two-series chart.
+  const MARGIN = { ...MARGIN_BASE, right: chartView === "weekly" ? 44 : MARGIN_BASE.right };
   const [chartWrapRef, { width: VB_WIDTH, height: VB_HEIGHT }] = useElementSize<HTMLDivElement>({
     width: 640,
     height: 260,
@@ -230,6 +241,16 @@ export function WeeklyProjectionChart({
   const actualPath = chartActualWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(w.index)},${yFor(w.sales)}`).join(" ");
   const actualSpendPath = chartActualWeeks.map((w, i) => `${i === 0 ? "M" : "L"}${xFor(w.index)},${yFor(w.budget)}`).join(" ");
 
+  // Incremental ROAS trendline — weekly view only. Plotted on its own right-side axis since
+  // ROAS (a small multiplier) and the $ sales/budget series live on wildly different scales.
+  const roasFor = (w: WeekPoint) => (w.budget > 0 ? w.sales / w.budget : 0);
+  const roasMax = useMemo(
+    () => niceCeiling(Math.max(...weeks.map(roasFor), 1) * 1.15),
+    [weeks]
+  );
+  const yForRoas = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / roasMax) * PLOT_HEIGHT;
+  const roasPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${bandCenter(i)},${yForRoas(roasFor(w))}`).join(" ");
+
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
   const labelEvery = Math.max(1, Math.ceil(chartWeeks.length / 6));
   const hit = hoverIndex != null ? chartWeeks[hoverIndex] : null;
@@ -243,17 +264,17 @@ export function WeeklyProjectionChart({
           <div className={styles.viewToggle}>
             <button
               type="button"
-              className={chartView === "cumulative" ? styles.viewActive : ""}
-              onClick={() => setChartView("cumulative")}
-            >
-              Cumulative
-            </button>
-            <button
-              type="button"
               className={chartView === "weekly" ? styles.viewActive : ""}
               onClick={() => setChartView("weekly")}
             >
               Weekly
+            </button>
+            <button
+              type="button"
+              className={chartView === "cumulative" ? styles.viewActive : ""}
+              onClick={() => setChartView("cumulative")}
+            >
+              Cumulative
             </button>
           </div>
         </div>
@@ -267,6 +288,12 @@ export function WeeklyProjectionChart({
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
           Planned Budget
         </span>
+        {chartView === "weekly" && (
+          <span className={styles.legendItem}>
+            <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+            Incremental ROAS
+          </span>
+        )}
         {showActual && (
           <>
             <span className={styles.legendItem}>
@@ -291,7 +318,7 @@ export function WeeklyProjectionChart({
           aria-label={
             chartView === "cumulative"
               ? `Line chart of projected cumulative incremental ${volumeNoun.toLowerCase()} and budget by week`
-              : `Bar chart of projected incremental ${volumeNoun.toLowerCase()} and budget by week`
+              : `Bar chart of projected incremental ${volumeNoun.toLowerCase()}, budget, and incremental ROAS by week`
           }
         >
           <defs>
@@ -315,6 +342,17 @@ export function WeeklyProjectionChart({
                 <text x={MARGIN.left - 10} y={y} className={styles.yTick} textAnchor="end" dominantBaseline="middle">
                   {formatAxisTick(yMax * step, isOrdersFamily)}
                 </text>
+                {chartView === "weekly" && (
+                  <text
+                    x={VB_WIDTH - MARGIN.right + 10}
+                    y={y}
+                    className={styles.yTick}
+                    textAnchor="start"
+                    dominantBaseline="middle"
+                  >
+                    {formatRoasTick(roasMax * step)}
+                  </text>
+                )}
               </g>
             );
           })}
@@ -378,7 +416,8 @@ export function WeeklyProjectionChart({
               )}
             </>
           ) : (
-            chartWeeks.map((w, i) => {
+            <>
+            {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
               const barCount = showActual ? 4 : 2;
               const barWidth = Math.max(2, Math.min(barCount === 4 ? 13 : 22, bandWidth * (barCount === 4 ? 0.1 : 0.18)));
@@ -434,7 +473,12 @@ export function WeeklyProjectionChart({
                   )}
                 </g>
               );
-            })
+            })}
+            <path d={roasPath} className={styles.roasLine} fill="none" />
+            {hit && (
+              <circle cx={bandCenter(hoverIndex!)} cy={yForRoas(roasFor(hit))} r={5} className={styles.roasDot} />
+            )}
+            </>
           )}
 
           {chartWeeks.map((w, i) => {
@@ -502,6 +546,13 @@ export function WeeklyProjectionChart({
               </span>
               <strong>{formatFullCurrency(hit.budget)}</strong>
             </div>
+            {chartView === "weekly" && (
+              <div className={styles.tooltipRow}>
+                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                <span className={styles.tooltipRowLabel}>Incremental ROAS</span>
+                <strong>{formatRoasFull(roasFor(hit))}</strong>
+              </div>
+            )}
             {hitActual && (
               <div className={styles.tooltipRow}>
                 <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />

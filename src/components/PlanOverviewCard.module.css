@@ -102,6 +102,10 @@
   background: var(--purple-600);
 }
 
+.swatchRoas {
+  background: var(--gold-600);
+}
+
 .body {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -356,6 +360,19 @@
   stroke: var(--purple-600);
   stroke-width: 2;
   transition: r 0.1s ease;
+}
+
+.roasLine {
+  stroke: var(--gold-600);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.roasDot {
+  fill: var(--gray-000);
+  stroke: var(--gold-600);
+  stroke-width: 2;
 }
 
 .crosshair {
