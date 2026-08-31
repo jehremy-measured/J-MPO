@@ -41,8 +41,14 @@
 }
 
 .topBarReview {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   align-items: center;
   justify-content: space-between;
+  padding-top: 16px;
+  margin-top: -16px;
+  background: var(--gray-000);
 }
 
 .reviewPageTitle {
@@ -100,7 +106,9 @@
 }
 
 .pageReview .tblHead {
-  top: var(--header-height, 48px);
+  /* Sits directly below the now-sticky "Plan settings" title bar (48px tall) instead of the
+   * global nav's header height, which is 0 here since the top nav is hidden on this page. */
+  top: 48px;
 }
 
 .pageReview .tblFoot {

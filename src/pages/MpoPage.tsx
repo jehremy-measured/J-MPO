@@ -3,6 +3,7 @@ import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
+import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { CloseIcon } from "../components/icons/CloseIcon";
@@ -185,6 +186,17 @@ export function MpoPage() {
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
+
+  // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
+  // after landing on it — resets whenever the viewed plan changes.
+  const [showDuplicatePopover, setShowDuplicatePopover] = useState(false);
+  useEffect(() => {
+    setShowDuplicatePopover(false);
+    if (viewMode !== "detail" || activePlan?.kind !== "simulation") return;
+    const timer = window.setTimeout(() => setShowDuplicatePopover(true), 10000);
+    return () => window.clearTimeout(timer);
+  }, [viewMode, activePlan?.id, activePlan?.kind]);
+
   const currentTarget =
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.target
@@ -305,6 +317,15 @@ export function MpoPage() {
                       <CloseIcon size={20} />
                     </button>
                   </div>
+                  {showDuplicatePopover && activePlan && (
+                    <DuplicatePlanPopover
+                      onDuplicate={() => {
+                        state.duplicatePlan(activePlan.id);
+                        setShowDuplicatePopover(false);
+                      }}
+                      onDismiss={() => setShowDuplicatePopover(false)}
+                    />
+                  )}
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (

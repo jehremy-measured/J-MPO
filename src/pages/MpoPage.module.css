@@ -81,10 +81,14 @@
 }
 
 .detailHeader {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   display: flex;
   align-items: center;
   gap: 12px;
   padding: 16px 24px 24px;
+  background: var(--gray-000);
 }
 
 .detailTitleGroup {

@@ -1,0 +1,94 @@
+.popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  left: 24px;
+  z-index: 20;
+  width: 320px;
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  background: var(--gray-1000);
+  box-shadow: 0 12px 28px rgba(13, 45, 66, 0.35);
+  animation: popIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes popIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.arrow {
+  position: absolute;
+  top: -7px;
+  left: 28px;
+  width: 14px;
+  height: 14px;
+  background: var(--gray-1000);
+  transform: rotate(45deg);
+  border-radius: 3px 0 0 0;
+}
+
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--gray-000);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-sm);
+}
+
+.closeBtn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--gray-000);
+}
+
+.subtext {
+  margin: 0 0 16px;
+  font-size: 14px;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ctaBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  padding: 0 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  background: var(--gray-000);
+  border-radius: var(--radius-sm);
+}
+
+.ctaBtn:hover {
+  background: var(--gray-200);
+}
