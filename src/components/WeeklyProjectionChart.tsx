@@ -245,11 +245,14 @@ export function WeeklyProjectionChart({
   // ROAS (a small multiplier) and the $ sales/budget series live on wildly different scales.
   const roasFor = (w: WeekPoint) => (w.budget > 0 ? w.sales / w.budget : 0);
   const roasMax = useMemo(
-    () => niceCeiling(Math.max(...weeks.map(roasFor), 1) * 1.15),
-    [weeks]
+    () => niceCeiling(Math.max(...weeks.map(roasFor), ...actualWeeks.map(roasFor), 1) * 1.15),
+    [weeks, actualWeeks]
   );
   const yForRoas = (v: number) => MARGIN.top + PLOT_HEIGHT - (v / roasMax) * PLOT_HEIGHT;
   const roasPath = weeks.map((w, i) => `${i === 0 ? "M" : "L"}${bandCenter(i)},${yForRoas(roasFor(w))}`).join(" ");
+  const actualRoasPath = actualWeeks
+    .map((w, i) => `${i === 0 ? "M" : "L"}${bandCenter(w.index)},${yForRoas(roasFor(w))}`)
+    .join(" ");
 
   const gridSteps = [0, 0.25, 0.5, 0.75, 1];
   const labelEvery = Math.max(1, Math.ceil(chartWeeks.length / 6));
@@ -304,6 +307,12 @@ export function WeeklyProjectionChart({
               <span className={`${styles.swatch} ${styles.swatchActualSpend}`} aria-hidden />
               Actual Spend
             </span>
+            {chartView === "weekly" && (
+              <span className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchActualRoas}`} aria-hidden />
+                Actual ROAS
+              </span>
+            )}
           </>
         )}
       </div>
@@ -478,6 +487,15 @@ export function WeeklyProjectionChart({
             {hit && (
               <circle cx={bandCenter(hoverIndex!)} cy={yForRoas(roasFor(hit))} r={5} className={styles.roasDot} />
             )}
+            {showActual && <path d={actualRoasPath} className={styles.actualRoasLine} fill="none" />}
+            {showActual && hitActual && (
+              <circle
+                cx={bandCenter(hitActual.index)}
+                cy={yForRoas(roasFor(hitActual))}
+                r={5}
+                className={styles.actualRoasDot}
+              />
+            )}
             </>
           )}
 
@@ -571,6 +589,13 @@ export function WeeklyProjectionChart({
                 <strong>{formatFullCurrency(hitActual.budget)}</strong>
               </div>
             )}
+            {chartView === "weekly" && hitActual && (
+              <div className={styles.tooltipRow}>
+                <span className={`${styles.swatch} ${styles.swatchActualRoas}`} aria-hidden />
+                <span className={styles.tooltipRowLabel}>Actual ROAS</span>
+                <strong>{formatRoasFull(roasFor(hitActual))}</strong>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -586,8 +611,10 @@ export function WeeklyProjectionChart({
             <th scope="col">Week</th>
             <th scope="col">Projected incremental {volumeNoun.toLowerCase()}</th>
             <th scope="col">Planned budget</th>
+            {chartView === "weekly" && <th scope="col">Incremental ROAS</th>}
             {showActual && <th scope="col">Actual incremental {volumeNoun.toLowerCase()}</th>}
             {showActual && <th scope="col">Actual spend</th>}
+            {chartView === "weekly" && showActual && <th scope="col">Actual ROAS</th>}
           </tr>
         </thead>
         <tbody>
@@ -596,11 +623,15 @@ export function WeeklyProjectionChart({
               <td>{w.fullLabel}</td>
               <td>{formatVolumeFull(w.sales, isOrdersFamily)}</td>
               <td>{formatFullCurrency(w.budget)}</td>
+              {chartView === "weekly" && <td>{formatRoasFull(roasFor(w))}</td>}
               {showActual && (
                 <td>{actualByIndex.has(w.index) ? formatVolumeFull(actualByIndex.get(w.index)!.sales, isOrdersFamily) : "—"}</td>
               )}
               {showActual && (
                 <td>{actualByIndex.has(w.index) ? formatFullCurrency(actualByIndex.get(w.index)!.budget) : "—"}</td>
+              )}
+              {chartView === "weekly" && showActual && (
+                <td>{actualByIndex.has(w.index) ? formatRoasFull(roasFor(actualByIndex.get(w.index)!)) : "—"}</td>
               )}
             </tr>
           ))}

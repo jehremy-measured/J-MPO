@@ -106,6 +106,10 @@
   background: var(--gold-600);
 }
 
+.swatchActualRoas {
+  background: var(--pink-600);
+}
+
 .body {
   display: grid;
   grid-template-columns: 1fr 2fr;
@@ -372,6 +376,19 @@
 .roasDot {
   fill: var(--gray-000);
   stroke: var(--gold-600);
+  stroke-width: 2;
+}
+
+.actualRoasLine {
+  stroke: var(--pink-600);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.actualRoasDot {
+  fill: var(--gray-000);
+  stroke: var(--pink-600);
   stroke-width: 2;
 }
 
