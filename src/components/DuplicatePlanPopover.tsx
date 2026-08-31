@@ -10,16 +10,16 @@ type Props = {
  * seconds after opening the plan, pointing up at the plan title. */
 export function DuplicatePlanPopover({ onDuplicate, onDismiss }: Props) {
   return (
-    <div className={styles.popover} role="dialog" aria-label="Duplicate this plan">
+    <div className={styles.popover} role="dialog" aria-label="Explore what-if scenarios">
       <span className={styles.arrow} aria-hidden />
       <div className={styles.header}>
-        <h3 className={styles.title}>Duplicate this plan</h3>
+        <h3 className={styles.title}>Explore what-if scenarios</h3>
         <button type="button" className={styles.closeBtn} aria-label="Dismiss" onClick={onDismiss}>
           <CloseIcon size={16} />
         </button>
       </div>
       <p className={styles.subtext}>
-        Simulate what-if scenarios of this plan by creating a variant of this plan.
+        Duplicate this plan to simulate what-if scenarios with different budgets.
       </p>
       <div className={styles.actions}>
         <button type="button" className={styles.ctaBtn} onClick={onDuplicate}>

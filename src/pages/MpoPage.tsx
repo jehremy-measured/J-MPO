@@ -307,6 +307,15 @@ export function MpoPage() {
                           {KIND_LABEL[activePlan.kind]}
                         </span>
                       )}
+                      {showDuplicatePopover && activePlan && (
+                        <DuplicatePlanPopover
+                          onDuplicate={() => {
+                            setShowDuplicatePopover(false);
+                            setDuplicateDialogOpen(true);
+                          }}
+                          onDismiss={() => setShowDuplicatePopover(false)}
+                        />
+                      )}
                     </div>
                   )}
                   <div className={styles.detailHeaderActions}>
@@ -319,15 +328,6 @@ export function MpoPage() {
                       <CloseIcon size={20} />
                     </button>
                   </div>
-                  {showDuplicatePopover && activePlan && (
-                    <DuplicatePlanPopover
-                      onDuplicate={() => {
-                        setShowDuplicatePopover(false);
-                        setDuplicateDialogOpen(true);
-                      }}
-                      onDismiss={() => setShowDuplicatePopover(false)}
-                    />
-                  )}
                 </div>
                 <div className={styles.content}>
                   {state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId ? (
