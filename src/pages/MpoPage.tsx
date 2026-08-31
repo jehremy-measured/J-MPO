@@ -3,6 +3,7 @@ import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
+import { DuplicatePlanDialog } from "../components/DuplicatePlanDialog";
 import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
@@ -190,6 +191,7 @@ export function MpoPage() {
   // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
   // after landing on it — resets whenever the viewed plan changes.
   const [showDuplicatePopover, setShowDuplicatePopover] = useState(false);
+  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   useEffect(() => {
     setShowDuplicatePopover(false);
     if (viewMode !== "detail" || activePlan?.kind !== "simulation") return;
@@ -320,8 +322,8 @@ export function MpoPage() {
                   {showDuplicatePopover && activePlan && (
                     <DuplicatePlanPopover
                       onDuplicate={() => {
-                        state.duplicatePlan(activePlan.id);
                         setShowDuplicatePopover(false);
+                        setDuplicateDialogOpen(true);
                       }}
                       onDismiss={() => setShowDuplicatePopover(false)}
                     />
@@ -446,6 +448,16 @@ export function MpoPage() {
         blendedRoas={state.totals.roas}
       />
       {creatingPlan && <CreatingPlanOverlay />}
+      {duplicateDialogOpen && activePlan && (
+        <DuplicatePlanDialog
+          planLabel={activePlan.label}
+          onClose={() => setDuplicateDialogOpen(false)}
+          onConfirm={(name) => {
+            state.duplicatePlan(activePlan.id, name);
+            setDuplicateDialogOpen(false);
+          }}
+        />
+      )}
     </div>
   );
 }

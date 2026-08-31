@@ -241,7 +241,7 @@ export function useMpoState() {
   );
 
   const duplicatePlan = useCallback(
-    (id: string) => {
+    (id: string, label?: string) => {
       const source = plans.find((p) => p.id === id);
       if (!source) return;
 
@@ -250,7 +250,7 @@ export function useMpoState() {
       const copy: Plan = {
         ...source,
         id: newId,
-        label: `${source.label} (copy)`,
+        label: label ?? `${source.label} (copy)`,
         createdBy: "JH",
         lastEdited: new Date(),
       };
@@ -264,7 +264,7 @@ export function useMpoState() {
           baseline: cloneTactics(sourceSnapshot.baseline),
         },
       }));
-      notify(`Duplicated "${source.label}"`);
+      notify(label ? `Duplicated "${source.label}" as "${label}"` : `Duplicated "${source.label}"`);
       return newId;
     },
     [plans, planData, activePlanId, currentSnapshot, notify]
