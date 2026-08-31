@@ -131,7 +131,7 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 }
 
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
-type OptimizeSignal = { token: number; rows: SummaryRow[] };
+type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
 
 type Props = {
   open: boolean;
@@ -183,6 +183,7 @@ export function MiaSidePanel({
   const [settingUp, setSettingUp] = useState(false);
   const [settingConstraints, setSettingConstraints] = useState(false);
   const [pendingOptimizeRows, setPendingOptimizeRows] = useState<SummaryRow[] | null>(null);
+  const [pendingOptimizePeriod, setPendingOptimizePeriod] = useState<string | null>(null);
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -238,6 +239,7 @@ export function MiaSidePanel({
     setSettingUp(false);
     setSettingConstraints(false);
     setPendingOptimizeRows(null);
+    setPendingOptimizePeriod(null);
     setChatsMenuOpen(false);
     setPresetPlanType(null);
   }, []);
@@ -263,7 +265,7 @@ export function MiaSidePanel({
   }, [open, startSignal, startCreateFlow]);
 
   const startOptimizeFlow = useCallback(
-    (rows: SummaryRow[]) => {
+    (periodLabel: string, rows: SummaryRow[]) => {
       appendMessages([{ role: "user", text: "Optimize this plan" }]);
       setFlowActive(false);
       setUploadState(null);
@@ -271,6 +273,7 @@ export function MiaSidePanel({
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(null);
+      setPendingOptimizePeriod(periodLabel);
       setPendingOptimizeRows(rows);
       setSettingConstraints(true);
     },
@@ -281,7 +284,7 @@ export function MiaSidePanel({
     if (!open || !optimizeSignal || optimizeSignal.token === lastOptimizeTokenRef.current) return;
     lastOptimizeTokenRef.current = optimizeSignal.token;
     setMessages([]);
-    startOptimizeFlow(optimizeSignal.rows);
+    startOptimizeFlow(optimizeSignal.periodLabel, optimizeSignal.rows);
   }, [open, optimizeSignal, startOptimizeFlow]);
 
   useEffect(() => {
@@ -300,15 +303,17 @@ export function MiaSidePanel({
   useEffect(() => {
     if (!settingConstraints) return;
     const rows = pendingOptimizeRows ?? [];
+    const periodLabel = pendingOptimizePeriod;
     const timer = window.setTimeout(() => {
       setSettingConstraints(false);
       setPendingOptimizeRows(null);
+      setPendingOptimizePeriod(null);
       appendMessages([
         { role: "mia", text: "Your plan is ready to optimize." },
         {
           role: "mia",
           kind: "optimize-ready-card",
-          text: "Plan ready for optimization",
+          text: periodLabel ? `${periodLabel} optimized` : "Plan ready for optimization",
           rows: [
             ...rows,
             {
@@ -322,7 +327,7 @@ export function MiaSidePanel({
       ]);
     }, CONSTRAINTS_DELAY_MS);
     return () => window.clearTimeout(timer);
-  }, [settingConstraints, pendingOptimizeRows, appendMessages]);
+  }, [settingConstraints, pendingOptimizeRows, pendingOptimizePeriod, appendMessages]);
 
   useEffect(() => {
     if (!loadingReviewState) return;
@@ -355,6 +360,7 @@ export function MiaSidePanel({
       setSettingUp(false);
       setSettingConstraints(false);
       setPendingOptimizeRows(null);
+      setPendingOptimizePeriod(null);
       setChatsMenuOpen(false);
       setPresetPlanType(null);
       return;
@@ -726,14 +732,14 @@ export function MiaSidePanel({
               )}
               <div className={styles.readyCardActions}>
                 <button type="button" className={styles.rcBtn} onClick={() => onEditConstraints?.()}>
-                  Edit constraints
+                  Edit
                 </button>
                 <button
                   type="button"
                   className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
                   onClick={() => onOptimizePlan?.()}
                 >
-                  Optimize plan
+                  Create plan
                 </button>
               </div>
             </div>

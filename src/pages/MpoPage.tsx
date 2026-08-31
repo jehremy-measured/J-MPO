@@ -76,7 +76,11 @@ export function MpoPage() {
   const [planBuildStates, setPlanBuildStates] = useState<Record<string, BuildPlanState>>({});
   const [viewMode, setViewMode] = useState<"list" | "detail">("list");
   const [miaStart, setMiaStart] = useState<{ token: number; planType: "outcomes" | "spend" } | null>(null);
-  const [optimizeSignal, setOptimizeSignal] = useState<{ token: number; rows: OptimizeRow[] } | null>(null);
+  const [optimizeSignal, setOptimizeSignal] = useState<{
+    token: number;
+    periodLabel: string;
+    rows: OptimizeRow[];
+  } | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
@@ -110,9 +114,9 @@ export function MpoPage() {
     setMiaStart({ token: Date.now(), planType });
   };
 
-  const startOptimizeFlow = (rows: OptimizeRow[]) => {
+  const startOptimizeFlow = (periodLabel: string, rows: OptimizeRow[]) => {
     setMiaOpen(true);
-    setOptimizeSignal({ token: Date.now(), rows });
+    setOptimizeSignal({ token: Date.now(), periodLabel, rows });
   };
 
   const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState, modeOverride?: "create" | "edit") => {
@@ -325,6 +329,7 @@ export function MpoPage() {
                         cpo={state.totals.cpo}
                         onOptimize={() =>
                           startOptimizeFlow(
+                            formatRangeLabel(state.newPlanSummary!.planStart, state.newPlanSummary!.planEnd),
                             buildOptimizeRows(
                               state.newPlanSummary!.planStart,
                               state.newPlanSummary!.planEnd,
@@ -362,6 +367,7 @@ export function MpoPage() {
                         cpo={state.totals.cpo}
                         onOptimize={() =>
                           startOptimizeFlow(
+                            formatRangeLabel(activePlan.planStart, activePlan.planEnd),
                             buildOptimizeRows(
                               activePlan.planStart,
                               activePlan.planEnd,
