@@ -16,7 +16,7 @@ type Props = {
   onUpdateModel?: () => void;
   currentModelLabel?: string;
   /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
-   * directly beside a title, opening the menu aligned to its left edge instead of its right. */
+   * directly beside a title. */
   variant?: "button" | "chevron";
   /** For the "chevron" variant: renders this text before the chevron inside the same trigger,
    * so the title itself (not just the chevron) is hoverable and opens the menu on click. */
@@ -107,7 +107,7 @@ export function PlanOptionsMenu({
         </button>
       )}
       {menuOpen && (
-        <div className={`${styles.moreMenu} ${variant === "chevron" ? styles.moreMenuLeft : ""}`}>
+        <div className={styles.moreMenu}>
           {onRenameRequest && (
             <button type="button" onClick={handleRename}>
               <EditIcon size={20} /> Rename

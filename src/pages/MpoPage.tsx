@@ -294,7 +294,7 @@ export function MpoPage() {
                           shared={activePlan?.shared}
                           onRenameRequest={startRenameTitle}
                           onToggleSharePlan={state.toggleSharePlan}
-                          onDuplicatePlan={state.duplicatePlan}
+                          onDuplicatePlan={() => setDuplicateDialogOpen(true)}
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}

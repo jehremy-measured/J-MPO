@@ -76,11 +76,6 @@
   z-index: 20;
 }
 
-.moreMenuLeft {
-  left: 0;
-  right: auto;
-}
-
 .moreMenu button {
   width: 100%;
   height: 32px;
