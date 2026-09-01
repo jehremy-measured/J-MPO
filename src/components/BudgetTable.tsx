@@ -90,7 +90,36 @@ function formatPercentOfTotal(value: string, total: number): string {
   return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
 }
 
+function pctOf(value: number, total: number): string {
+  if (total <= 0) return "—";
+  return `${((value / total) * 100).toFixed(1)}%`;
+}
+
+type ChannelRow = {
+  name: string;
+  budget: number;
+  sales: number;
+  orders: number;
+};
+
+function buildChannelRows(tacticRows: TacticRow[]): ChannelRow[] {
+  const byChannel = new Map<string, ChannelRow>();
+  for (const row of tacticRows) {
+    const existing = byChannel.get(row.channel) ?? { name: row.channel, budget: 0, sales: 0, orders: 0 };
+    existing.budget += parseCurrency(row.budget);
+    existing.sales += parseCurrency(row.sales);
+    existing.orders += parseCurrency(row.orders);
+    byChannel.set(row.channel, existing);
+  }
+  return [...byChannel.values()];
+}
+
+const channelRows = buildChannelRows(rows);
+
+type BudgetTableView = "channels" | "tactics";
+
 export function BudgetTable({ target, planStart, planEnd, allowActual = true }: Props) {
+  const [view, setView] = useState<BudgetTableView>("channels");
   const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
   const showOrders = target === "incremental-orders" || target === "incremental-cpo";
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
@@ -114,8 +143,18 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
         <div className={styles.headerControls}>
           <div className={styles.viewToggle}>
             <button type="button">Segments</button>
-            <button type="button">Channels</button>
-            <button type="button" className={styles.viewActive}>
+            <button
+              type="button"
+              className={view === "channels" ? styles.viewActive : undefined}
+              onClick={() => setView("channels")}
+            >
+              Channels
+            </button>
+            <button
+              type="button"
+              className={view === "tactics" ? styles.viewActive : undefined}
+              onClick={() => setView("tactics")}
+            >
               Tactics
             </button>
           </div>
@@ -135,7 +174,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Tactic</th>
+              <th>{view === "channels" ? "Channel" : "Tactic"}</th>
               <th>Budget</th>
               <th>{primaryLabel}</th>
               <th>{secondaryLabel}</th>
@@ -158,47 +197,84 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
               </td>
               <td />
             </tr>
-            {rows.map((row) => (
-              <tr key={row.name}>
-                <td>
-                  <div className={styles.tacticCell}>
-                    <span className={styles.logoPlaceholder} aria-hidden>
-                      {row.name.charAt(0)}
-                    </span>
-                    <div>
-                      <div className={styles.tacticName}>{row.name}</div>
-                      <div className={styles.tacticChannel}>{row.channel}</div>
-                    </div>
-                    <button
-                      type="button"
-                      className={styles.sparkline}
-                      aria-label={`View projections by week for ${row.name}`}
-                      onClick={() => setActiveTactic(row)}
-                    >
-                      <ReturnCurveIcon size={20} />
-                    </button>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cellStack}>
-                    <span className={styles.value}>{row.budget}</span>
-                    <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.cellStack}>
-                    <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
-                    <span className={styles.pctOfTotal}>
-                      {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
-                    </span>
-                  </div>
-                </td>
-                <td>
-                  <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
-                </td>
-                <td>{row.marginal}</td>
-              </tr>
-            ))}
+            {view === "channels"
+              ? channelRows.map((row) => {
+                  const primaryValue = showOrders ? row.orders : row.sales;
+                  const secondaryValue = showOrders
+                    ? row.budget / (row.orders || 1)
+                    : row.sales / (row.budget || 1);
+                  return (
+                    <tr key={row.name}>
+                      <td>
+                        <div className={styles.tacticCell}>
+                          <span className={styles.logoPlaceholder} aria-hidden>
+                            {row.name.charAt(0)}
+                          </span>
+                          <div className={styles.tacticName}>{row.name}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={styles.value}>{formatCurrency(row.budget)}</span>
+                          <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={styles.value}>
+                            {showOrders ? Math.round(primaryValue).toLocaleString() : formatCurrency(primaryValue)}
+                          </span>
+                          <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span className={styles.value}>${secondaryValue.toFixed(2)}</span>
+                      </td>
+                      <td>—</td>
+                    </tr>
+                  );
+                })
+              : rows.map((row) => (
+                  <tr key={row.name}>
+                    <td>
+                      <div className={styles.tacticCell}>
+                        <span className={styles.logoPlaceholder} aria-hidden>
+                          {row.name.charAt(0)}
+                        </span>
+                        <div>
+                          <div className={styles.tacticName}>{row.name}</div>
+                          <div className={styles.tacticChannel}>{row.channel}</div>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.sparkline}
+                          aria-label={`View projections by week for ${row.name}`}
+                          onClick={() => setActiveTactic(row)}
+                        >
+                          <ReturnCurveIcon size={20} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.cellStack}>
+                        <span className={styles.value}>{row.budget}</span>
+                        <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.cellStack}>
+                        <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
+                        <span className={styles.pctOfTotal}>
+                          {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
+                    </td>
+                    <td>{row.marginal}</td>
+                  </tr>
+                ))}
           </tbody>
         </table>
       </div>

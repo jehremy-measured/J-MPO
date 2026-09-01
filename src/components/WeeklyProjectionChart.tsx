@@ -169,7 +169,7 @@ export function WeeklyProjectionChart({
   volumeMetric,
   volumeNoun,
   isOrdersFamily,
-  title = "Projections by Week",
+  title = "Projections over time",
   hideHeader = false,
   chartView: controlledChartView,
   onChartViewChange,
