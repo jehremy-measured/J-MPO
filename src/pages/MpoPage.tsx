@@ -283,11 +283,11 @@ export function MpoPage() {
                     />
                   ) : (
                     <div className={styles.detailTitleGroup}>
-                      <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
-                      {state.activePlanId && (
+                      {state.activePlanId ? (
                         <PlanOptionsMenu
                           planId={state.activePlanId}
                           planLabel={state.activePlanLabel}
+                          title={state.activePlanLabel}
                           shared={activePlan?.shared}
                           onRenameRequest={startRenameTitle}
                           onToggleSharePlan={state.toggleSharePlan}
@@ -298,6 +298,8 @@ export function MpoPage() {
                           lastUpdatedLabel="Updated 2 hours ago"
                           variant="chevron"
                         />
+                      ) : (
+                        <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
                       )}
                       {activePlan && (
                         <span

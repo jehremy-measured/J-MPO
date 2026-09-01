@@ -39,10 +39,31 @@
   color: var(--gray-1000);
 }
 
+.chevronBtnWithTitle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.chevronBtnWithTitle:hover {
+  background: var(--gray-200);
+}
+
+.chevronBtnTitleText {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  white-space: nowrap;
+}
+
 .moreMenu {
   position: absolute;
   right: 0;
-  top: 38px;
+  top: calc(100% + 6px);
   background: var(--gray-000);
   border: 1px solid var(--gray-300);
   border-radius: 10px;

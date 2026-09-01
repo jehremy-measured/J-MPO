@@ -18,6 +18,9 @@ type Props = {
   /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
    * directly beside a title, opening the menu aligned to its left edge instead of its right. */
   variant?: "button" | "chevron";
+  /** For the "chevron" variant: renders this text before the chevron inside the same trigger,
+   * so the title itself (not just the chevron) is hoverable and opens the menu on click. */
+  title?: string;
 };
 
 export function PlanOptionsMenu({
@@ -32,6 +35,7 @@ export function PlanOptionsMenu({
   onRefresh,
   lastUpdatedLabel,
   variant = "button",
+  title,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [confirmingDelete, setConfirmingDelete] = useState(false);
@@ -89,10 +93,11 @@ export function PlanOptionsMenu({
       {variant === "chevron" ? (
         <button
           type="button"
-          className={styles.chevronBtn}
-          aria-label="Plan options"
+          className={title ? styles.chevronBtnWithTitle : styles.chevronBtn}
+          aria-label={title ? undefined : "Plan options"}
           onClick={() => setMenuOpen((v) => !v)}
         >
+          {title && <span className={styles.chevronBtnTitleText}>{title}</span>}
           <ChevronDownIcon size={18} />
         </button>
       ) : (
