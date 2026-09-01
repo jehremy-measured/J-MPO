@@ -13,8 +13,8 @@ type Props = {
   onDuplicatePlan?: (id: string) => void;
   onExportPlan?: () => void;
   onDeletePlan?: (id: string) => void;
-  onRefresh?: () => void;
-  lastUpdatedLabel?: string;
+  onUpdateModel?: () => void;
+  currentModelLabel?: string;
   /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
    * directly beside a title, opening the menu aligned to its left edge instead of its right. */
   variant?: "button" | "chevron";
@@ -32,8 +32,8 @@ export function PlanOptionsMenu({
   onDuplicatePlan,
   onExportPlan,
   onDeletePlan,
-  onRefresh,
-  lastUpdatedLabel,
+  onUpdateModel,
+  currentModelLabel,
   variant = "button",
   title,
 }: Props) {
@@ -50,7 +50,7 @@ export function PlanOptionsMenu({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan && !onRefresh)
+  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan && !onUpdateModel)
     return null;
 
   const handleRename = () => {
@@ -78,9 +78,9 @@ export function PlanOptionsMenu({
     if (onDeletePlan) setConfirmingDelete(true);
   };
 
-  const handleRefresh = () => {
+  const handleUpdateModel = () => {
     setMenuOpen(false);
-    onRefresh?.();
+    onUpdateModel?.();
   };
 
   const confirmDelete = () => {
@@ -133,14 +133,14 @@ export function PlanOptionsMenu({
               <TrashIcon size={20} /> Delete
             </button>
           )}
-          {onRefresh && (
+          {onUpdateModel && (
             <>
               <div className={styles.menuDivider} />
-              <button type="button" className={styles.stackedItem} onClick={handleRefresh}>
+              <button type="button" className={styles.stackedItem} onClick={handleUpdateModel}>
                 <MaterialIcon name="autorenew" size={20} />
                 <span className={styles.stackedItemText}>
-                  <span className={styles.stackedItemLabel}>Refresh</span>
-                  {lastUpdatedLabel && <span className={styles.stackedItemSub}>{lastUpdatedLabel}</span>}
+                  <span className={styles.stackedItemLabel}>Update model</span>
+                  {currentModelLabel && <span className={styles.stackedItemSub}>{currentModelLabel}</span>}
                 </span>
               </button>
             </>

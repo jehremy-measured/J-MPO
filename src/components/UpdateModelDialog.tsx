@@ -5,18 +5,18 @@ import { ModelSelectList } from "./ModelSelectList";
 import styles from "./PlanDialog.module.css";
 
 type Props = {
-  planLabel: string;
   onClose: () => void;
-  onConfirm: (name: string, model: ModelOption) => void;
+  onConfirm: (model: ModelOption) => void;
 };
 
-export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
-  const [name, setName] = useState(`${planLabel} variant 1`);
+/** Same "Select model" list as the Duplicate-plan dialog, minus the plan-name field — for
+ * switching the plan's current model to a different weekly refresh. */
+export function UpdateModelDialog({ onClose, onConfirm }: Props) {
   const [selectedModelId, setSelectedModelId] = useState(MODELS[0].id);
 
   const handleConfirm = () => {
     const model = MODELS.find((m) => m.id === selectedModelId) ?? MODELS[0];
-    onConfirm(name.trim() || `${planLabel} variant 1`, model);
+    onConfirm(model);
   };
 
   return (
@@ -25,12 +25,12 @@ export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
         className={styles.dialog}
         role="dialog"
         aria-modal="true"
-        aria-labelledby="duplicate-plan-title"
+        aria-labelledby="update-model-title"
         onMouseDown={(e) => e.stopPropagation()}
       >
         <div className={styles.header}>
-          <h3 id="duplicate-plan-title" className={styles.title}>
-            Duplicate this plan
+          <h3 id="update-model-title" className={styles.title}>
+            Update model
           </h3>
           <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
             <CloseIcon size={20} />
@@ -38,17 +38,6 @@ export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
         </div>
 
         <div className={styles.body}>
-          <label className={styles.fieldLabel} htmlFor="duplicate-plan-name">
-            Plan name
-          </label>
-          <input
-            id="duplicate-plan-name"
-            type="text"
-            className={styles.textInput}
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-
           <ModelSelectList selectedModelId={selectedModelId} onSelect={setSelectedModelId} />
         </div>
 
@@ -57,7 +46,7 @@ export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
             Cancel
           </button>
           <button type="button" className={styles.confirmBtn} onClick={handleConfirm}>
-            Duplicate
+            Update
           </button>
         </div>
       </div>

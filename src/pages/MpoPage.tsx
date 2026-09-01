@@ -17,6 +17,7 @@ import { PrototypeBar } from "../components/PrototypeBar";
 import { SharedPlanIcon } from "../components/SharedPlanIcon";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
+import { UpdateModelDialog } from "../components/UpdateModelDialog";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
 import {
@@ -27,6 +28,7 @@ import {
   formatTargetLabel,
 } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
+import { MODELS } from "../mpo/modelOptions";
 import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -193,6 +195,7 @@ export function MpoPage() {
   // after landing on it — resets whenever the viewed plan changes.
   const [showDuplicatePopover, setShowDuplicatePopover] = useState(false);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [updateModelDialogOpen, setUpdateModelDialogOpen] = useState(false);
   useEffect(() => {
     setShowDuplicatePopover(false);
     if (viewMode !== "detail" || activePlan?.kind !== "simulation") return;
@@ -294,8 +297,8 @@ export function MpoPage() {
                           onDuplicatePlan={state.duplicatePlan}
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
-                          onRefresh={() => {}}
-                          lastUpdatedLabel="Updated 2 hours ago"
+                          onUpdateModel={() => setUpdateModelDialogOpen(true)}
+                          currentModelLabel={`Current: ${MODELS[0].date}`}
                           variant="chevron"
                         />
                       ) : (
@@ -459,6 +462,15 @@ export function MpoPage() {
           onConfirm={(name) => {
             state.duplicatePlan(activePlan.id, name);
             setDuplicateDialogOpen(false);
+          }}
+        />
+      )}
+      {updateModelDialogOpen && activePlan && (
+        <UpdateModelDialog
+          onClose={() => setUpdateModelDialogOpen(false)}
+          onConfirm={(model) => {
+            state.notify(`Updated "${activePlan.label}" to the ${model.date} model`);
+            setUpdateModelDialogOpen(false);
           }}
         />
       )}
