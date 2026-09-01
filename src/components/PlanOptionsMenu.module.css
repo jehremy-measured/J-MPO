@@ -45,6 +45,9 @@
   align-items: center;
   gap: 6px;
   padding: 4px 8px;
+  /* Cancels the padding above so the hover/click target is larger than the title text without
+   * shifting that text out of alignment with the content below it. */
+  margin: -4px -8px;
   color: var(--gray-800);
   border-radius: var(--radius-sm);
 }
