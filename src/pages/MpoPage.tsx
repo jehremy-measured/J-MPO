@@ -14,6 +14,7 @@ import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
 import { PlanOverviewCard } from "../components/PlanOverviewCard";
 import { PlansTable, downloadPlansCsv } from "../components/PlansTable";
 import { PrototypeBar } from "../components/PrototypeBar";
+import { SharedPlanIcon } from "../components/SharedPlanIcon";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
@@ -307,6 +308,7 @@ export function MpoPage() {
                           {KIND_LABEL[activePlan.kind]}
                         </span>
                       )}
+                      {activePlan?.shared && <SharedPlanIcon createdBy={activePlan.createdBy} />}
                       {showDuplicatePopover && activePlan && (
                         <DuplicatePlanPopover
                           onDuplicate={() => {

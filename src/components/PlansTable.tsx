@@ -15,6 +15,7 @@ import {
   WrenchIcon,
 } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
+import { SharedPlanIcon } from "./SharedPlanIcon";
 import styles from "./PlansTable.module.css";
 
 type Props = {
@@ -46,7 +47,6 @@ const TARGET_LABEL: Record<PlanTarget, string> = {
 };
 
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
-const CURRENT_USER_INITIALS = "JH";
 
 export function downloadPlansCsv(plansToExport: Plan[]) {
   const header = ["Plan name", "Type", "Created by", "Last updated", "Target"];
@@ -314,18 +314,7 @@ export function PlansTable({
                         <KindIcon kind={plan.kind} />
                         <span className={styles.nameText}>{plan.label}</span>
                       </span>
-                      {plan.shared && (
-                        <span className={styles.sharedIconWrap}>
-                          <span className={styles.sharedIcon} aria-label="Shared plan">
-                            <MaterialIcon name="group" size={20} />
-                          </span>
-                          <span className={styles.sharedTooltip} role="tooltip">
-                            {plan.createdBy === CURRENT_USER_INITIALS
-                              ? "You have shared this plan with others on your team."
-                              : "This plan has been shared with you."}
-                          </span>
-                        </span>
-                      )}
+                      {plan.shared && <SharedPlanIcon createdBy={plan.createdBy} />}
                     </span>
                   )}
                 </td>
