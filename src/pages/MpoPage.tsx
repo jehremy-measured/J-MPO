@@ -28,7 +28,7 @@ import {
   formatTargetLabel,
 } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import { MODELS } from "../mpo/modelOptions";
+import { CURRENT_MODEL } from "../mpo/modelOptions";
 import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -298,7 +298,7 @@ export function MpoPage() {
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}
-                          currentModelLabel={`Current: ${MODELS[0].date}`}
+                          currentModelLabel={`Current: ${CURRENT_MODEL.date}`}
                           variant="chevron"
                         />
                       ) : (

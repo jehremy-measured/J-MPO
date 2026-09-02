@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MODELS, type ModelOption } from "../mpo/modelOptions";
+import { CURRENT_MODEL, isOnLatestModel, LATEST_MODEL, type ModelOption } from "../mpo/modelOptions";
 import { CloseIcon } from "./icons/CloseIcon";
 import { ModelSelectList } from "./ModelSelectList";
 import styles from "./PlanDialog.module.css";
@@ -12,10 +12,10 @@ type Props = {
 /** Same "Select model" list as the Duplicate-plan dialog, minus the plan-name field — for
  * switching the plan's current model to a different weekly refresh. */
 export function UpdateModelDialog({ onClose, onConfirm }: Props) {
-  const [selectedModelId, setSelectedModelId] = useState(MODELS[0].id);
+  const [selectedModelId, setSelectedModelId] = useState<ModelOption["id"]>("current");
 
   const handleConfirm = () => {
-    const model = MODELS.find((m) => m.id === selectedModelId) ?? MODELS[0];
+    const model = isOnLatestModel || selectedModelId === "latest" ? LATEST_MODEL : CURRENT_MODEL;
     onConfirm(model);
   };
 

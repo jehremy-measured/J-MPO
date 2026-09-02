@@ -105,10 +105,51 @@
 }
 
 .moreMenu button.stackedItem {
+  position: relative;
   height: auto;
   min-height: 32px;
   padding: 6px 12px 6px 8px;
   align-items: flex-start;
+}
+
+.moreMenu button.stackedItemDisabled {
+  cursor: not-allowed;
+  color: var(--gray-500);
+}
+
+.moreMenu button.stackedItemDisabled:hover {
+  background: transparent;
+}
+
+.stackedItemDisabled .stackedItemLabel {
+  color: var(--gray-500);
+}
+
+.stackedItemTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 8px;
+  z-index: 40;
+  width: 220px;
+  padding: 8px 10px;
+  background: var(--gray-1000);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.24);
+  color: var(--gray-000);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+
+.stackedItemDisabled:hover .stackedItemTooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 .stackedItemText {

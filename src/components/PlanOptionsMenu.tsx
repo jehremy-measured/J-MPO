@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { isOnLatestModel } from "../mpo/modelOptions";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ChevronDownIcon, DownloadIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
@@ -79,6 +80,7 @@ export function PlanOptionsMenu({
   };
 
   const handleUpdateModel = () => {
+    if (isOnLatestModel) return;
     setMenuOpen(false);
     onUpdateModel?.();
   };
@@ -136,12 +138,22 @@ export function PlanOptionsMenu({
           {onUpdateModel && (
             <>
               <div className={styles.menuDivider} />
-              <button type="button" className={styles.stackedItem} onClick={handleUpdateModel}>
+              <button
+                type="button"
+                className={`${styles.stackedItem} ${isOnLatestModel ? styles.stackedItemDisabled : ""}`}
+                aria-disabled={isOnLatestModel}
+                onClick={handleUpdateModel}
+              >
                 <MaterialIcon name="autorenew" size={20} />
                 <span className={styles.stackedItemText}>
                   <span className={styles.stackedItemLabel}>Update model</span>
                   {currentModelLabel && <span className={styles.stackedItemSub}>{currentModelLabel}</span>}
                 </span>
+                {isOnLatestModel && (
+                  <span className={styles.stackedItemTooltip} role="tooltip">
+                    You're already using the latest model data for this plan.
+                  </span>
+                )}
               </button>
             </>
           )}

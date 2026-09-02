@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MODELS, type ModelOption } from "../mpo/modelOptions";
+import { CURRENT_MODEL, isOnLatestModel, LATEST_MODEL, type ModelOption } from "../mpo/modelOptions";
 import { CloseIcon } from "./icons/CloseIcon";
 import { ModelSelectList } from "./ModelSelectList";
 import styles from "./PlanDialog.module.css";
@@ -12,10 +12,10 @@ type Props = {
 
 export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
   const [name, setName] = useState(`${planLabel} variant 1`);
-  const [selectedModelId, setSelectedModelId] = useState(MODELS[0].id);
+  const [selectedModelId, setSelectedModelId] = useState<ModelOption["id"]>("current");
 
   const handleConfirm = () => {
-    const model = MODELS.find((m) => m.id === selectedModelId) ?? MODELS[0];
+    const model = isOnLatestModel || selectedModelId === "latest" ? LATEST_MODEL : CURRENT_MODEL;
     onConfirm(name.trim() || `${planLabel} variant 1`, model);
   };
 
