@@ -285,7 +285,7 @@ export function WeeklyProjectionChart({
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-          Projected Incremental {volumeNoun}
+          Incremental {volumeNoun}
         </span>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
