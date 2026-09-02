@@ -40,6 +40,7 @@ type Message = {
   subtext?: string;
   planState?: BuildPlanState;
   rows?: SummaryRow[];
+  duplicatePayload?: { planId: string; choices: DuplicatePlanChoices };
 };
 
 type Prompt =
@@ -218,6 +219,7 @@ export function MiaSidePanel({
         subtext?: string;
         planState?: BuildPlanState;
         rows?: SummaryRow[];
+        duplicatePayload?: { planId: string; choices: DuplicatePlanChoices };
       }[]
     ) => {
       setMessages((prev) => [
@@ -230,6 +232,7 @@ export function MiaSidePanel({
           subtext: item.subtext,
           planState: item.planState,
           rows: item.rows,
+          duplicatePayload: item.duplicatePayload,
         })),
       ]);
     },
@@ -834,8 +837,26 @@ export function MiaSidePanel({
                 </dl>
               )}
               <div className={styles.readyCardActions}>
-                <button type="button" className={styles.rcBtn} onClick={() => onEditConstraints?.()}>
+                <button
+                  type="button"
+                  className={styles.rcBtn}
+                  onClick={() => {
+                    setDuplicateFlowKey((k) => k + 1);
+                    setDuplicateFlowActive(true);
+                  }}
+                >
                   Edit
+                </button>
+                <button
+                  type="button"
+                  className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
+                  onClick={() => {
+                    if (!msg.duplicatePayload) return;
+                    onDuplicatePlan?.(msg.duplicatePayload.planId, msg.duplicatePayload.choices);
+                    setDuplicateContext(null);
+                  }}
+                >
+                  Create plan
                 </button>
               </div>
             </div>
@@ -907,14 +928,8 @@ export function MiaSidePanel({
             onDone={(result) => {
               const ctx = duplicateContext;
               setDuplicateFlowActive(false);
-              setDuplicateContext(null);
               if (!ctx) return;
               const label = `${ctx.planLabel} variant 1`;
-              onDuplicatePlan?.(ctx.planId, {
-                label,
-                modelDate: result.model.date,
-                adjustBudget: result.adjustBudget,
-              });
               appendMessages([
                 { role: "mia", text: "Your new plan is ready." },
                 {
@@ -929,6 +944,10 @@ export function MiaSidePanel({
                       value: `${result.model.id === "latest" ? "Latest" : "Current"} (${result.model.date})`,
                     },
                   ],
+                  duplicatePayload: {
+                    planId: ctx.planId,
+                    choices: { label, modelDate: result.model.date, adjustBudget: result.adjustBudget },
+                  },
                 },
               ]);
             }}
