@@ -44,6 +44,9 @@ export type Plan = {
   editVariant?: "sidebar";
   /** Whether this plan has been shared with other users. */
   shared?: boolean;
+  /** Date of the MIM model refresh this plan is built on. Defaults to `CURRENT_MODEL_DATE`
+   * (`../mpo/modelOptions`) when unset. */
+  modelDate?: string;
 };
 
 export type PlanSnapshot = {

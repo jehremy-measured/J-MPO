@@ -28,7 +28,7 @@ import {
   formatTargetLabel,
 } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import { CURRENT_MODEL } from "../mpo/modelOptions";
+import { CURRENT_MODEL_DATE, isModelUpToDate } from "../mpo/modelOptions";
 import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -190,6 +190,7 @@ export function MpoPage() {
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
+  const activeModelDate = activePlan?.modelDate ?? CURRENT_MODEL_DATE;
 
   // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
   // after landing on it — resets whenever the viewed plan changes.
@@ -298,7 +299,8 @@ export function MpoPage() {
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}
-                          currentModelLabel={`Current: ${CURRENT_MODEL.date}`}
+                          currentModelLabel={`Current: ${activeModelDate}`}
+                          modelUpToDate={isModelUpToDate(activeModelDate)}
                           variant="chevron"
                         />
                       ) : (
@@ -458,6 +460,7 @@ export function MpoPage() {
       {duplicateDialogOpen && activePlan && (
         <DuplicatePlanDialog
           planLabel={activePlan.label}
+          currentModelDate={activeModelDate}
           onClose={() => setDuplicateDialogOpen(false)}
           onConfirm={(name) => {
             state.duplicatePlan(activePlan.id, name);
@@ -467,6 +470,7 @@ export function MpoPage() {
       )}
       {updateModelDialogOpen && activePlan && (
         <UpdateModelDialog
+          currentModelDate={activeModelDate}
           onClose={() => setUpdateModelDialogOpen(false)}
           onConfirm={(model) => {
             state.notify(`Updated "${activePlan.label}" to the ${model.date} model`);

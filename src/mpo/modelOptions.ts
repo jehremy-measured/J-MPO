@@ -3,7 +3,10 @@ export type ModelOption = {
   date: string;
 };
 
-export const CURRENT_MODEL: ModelOption = { id: "current", date: "Aug 30, 2026" };
-export const LATEST_MODEL: ModelOption = { id: "latest", date: "Sep 6, 2026" };
+/** Default MIM model date for plans that don't set `Plan.modelDate`. */
+export const CURRENT_MODEL_DATE = "Aug 30, 2026";
+export const LATEST_MODEL_DATE = "Sep 6, 2026";
 
-export const isOnLatestModel = CURRENT_MODEL.date === LATEST_MODEL.date;
+export function isModelUpToDate(modelDate: string): boolean {
+  return modelDate === LATEST_MODEL_DATE;
+}

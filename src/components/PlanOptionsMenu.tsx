@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { isOnLatestModel } from "../mpo/modelOptions";
 import { ConfirmDialog } from "./ConfirmDialog";
 import { ChevronDownIcon, DownloadIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
@@ -16,6 +15,9 @@ type Props = {
   onDeletePlan?: (id: string) => void;
   onUpdateModel?: () => void;
   currentModelLabel?: string;
+  /** Whether this plan's model is already the latest MIM refresh — disables the "Update model"
+   * item and shows an explanatory tooltip instead of opening the dialog. */
+  modelUpToDate?: boolean;
   /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
    * directly beside a title. */
   variant?: "button" | "chevron";
@@ -35,6 +37,7 @@ export function PlanOptionsMenu({
   onDeletePlan,
   onUpdateModel,
   currentModelLabel,
+  modelUpToDate = false,
   variant = "button",
   title,
 }: Props) {
@@ -80,7 +83,7 @@ export function PlanOptionsMenu({
   };
 
   const handleUpdateModel = () => {
-    if (isOnLatestModel) return;
+    if (modelUpToDate) return;
     setMenuOpen(false);
     onUpdateModel?.();
   };
@@ -140,8 +143,8 @@ export function PlanOptionsMenu({
               <div className={styles.menuDivider} />
               <button
                 type="button"
-                className={`${styles.stackedItem} ${isOnLatestModel ? styles.stackedItemDisabled : ""}`}
-                aria-disabled={isOnLatestModel}
+                className={`${styles.stackedItem} ${modelUpToDate ? styles.stackedItemDisabled : ""}`}
+                aria-disabled={modelUpToDate}
                 onClick={handleUpdateModel}
               >
                 <MaterialIcon name="autorenew" size={20} />
@@ -149,7 +152,7 @@ export function PlanOptionsMenu({
                   <span className={styles.stackedItemLabel}>Update model</span>
                   {currentModelLabel && <span className={styles.stackedItemSub}>{currentModelLabel}</span>}
                 </span>
-                {isOnLatestModel && (
+                {modelUpToDate && (
                   <span className={styles.stackedItemTooltip} role="tooltip">
                     You're already using the latest model data for this plan.
                   </span>

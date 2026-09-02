@@ -1,21 +1,25 @@
 import { useState } from "react";
-import { CURRENT_MODEL, isOnLatestModel, LATEST_MODEL, type ModelOption } from "../mpo/modelOptions";
+import { isModelUpToDate, LATEST_MODEL_DATE, type ModelOption } from "../mpo/modelOptions";
 import { CloseIcon } from "./icons/CloseIcon";
 import { ModelSelectList } from "./ModelSelectList";
 import styles from "./PlanDialog.module.css";
 
 type Props = {
   planLabel: string;
+  currentModelDate: string;
   onClose: () => void;
   onConfirm: (name: string, model: ModelOption) => void;
 };
 
-export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
+export function DuplicatePlanDialog({ planLabel, currentModelDate, onClose, onConfirm }: Props) {
   const [name, setName] = useState(`${planLabel} variant 1`);
   const [selectedModelId, setSelectedModelId] = useState<ModelOption["id"]>("current");
 
   const handleConfirm = () => {
-    const model = isOnLatestModel || selectedModelId === "latest" ? LATEST_MODEL : CURRENT_MODEL;
+    const useLatest = isModelUpToDate(currentModelDate) || selectedModelId === "latest";
+    const model: ModelOption = useLatest
+      ? { id: "latest", date: LATEST_MODEL_DATE }
+      : { id: "current", date: currentModelDate };
     onConfirm(name.trim() || `${planLabel} variant 1`, model);
   };
 
@@ -49,7 +53,11 @@ export function DuplicatePlanDialog({ planLabel, onClose, onConfirm }: Props) {
             onChange={(e) => setName(e.target.value)}
           />
 
-          <ModelSelectList selectedModelId={selectedModelId} onSelect={setSelectedModelId} />
+          <ModelSelectList
+            currentModelDate={currentModelDate}
+            selectedModelId={selectedModelId}
+            onSelect={setSelectedModelId}
+          />
         </div>
 
         <div className={styles.footer}>
