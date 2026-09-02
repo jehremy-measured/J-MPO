@@ -178,6 +178,8 @@ export function WeeklyProjectionChart({
   showActuals = true,
 }: Props) {
   const gradientId = useId();
+  const salesStripeId = useId();
+  const budgetStripeId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [uncontrolledChartView, setUncontrolledChartView] = useState<"cumulative" | "weekly">("weekly");
   const chartView = controlledChartView ?? uncontrolledChartView;
@@ -283,25 +285,39 @@ export function WeeklyProjectionChart({
         </div>
       )}
       <div className={styles.legend}>
-        <span className={styles.legendItem}>
-          <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-          Projected Incremental {volumeNoun}
-        </span>
-        <span className={styles.legendItem}>
-          <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-          Planned Budget
-        </span>
-        {chartView === "weekly" && (
+        <div className={styles.legendRow}>
           <span className={styles.legendItem}>
-            <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
-            Projected Incremental ROAS
+            <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
+            Projected Incremental {volumeNoun}
           </span>
-        )}
+          <span className={styles.legendItem}>
+            <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
+            Planned Budget
+          </span>
+          {chartView === "weekly" && (
+            <span className={styles.legendItem}>
+              <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+              Projected Incremental ROAS
+            </span>
+          )}
+        </div>
         {showActual && (
-          <span className={styles.legendItem}>
-            <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
-            Actuals
-          </span>
+          <div className={styles.legendRow}>
+            <span className={styles.legendItem}>
+              <span className={`${styles.swatch} ${styles.swatchActualSales}`} aria-hidden />
+              Actual Incremental {volumeNoun}
+            </span>
+            <span className={styles.legendItem}>
+              <span className={`${styles.swatch} ${styles.swatchActualBudget}`} aria-hidden />
+              Actual Spend
+            </span>
+            {chartView === "weekly" && (
+              <span className={styles.legendItem}>
+                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                Actual Incremental ROAS
+              </span>
+            )}
+          </div>
         )}
       </div>
       <div
@@ -323,6 +339,28 @@ export function WeeklyProjectionChart({
               <stop offset="0%" stopColor="var(--blue-700)" stopOpacity="0.16" />
               <stop offset="100%" stopColor="var(--blue-700)" stopOpacity="0" />
             </linearGradient>
+            {/* Actual bars reuse the projected bar's own color, just hatched, so the pair reads
+             * as "the same metric" rather than two unrelated series. */}
+            <pattern
+              id={salesStripeId}
+              width="6"
+              height="6"
+              patternTransform="rotate(45)"
+              patternUnits="userSpaceOnUse"
+            >
+              <rect width="6" height="6" className={styles.stripeSalesBg} />
+              <rect width="3" height="6" className={styles.stripeSalesFg} />
+            </pattern>
+            <pattern
+              id={budgetStripeId}
+              width="6"
+              height="6"
+              patternTransform="rotate(45)"
+              patternUnits="userSpaceOnUse"
+            >
+              <rect width="6" height="6" className={styles.stripeBudgetBg} />
+              <rect width="3" height="6" className={styles.stripeBudgetFg} />
+            </pattern>
           </defs>
 
           {gridSteps.map((step) => {
@@ -416,19 +454,20 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
+              const barCount = actualForWeek ? 4 : 2;
+              const barWidth = Math.max(2, Math.min(barCount === 4 ? 13 : 22, bandWidth * (barCount === 4 ? 0.1 : 0.18)));
               const gap = Math.max(2, barWidth * 0.3);
               const center = bandCenter(i);
-              const groupWidth = barWidth * 2 + gap;
+              const groupWidth = barWidth * barCount + gap * (barCount - 1);
               const groupStart = center - groupWidth / 2;
               const salesX = groupStart;
               const budgetX = groupStart + barWidth + gap;
+              const actualSalesX = groupStart + (barWidth + gap) * 2;
+              const actualBudgetX = groupStart + (barWidth + gap) * 3;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
               const active = hoverIndex === i;
-              const markerOverhang = 3;
-              const markerHeight = 3;
               return (
                 <g key={w.index} opacity={hoverIndex == null || active ? 1 : 0.45}>
                   <rect
@@ -449,20 +488,22 @@ export function WeeklyProjectionChart({
                   />
                   {actualForWeek && (
                     <rect
-                      x={salesX - markerOverhang}
-                      y={yFor(actualForWeek.sales) - markerHeight / 2}
-                      width={barWidth + markerOverhang * 2}
-                      height={markerHeight}
-                      className={styles.actualMarker}
+                      x={actualSalesX}
+                      y={yFor(actualForWeek.sales)}
+                      width={barWidth}
+                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
+                      rx={2}
+                      fill={`url(#${salesStripeId})`}
                     />
                   )}
                   {actualForWeek && (
                     <rect
-                      x={budgetX - markerOverhang}
-                      y={yFor(actualForWeek.budget) - markerHeight / 2}
-                      width={barWidth + markerOverhang * 2}
-                      height={markerHeight}
-                      className={styles.actualMarker}
+                      x={actualBudgetX}
+                      y={yFor(actualForWeek.budget)}
+                      width={barWidth}
+                      height={Math.max(0, baseline - yFor(actualForWeek.budget))}
+                      rx={2}
+                      fill={`url(#${budgetStripeId})`}
                     />
                   )}
                 </g>
@@ -558,7 +599,7 @@ export function WeeklyProjectionChart({
             )}
             {hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
+                <span className={`${styles.swatch} ${styles.swatchActualSales}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>
                   {chartView === "cumulative" ? `Actual cumulative ${volumeNoun}` : `Actual Incremental ${volumeNoun}`}
                 </span>
@@ -567,7 +608,7 @@ export function WeeklyProjectionChart({
             )}
             {hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
+                <span className={`${styles.swatch} ${styles.swatchActualBudget}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>
                   {chartView === "cumulative" ? "Actual cumulative spend" : "Actual Spend"}
                 </span>
@@ -576,8 +617,8 @@ export function WeeklyProjectionChart({
             )}
             {chartView === "weekly" && hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
-                <span className={styles.tooltipRowLabel}>Actual ROAS</span>
+                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                <span className={styles.tooltipRowLabel}>Actual Incremental ROAS</span>
                 <strong>{formatRoasFull(roasFor(hitActual))}</strong>
               </div>
             )}

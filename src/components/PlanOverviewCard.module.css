@@ -54,16 +54,35 @@
   fill: var(--green-800);
 }
 
-.actualMarker {
-  fill: #000;
+.stripeSalesBg {
+  fill: var(--blue-700);
+}
+
+.stripeSalesFg {
+  fill: rgba(255, 255, 255, 0.55);
+}
+
+.stripeBudgetBg {
+  fill: var(--green-800);
+}
+
+.stripeBudgetFg {
+  fill: rgba(255, 255, 255, 0.55);
 }
 
 .legend {
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 24px 0;
+}
+
+.legendRow {
+  display: flex;
   align-items: center;
   justify-content: center;
   gap: 16px;
-  padding: 24px 24px 0;
 }
 
 .legendItem {
@@ -94,8 +113,24 @@
   background: var(--gold-600);
 }
 
-.swatchActuals {
-  background: #000;
+.swatchActualSales {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--blue-700),
+    var(--blue-700) 2px,
+    rgba(255, 255, 255, 0.55) 2px,
+    rgba(255, 255, 255, 0.55) 4px
+  );
+}
+
+.swatchActualBudget {
+  background: repeating-linear-gradient(
+    45deg,
+    var(--green-800),
+    var(--green-800) 2px,
+    rgba(255, 255, 255, 0.55) 2px,
+    rgba(255, 255, 255, 0.55) 4px
+  );
 }
 
 .body {
@@ -313,16 +348,17 @@
 }
 
 .actualLine {
-  stroke: #000;
+  stroke: var(--blue-700);
   stroke-width: 2;
+  stroke-dasharray: 2 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .actualSpendLine {
-  stroke: #000;
+  stroke: var(--green-800);
   stroke-width: 2;
-  stroke-dasharray: 5 4;
+  stroke-dasharray: 2 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -343,14 +379,14 @@
 
 .actualDot {
   fill: var(--gray-000);
-  stroke: #000;
+  stroke: var(--blue-700);
   stroke-width: 2;
   transition: r 0.1s ease;
 }
 
 .actualSpendDot {
   fill: var(--gray-000);
-  stroke: #000;
+  stroke: var(--green-800);
   stroke-width: 2;
   transition: r 0.1s ease;
 }
@@ -369,15 +405,16 @@
 }
 
 .actualRoasLine {
-  stroke: #000;
+  stroke: var(--gold-600);
   stroke-width: 2;
+  stroke-dasharray: 2 3;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .actualRoasDot {
   fill: var(--gray-000);
-  stroke: #000;
+  stroke: var(--gold-600);
   stroke-width: 2;
 }
 
