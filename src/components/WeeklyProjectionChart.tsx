@@ -289,7 +289,7 @@ export function WeeklyProjectionChart({
         </span>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-          Planned Budget
+          Budget
         </span>
         {chartView === "weekly" && (
           <span className={styles.legendItem}>
@@ -553,14 +553,14 @@ export function WeeklyProjectionChart({
             <div className={styles.tooltipRow}>
               <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
               <span className={styles.tooltipRowLabel}>
-                {chartView === "cumulative" ? `Projected cumulative ${volumeNoun}` : `Projected Incremental ${volumeNoun}`}
+                {chartView === "cumulative" ? `Cumulative ${volumeNoun}` : `Incremental ${volumeNoun}`}
               </span>
               <strong>{formatVolumeFull(hit.sales, isOrdersFamily)}</strong>
             </div>
             <div className={styles.tooltipRow}>
               <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
               <span className={styles.tooltipRowLabel}>
-                {chartView === "cumulative" ? "Planned cumulative budget" : "Planned Budget"}
+                {chartView === "cumulative" ? "Cumulative budget" : "Budget"}
               </span>
               <strong>{formatFullCurrency(hit.budget)}</strong>
             </div>
