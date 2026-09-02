@@ -54,12 +54,8 @@
   fill: var(--green-800);
 }
 
-.actualBar {
-  fill: var(--orange-600);
-}
-
-.actualSpendBar {
-  fill: var(--purple-600);
+.actualMarker {
+  fill: #000;
 }
 
 .legend {
@@ -94,20 +90,12 @@
   background: var(--green-800);
 }
 
-.swatchActual {
-  background: var(--orange-600);
-}
-
-.swatchActualSpend {
-  background: var(--purple-600);
-}
-
 .swatchRoas {
   background: var(--gold-600);
 }
 
-.swatchActualRoas {
-  background: var(--pink-600);
+.swatchActuals {
+  background: #000;
 }
 
 .body {
@@ -325,15 +313,16 @@
 }
 
 .actualLine {
-  stroke: var(--orange-600);
+  stroke: #000;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
 
 .actualSpendLine {
-  stroke: var(--purple-600);
+  stroke: #000;
   stroke-width: 2;
+  stroke-dasharray: 5 4;
   stroke-linecap: round;
   stroke-linejoin: round;
 }
@@ -354,14 +343,14 @@
 
 .actualDot {
   fill: var(--gray-000);
-  stroke: var(--orange-600);
+  stroke: #000;
   stroke-width: 2;
   transition: r 0.1s ease;
 }
 
 .actualSpendDot {
   fill: var(--gray-000);
-  stroke: var(--purple-600);
+  stroke: #000;
   stroke-width: 2;
   transition: r 0.1s ease;
 }
@@ -380,7 +369,7 @@
 }
 
 .actualRoasLine {
-  stroke: var(--pink-600);
+  stroke: #000;
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -388,7 +377,7 @@
 
 .actualRoasDot {
   fill: var(--gray-000);
-  stroke: var(--pink-600);
+  stroke: #000;
   stroke-width: 2;
 }
 

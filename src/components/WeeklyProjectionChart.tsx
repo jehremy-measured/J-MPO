@@ -285,35 +285,23 @@ export function WeeklyProjectionChart({
       <div className={styles.legend}>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
-          Incremental {volumeNoun}
+          Projected Incremental {volumeNoun}
         </span>
         <span className={styles.legendItem}>
           <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
-          Budget
+          Planned Budget
         </span>
         {chartView === "weekly" && (
           <span className={styles.legendItem}>
             <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
-            Incremental ROAS
+            Projected Incremental ROAS
           </span>
         )}
         {showActual && (
-          <>
-            <span className={styles.legendItem}>
-              <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
-              Actual Incremental {volumeNoun}
-            </span>
-            <span className={styles.legendItem}>
-              <span className={`${styles.swatch} ${styles.swatchActualSpend}`} aria-hidden />
-              Actual Spend
-            </span>
-            {chartView === "weekly" && (
-              <span className={styles.legendItem}>
-                <span className={`${styles.swatch} ${styles.swatchActualRoas}`} aria-hidden />
-                Actual ROAS
-              </span>
-            )}
-          </>
+          <span className={styles.legendItem}>
+            <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
+            Actuals
+          </span>
         )}
       </div>
       <div
@@ -428,20 +416,19 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              const barCount = showActual ? 4 : 2;
-              const barWidth = Math.max(2, Math.min(barCount === 4 ? 13 : 22, bandWidth * (barCount === 4 ? 0.1 : 0.18)));
+              const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
               const gap = Math.max(2, barWidth * 0.3);
               const center = bandCenter(i);
-              const groupWidth = barWidth * barCount + gap * (barCount - 1);
+              const groupWidth = barWidth * 2 + gap;
               const groupStart = center - groupWidth / 2;
               const salesX = groupStart;
               const budgetX = groupStart + barWidth + gap;
-              const actualX = groupStart + (barWidth + gap) * 2;
-              const actualSpendX = groupStart + (barWidth + gap) * 3;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
               const active = hoverIndex === i;
+              const markerOverhang = 3;
+              const markerHeight = 3;
               return (
                 <g key={w.index} opacity={hoverIndex == null || active ? 1 : 0.45}>
                   <rect
@@ -462,22 +449,20 @@ export function WeeklyProjectionChart({
                   />
                   {actualForWeek && (
                     <rect
-                      x={actualX}
-                      y={yFor(actualForWeek.sales)}
-                      width={barWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
-                      rx={2}
-                      className={styles.actualBar}
+                      x={salesX - markerOverhang}
+                      y={yFor(actualForWeek.sales) - markerHeight / 2}
+                      width={barWidth + markerOverhang * 2}
+                      height={markerHeight}
+                      className={styles.actualMarker}
                     />
                   )}
                   {actualForWeek && (
                     <rect
-                      x={actualSpendX}
-                      y={yFor(actualForWeek.budget)}
-                      width={barWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.budget))}
-                      rx={2}
-                      className={styles.actualSpendBar}
+                      x={budgetX - markerOverhang}
+                      y={yFor(actualForWeek.budget) - markerHeight / 2}
+                      width={barWidth + markerOverhang * 2}
+                      height={markerHeight}
+                      className={styles.actualMarker}
                     />
                   )}
                 </g>
@@ -553,27 +538,27 @@ export function WeeklyProjectionChart({
             <div className={styles.tooltipRow}>
               <span className={`${styles.swatch} ${styles.swatchSales}`} aria-hidden />
               <span className={styles.tooltipRowLabel}>
-                {chartView === "cumulative" ? `Cumulative ${volumeNoun}` : `Incremental ${volumeNoun}`}
+                {chartView === "cumulative" ? `Projected cumulative ${volumeNoun}` : `Projected Incremental ${volumeNoun}`}
               </span>
               <strong>{formatVolumeFull(hit.sales, isOrdersFamily)}</strong>
             </div>
             <div className={styles.tooltipRow}>
               <span className={`${styles.swatch} ${styles.swatchBudget}`} aria-hidden />
               <span className={styles.tooltipRowLabel}>
-                {chartView === "cumulative" ? "Cumulative budget" : "Budget"}
+                {chartView === "cumulative" ? "Planned cumulative budget" : "Planned Budget"}
               </span>
               <strong>{formatFullCurrency(hit.budget)}</strong>
             </div>
             {chartView === "weekly" && (
               <div className={styles.tooltipRow}>
                 <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
-                <span className={styles.tooltipRowLabel}>Incremental ROAS</span>
+                <span className={styles.tooltipRowLabel}>Projected Incremental ROAS</span>
                 <strong>{formatRoasFull(roasFor(hit))}</strong>
               </div>
             )}
             {hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActual}`} aria-hidden />
+                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>
                   {chartView === "cumulative" ? `Actual cumulative ${volumeNoun}` : `Actual Incremental ${volumeNoun}`}
                 </span>
@@ -582,7 +567,7 @@ export function WeeklyProjectionChart({
             )}
             {hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActualSpend}`} aria-hidden />
+                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>
                   {chartView === "cumulative" ? "Actual cumulative spend" : "Actual Spend"}
                 </span>
@@ -591,7 +576,7 @@ export function WeeklyProjectionChart({
             )}
             {chartView === "weekly" && hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchActualRoas}`} aria-hidden />
+                <span className={`${styles.swatch} ${styles.swatchActuals}`} aria-hidden />
                 <span className={styles.tooltipRowLabel}>Actual ROAS</span>
                 <strong>{formatRoasFull(roasFor(hitActual))}</strong>
               </div>
