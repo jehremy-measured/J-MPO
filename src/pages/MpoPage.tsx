@@ -3,7 +3,6 @@ import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
-import { DuplicatePlanDialog } from "../components/DuplicatePlanDialog";
 import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
@@ -86,6 +85,12 @@ export function MpoPage() {
     periodLabel: string;
     rows: OptimizeRow[];
   } | null>(null);
+  const [duplicateSignal, setDuplicateSignal] = useState<{
+    token: number;
+    planId: string;
+    planLabel: string;
+    modelDate: string;
+  } | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
@@ -122,6 +127,11 @@ export function MpoPage() {
   const startOptimizeFlow = (periodLabel: string, rows: OptimizeRow[]) => {
     setMiaOpen(true);
     setOptimizeSignal({ token: Date.now(), periodLabel, rows });
+  };
+
+  const startDuplicateFlow = (planId: string, planLabel: string, modelDate: string) => {
+    setMiaOpen(true);
+    setDuplicateSignal({ token: Date.now(), planId, planLabel, modelDate });
   };
 
   const handleCreatePlan = (input: CreatePlanInput, rawState: BuildPlanState, modeOverride?: "create" | "edit") => {
@@ -195,7 +205,6 @@ export function MpoPage() {
   // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
   // after landing on it — resets whenever the viewed plan changes.
   const [showDuplicatePopover, setShowDuplicatePopover] = useState(false);
-  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [updateModelDialogOpen, setUpdateModelDialogOpen] = useState(false);
   useEffect(() => {
     setShowDuplicatePopover(false);
@@ -295,7 +304,9 @@ export function MpoPage() {
                           shared={activePlan?.shared}
                           onRenameRequest={startRenameTitle}
                           onToggleSharePlan={state.toggleSharePlan}
-                          onDuplicatePlan={() => setDuplicateDialogOpen(true)}
+                          onDuplicatePlan={() =>
+                            activePlan && startDuplicateFlow(activePlan.id, activePlan.label, activeModelDate)
+                          }
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}
@@ -320,7 +331,7 @@ export function MpoPage() {
                         <DuplicatePlanPopover
                           onDuplicate={() => {
                             setShowDuplicatePopover(false);
-                            setDuplicateDialogOpen(true);
+                            startDuplicateFlow(activePlan.id, activePlan.label, activeModelDate);
                           }}
                           onDismiss={() => setShowDuplicatePopover(false)}
                         />
@@ -447,6 +458,11 @@ export function MpoPage() {
             if (planId) openPlanForEdit(planId);
           }}
           onOptimizePlan={() => state.notify(`Optimized "${state.activePlanLabel}" with Mia`)}
+          duplicateSignal={duplicateSignal}
+          onDuplicatePlan={(planId, choices) => {
+            const newId = state.duplicatePlan(planId, choices.label, choices.modelDate);
+            if (newId) openPlan(newId);
+          }}
         />
       </div>
       <PrototypeBar
@@ -457,17 +473,6 @@ export function MpoPage() {
         blendedRoas={state.totals.roas}
       />
       {creatingPlan && <CreatingPlanOverlay />}
-      {duplicateDialogOpen && activePlan && (
-        <DuplicatePlanDialog
-          planLabel={activePlan.label}
-          currentModelDate={activeModelDate}
-          onClose={() => setDuplicateDialogOpen(false)}
-          onConfirm={(name) => {
-            state.duplicatePlan(activePlan.id, name);
-            setDuplicateDialogOpen(false);
-          }}
-        />
-      )}
       {updateModelDialogOpen && activePlan && (
         <UpdateModelDialog
           currentModelDate={activeModelDate}

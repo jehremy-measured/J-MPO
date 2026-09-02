@@ -241,7 +241,7 @@ export function useMpoState() {
   );
 
   const duplicatePlan = useCallback(
-    (id: string, label?: string) => {
+    (id: string, label?: string, modelDate?: string) => {
       const source = plans.find((p) => p.id === id);
       if (!source) return;
 
@@ -253,6 +253,7 @@ export function useMpoState() {
         label: label ?? `${source.label} (copy)`,
         createdBy: "JH",
         lastEdited: new Date(),
+        modelDate: modelDate ?? source.modelDate,
       };
 
       setPlans((prev) => [...prev, copy]);
