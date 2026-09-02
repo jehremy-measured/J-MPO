@@ -38,7 +38,7 @@ export function UpdateModelDialog({ onClose, onConfirm }: Props) {
         </div>
 
         <div className={styles.body}>
-          <ModelSelectList selectedModelId={selectedModelId} onSelect={setSelectedModelId} />
+          <ModelSelectList selectedModelId={selectedModelId} onSelect={setSelectedModelId} verb="updated" />
         </div>
 
         <div className={styles.footer}>
