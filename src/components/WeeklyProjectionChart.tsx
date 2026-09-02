@@ -454,16 +454,18 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              const barCount = actualForWeek ? 4 : 2;
-              const barWidth = Math.max(2, Math.min(barCount === 4 ? 13 : 22, bandWidth * (barCount === 4 ? 0.1 : 0.18)));
+              const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
               const gap = Math.max(2, barWidth * 0.3);
               const center = bandCenter(i);
-              const groupWidth = barWidth * barCount + gap * (barCount - 1);
+              const groupWidth = barWidth * 2 + gap;
               const groupStart = center - groupWidth / 2;
               const salesX = groupStart;
               const budgetX = groupStart + barWidth + gap;
-              const actualSalesX = groupStart + (barWidth + gap) * 2;
-              const actualBudgetX = groupStart + (barWidth + gap) * 3;
+              // The actual bar overlaps its projected counterpart instead of sitting beside it —
+              // narrower and centered within the same footprint, painted on top.
+              const actualWidth = Math.max(2, barWidth * 0.5);
+              const actualSalesX = salesX + (barWidth - actualWidth) / 2;
+              const actualBudgetX = budgetX + (barWidth - actualWidth) / 2;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
@@ -490,9 +492,9 @@ export function WeeklyProjectionChart({
                     <rect
                       x={actualSalesX}
                       y={yFor(actualForWeek.sales)}
-                      width={barWidth}
+                      width={actualWidth}
                       height={Math.max(0, baseline - yFor(actualForWeek.sales))}
-                      rx={2}
+                      rx={1}
                       fill={`url(#${salesStripeId})`}
                     />
                   )}
@@ -500,9 +502,9 @@ export function WeeklyProjectionChart({
                     <rect
                       x={actualBudgetX}
                       y={yFor(actualForWeek.budget)}
-                      width={barWidth}
+                      width={actualWidth}
                       height={Math.max(0, baseline - yFor(actualForWeek.budget))}
-                      rx={2}
+                      rx={1}
                       fill={`url(#${budgetStripeId})`}
                     />
                   )}
