@@ -13,7 +13,6 @@ import {
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
-import { MiaDuplicatePlanFlow } from "./mia-build-flow/MiaDuplicatePlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
 import {
   ChevronDownIcon,
@@ -36,11 +35,10 @@ type Message = {
   id: string;
   role: "mia" | "user";
   text: string;
-  kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card" | "duplicate-ready-card";
+  kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card";
   subtext?: string;
   planState?: BuildPlanState;
   rows?: SummaryRow[];
-  duplicatePayload?: { planId: string; choices: DuplicatePlanChoices };
 };
 
 type Prompt =
@@ -134,20 +132,6 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
-type DuplicateSignal = {
-  token: number;
-  planId: string;
-  planLabel: string;
-  modelDate: string;
-  currentBudget: number;
-};
-
-export type DuplicatePlanChoices = {
-  label: string;
-  modelDate: string;
-  adjustBudget: boolean;
-  newBudget: number | null;
-};
 
 type Props = {
   open: boolean;
@@ -161,10 +145,6 @@ type Props = {
   optimizeSignal?: OptimizeSignal | null;
   onEditConstraints?: () => void;
   onOptimizePlan?: () => void;
-  /** Triggers the "duplicate this plan" flow — a loading beat, then a budget question and a
-   * model question, then hands off to `onDuplicatePlan` and shows a ready card. */
-  duplicateSignal?: DuplicateSignal | null;
-  onDuplicatePlan?: (planId: string, choices: DuplicatePlanChoices) => void;
 };
 
 const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
@@ -181,8 +161,6 @@ export function MiaSidePanel({
   optimizeSignal,
   onEditConstraints,
   onOptimizePlan,
-  duplicateSignal,
-  onDuplicatePlan,
 }: Props) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -198,7 +176,6 @@ export function MiaSidePanel({
   const [presetPlanType, setPresetPlanType] = useState<StartSignal["planType"] | null>(null);
   const lastStartTokenRef = useRef<number | null>(null);
   const lastOptimizeTokenRef = useRef<number | null>(null);
-  const lastDuplicateTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
@@ -208,15 +185,6 @@ export function MiaSidePanel({
   const [pendingOptimizeRows, setPendingOptimizeRows] = useState<SummaryRow[] | null>(null);
   const [pendingOptimizePeriod, setPendingOptimizePeriod] = useState<string | null>(null);
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
-  const [duplicateContext, setDuplicateContext] = useState<{
-    planId: string;
-    planLabel: string;
-    modelDate: string;
-    currentBudget: number;
-  } | null>(null);
-  const [duplicateLoading, setDuplicateLoading] = useState(false);
-  const [duplicateFlowActive, setDuplicateFlowActive] = useState(false);
-  const [duplicateFlowKey, setDuplicateFlowKey] = useState(0);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -227,11 +195,10 @@ export function MiaSidePanel({
       items: {
         role: "mia" | "user";
         text: string;
-        kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card" | "duplicate-ready-card";
+        kind?: "download-card" | "plan-card" | "plan-ready-card" | "optimize-ready-card";
         subtext?: string;
         planState?: BuildPlanState;
         rows?: SummaryRow[];
-        duplicatePayload?: { planId: string; choices: DuplicatePlanChoices };
       }[]
     ) => {
       setMessages((prev) => [
@@ -244,7 +211,6 @@ export function MiaSidePanel({
           subtext: item.subtext,
           planState: item.planState,
           rows: item.rows,
-          duplicatePayload: item.duplicatePayload,
         })),
       ]);
     },
@@ -262,12 +228,6 @@ export function MiaSidePanel({
     ]);
   }, [appendMessages]);
 
-  const cancelDuplicateFlow = useCallback(() => {
-    setDuplicateFlowActive(false);
-    setDuplicateContext(null);
-    appendMessages([{ role: "mia", text: "Duplicate setup cancelled." }]);
-  }, [appendMessages]);
-
   const resetToHome = useCallback(() => {
     setFlowActive(false);
     setUploadState(null);
@@ -282,9 +242,6 @@ export function MiaSidePanel({
     setPendingOptimizePeriod(null);
     setChatsMenuOpen(false);
     setPresetPlanType(null);
-    setDuplicateContext(null);
-    setDuplicateLoading(false);
-    setDuplicateFlowActive(false);
   }, []);
 
   const startCreateFlow = useCallback(
@@ -329,46 +286,6 @@ export function MiaSidePanel({
     setMessages([]);
     startOptimizeFlow(optimizeSignal.periodLabel, optimizeSignal.rows);
   }, [open, optimizeSignal, startOptimizeFlow]);
-
-  const startDuplicateFlow = useCallback(
-    (planId: string, planLabel: string, modelDate: string, currentBudget: number) => {
-      appendMessages([{ role: "user", text: `Duplicate "${planLabel}"` }]);
-      setFlowActive(false);
-      setUploadState(null);
-      setLoadingReviewState(null);
-      setLastPlanState(null);
-      setDraft("");
-      setPresetPlanType(null);
-      setDuplicateFlowActive(false);
-      setDuplicateContext({ planId, planLabel, modelDate, currentBudget });
-      setDuplicateLoading(true);
-    },
-    [appendMessages]
-  );
-
-  useEffect(() => {
-    if (!open || !duplicateSignal || duplicateSignal.token === lastDuplicateTokenRef.current) return;
-    lastDuplicateTokenRef.current = duplicateSignal.token;
-    setMessages([]);
-    startDuplicateFlow(
-      duplicateSignal.planId,
-      duplicateSignal.planLabel,
-      duplicateSignal.modelDate,
-      duplicateSignal.currentBudget
-    );
-  }, [open, duplicateSignal, startDuplicateFlow]);
-
-  useEffect(() => {
-    if (!duplicateLoading || !duplicateContext) return;
-    const label = duplicateContext.planLabel;
-    const timer = window.setTimeout(() => {
-      setDuplicateLoading(false);
-      appendMessages([{ role: "mia", text: `Let's set up your duplicate of "${label}".` }]);
-      setDuplicateFlowKey((k) => k + 1);
-      setDuplicateFlowActive(true);
-    }, SETUP_DELAY_MS);
-    return () => window.clearTimeout(timer);
-  }, [duplicateLoading, duplicateContext, appendMessages]);
 
   useEffect(() => {
     if (!settingUp) return;
@@ -446,16 +363,12 @@ export function MiaSidePanel({
       setPendingOptimizePeriod(null);
       setChatsMenuOpen(false);
       setPresetPlanType(null);
-      setDuplicateContext(null);
-      setDuplicateLoading(false);
-      setDuplicateFlowActive(false);
       return;
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
       if (flowActive) cancelCreateFlow();
-      else if (duplicateFlowActive) cancelDuplicateFlow();
       else onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
@@ -464,7 +377,7 @@ export function MiaSidePanel({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, flowActive, cancelCreateFlow, duplicateFlowActive, cancelDuplicateFlow]);
+  }, [open, flowActive, cancelCreateFlow]);
 
   useEffect(() => {
     if (!chatsMenuOpen) return;
@@ -604,19 +517,16 @@ export function MiaSidePanel({
     sendUserText(prompt.label);
   };
 
-  const duplicateBusy = duplicateLoading || duplicateFlowActive;
   const placeholder = settingUp
     ? "Setting up your plan…"
     : settingConstraints
       ? "Setting constraints using AI…"
-      : duplicateLoading
-        ? "Duplicating your plan…"
-        : flowActive || duplicateFlowActive
-          ? "Finish the setup above"
-          : uploadState
-            ? "Attach your budget file…"
-            : "Type your message…";
-  const canSend = !flowActive && !settingUp && !settingConstraints && !duplicateBusy && draft.trim().length > 0;
+      : flowActive
+        ? "Finish the setup above"
+        : uploadState
+          ? "Attach your budget file…"
+          : "Type your message…";
+  const canSend = !flowActive && !settingUp && !settingConstraints && draft.trim().length > 0;
 
   const handleDragOver = (e: DragEvent) => {
     if (!uploadState) return;
@@ -833,50 +743,6 @@ export function MiaSidePanel({
                 </button>
               </div>
             </div>
-          ) : msg.kind === "duplicate-ready-card" ? (
-            <div key={msg.id} className={styles.readyCard}>
-              <div className={styles.readyCardHeader}>
-                <span className={styles.planCardIcon} aria-hidden>
-                  <FileIcon size={20} />
-                </span>
-                <span className={styles.planCardTitle}>{msg.text}</span>
-              </div>
-              {msg.rows && (
-                <dl className={styles.readyCardRows}>
-                  {msg.rows.map((row) => (
-                    <div className={styles.readyCardRow} key={row.label}>
-                      <dt>{row.label}</dt>
-                      <dd>
-                        <span className={styles.readyCardRowValue}>{row.value}</span>
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-              )}
-              <div className={styles.readyCardActions}>
-                <button
-                  type="button"
-                  className={styles.rcBtn}
-                  onClick={() => {
-                    setDuplicateFlowKey((k) => k + 1);
-                    setDuplicateFlowActive(true);
-                  }}
-                >
-                  Edit
-                </button>
-                <button
-                  type="button"
-                  className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
-                  onClick={() => {
-                    if (!msg.duplicatePayload) return;
-                    onDuplicatePlan?.(msg.duplicatePayload.planId, msg.duplicatePayload.choices);
-                    setDuplicateContext(null);
-                  }}
-                >
-                  Create plan
-                </button>
-              </div>
-            </div>
           ) : msg.role === "mia" ? (
             <p key={msg.id} className={styles.miaText}>
               {msg.text}
@@ -923,63 +789,6 @@ export function MiaSidePanel({
           />
         )}
 
-        {duplicateLoading && duplicateContext && (
-          <div className={styles.thinkingRow}>
-            <span className={styles.thinkingChevron} aria-hidden>
-              <ChevronDownIcon size={14} />
-            </span>
-            <span className={styles.thinkingText}>Duplicating "{duplicateContext.planLabel}"…</span>
-          </div>
-        )}
-
-        {duplicateFlowActive && duplicateContext && (
-          <MiaDuplicatePlanFlow
-            key={duplicateFlowKey}
-            currentModelDate={duplicateContext.modelDate}
-            currentBudget={duplicateContext.currentBudget}
-            onExchange={(question, answer) =>
-              appendMessages([
-                { role: "mia", text: question },
-                { role: "user", text: answer },
-              ])
-            }
-            onDone={(result) => {
-              const ctx = duplicateContext;
-              setDuplicateFlowActive(false);
-              if (!ctx) return;
-              const label = `${ctx.planLabel} variant 1`;
-              appendMessages([
-                { role: "mia", text: "Your new plan is ready." },
-                {
-                  role: "mia",
-                  kind: "duplicate-ready-card",
-                  text: label,
-                  rows: [
-                    { label: "Source plan", value: ctx.planLabel },
-                    {
-                      label: "Budget",
-                      value: result.adjustBudget ? currencyFormatter.format(result.newBudget ?? 0) : "Same as source",
-                    },
-                    {
-                      label: "Model",
-                      value: `${result.model.id === "latest" ? "Latest" : "Current"} (${result.model.date})`,
-                    },
-                  ],
-                  duplicatePayload: {
-                    planId: ctx.planId,
-                    choices: {
-                      label,
-                      modelDate: result.model.date,
-                      adjustBudget: result.adjustBudget,
-                      newBudget: result.newBudget,
-                    },
-                  },
-                },
-              ]);
-            }}
-          />
-        )}
-
         {loadingReviewState && (
           <div className={styles.thinkingRow}>
             <span className={styles.thinkingChevron} aria-hidden>
@@ -1014,7 +823,7 @@ export function MiaSidePanel({
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive || settingUp || settingConstraints || duplicateBusy}
+            disabled={flowActive || settingUp || settingConstraints}
             className={styles.composerInput}
           />
           <div className={styles.composerToolbar}>
@@ -1022,7 +831,7 @@ export function MiaSidePanel({
               type="button"
               className={styles.attachBtn}
               aria-label="Attach file"
-              disabled={flowActive || settingUp || settingConstraints || duplicateBusy}
+              disabled={flowActive || settingUp || settingConstraints}
               onClick={() => fileAttachRef.current?.click()}
             >
               <PlusIcon size={18} />
@@ -1037,7 +846,7 @@ export function MiaSidePanel({
                 if (file) handleFileAttached(file);
               }}
             />
-            <button type="button" className={styles.mentionBtn} aria-label="Mention" disabled={flowActive || settingUp || settingConstraints || duplicateBusy}>
+            <button type="button" className={styles.mentionBtn} aria-label="Mention" disabled={flowActive || settingUp || settingConstraints}>
               @
             </button>
             <span className={styles.composerSpacer} />

@@ -241,7 +241,7 @@ export function useMpoState() {
   );
 
   const duplicatePlan = useCallback(
-    (id: string, label?: string, modelDate?: string, newBudget?: number) => {
+    (id: string, label?: string, modelDate?: string) => {
       const source = plans.find((p) => p.id === id);
       if (!source) return;
 
@@ -256,19 +256,13 @@ export function useMpoState() {
         modelDate: modelDate ?? source.modelDate,
       };
 
-      // Editing the total budget re-scales every unlocked tactic proportionally rather than
-      // just cloning the source figures as-is.
-      const clonedTactics = cloneTactics(sourceSnapshot.tactics);
-      const tactics = newBudget != null ? applyTargetBudget(clonedTactics, newBudget) : clonedTactics;
-
       setPlans((prev) => [...prev, copy]);
       setPlanData((prev) => ({
         ...prev,
         [newId]: {
           ...sourceSnapshot,
-          tactics,
+          tactics: cloneTactics(sourceSnapshot.tactics),
           baseline: cloneTactics(sourceSnapshot.baseline),
-          targetBudget: newBudget ?? sourceSnapshot.targetBudget,
         },
       }));
       notify(label ? `Duplicated "${source.label}" as "${label}"` : `Duplicated "${source.label}"`);
