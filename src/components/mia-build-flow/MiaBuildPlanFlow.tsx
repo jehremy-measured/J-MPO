@@ -16,7 +16,7 @@ import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { Checkbox } from "../Checkbox";
 import { RollupHint } from "../RollupHint";
-import { LayersIcon, ResetIcon, TargetIcon, UploadIcon } from "../icons/BuildPlanIcons";
+import { ResetIcon, TargetIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
@@ -28,43 +28,33 @@ type Props = {
 
 const STEP_DELAY_MS = 300;
 
-type BudgetInputChoice = "tactic" | "channel" | "total" | null;
+type BudgetInputChoice = "upload" | "total" | null;
 
-/** Granularity to add budget at. Only "tactic" has a real entry mechanism today (the xls
- * upload); "channel" and "total" don't have a dedicated input UI yet, so they fall back to
- * the same auto-filled reference-period path "Fetch from past period" used to — see
- * BUDGET_INPUT_METHOD below. */
+/** Only "upload" has a real entry mechanism today (the xls upload); "total" doesn't have a
+ * dedicated input UI yet, so it falls back to the same auto-filled reference-period path
+ * "Fetch from past period" used to — see BUDGET_INPUT_METHOD below. */
 const BUDGET_INPUT_OPTIONS: {
   id: Exclude<BudgetInputChoice, null>;
   icon: typeof UploadIcon;
   label: string;
   desc: string;
-  recommended?: boolean;
 }[] = [
   {
-    id: "tactic",
+    id: "upload",
     icon: UploadIcon,
-    label: "Add tactic budgets",
-    desc: "Add tactic-wise budgets in an xls file",
-    recommended: true,
-  },
-  {
-    id: "channel",
-    icon: LayersIcon,
-    label: "Add channel budgets",
-    desc: "Set a budget per channel; we'll split it across tactics",
+    label: "Upload tactic/channel budgets",
+    desc: "Use our template or upload your own budget file",
   },
   {
     id: "total",
     icon: TargetIcon,
-    label: "Add a total budget",
-    desc: "Set one overall number; we'll allocate it across tactics",
+    label: "I only have a total budget",
+    desc: "I'll assign tactic-wise budgets based on past spend data",
   },
 ];
 
 const BUDGET_INPUT_METHOD: Record<Exclude<BudgetInputChoice, null>, "upload" | "fetch"> = {
-  tactic: "upload",
-  channel: "fetch",
+  upload: "upload",
   total: "fetch",
 };
 
@@ -353,10 +343,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                     <opt.icon size={20} />
                   </div>
                   <div>
-                    <div className={styles.methodTitleRow}>
-                      <h4>{opt.label}</h4>
-                      {opt.recommended && <span className={styles.recommendedTag}>Recommended</span>}
-                    </div>
+                    <h4>{opt.label}</h4>
                     <p>{opt.desc}</p>
                   </div>
                 </button>
