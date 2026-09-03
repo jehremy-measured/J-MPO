@@ -229,6 +229,29 @@ export function planSummaryRows(state: BuildPlanState): { label: string; value: 
   return rows;
 }
 
+export type ChannelBudgetRow = {
+  channel: string;
+  value: number;
+  tactics: { name: string; value: number }[];
+};
+
+/** Per-channel budget breakdown (included tactics only), ordered the same way as the channel
+ * filter — backs the plan-ready summary card's channel table. */
+export function channelBudgetRows(state: BuildPlanState): ChannelBudgetRow[] {
+  const byChannel = new Map<string, ChannelBudgetRow>();
+  BUILD_TACTICS.forEach((t) => {
+    if (!state.included[t.id]) return;
+    const value = state.budget[t.id] ?? 0;
+    if (!byChannel.has(t.channel)) byChannel.set(t.channel, { channel: t.channel, value: 0, tactics: [] });
+    const row = byChannel.get(t.channel)!;
+    row.value += value;
+    row.tactics.push({ name: t.name, value });
+  });
+  return channelsPresent()
+    .filter((c) => byChannel.has(c))
+    .map((c) => byChannel.get(c)!);
+}
+
 /** Default value for the target field: last year's actuals for this exact period, or the latest
  * comparable period when last year isn't covered by the data we have. */
 export function referenceTargetDefault(state: BuildPlanState, target: Exclude<PlanTarget, null>): number {
