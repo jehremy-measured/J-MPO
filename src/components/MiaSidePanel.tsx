@@ -371,7 +371,7 @@ export function MiaSidePanel({
       appendMessages([
         {
           role: "mia",
-          text: "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* I've allocated budgets for tactics under each channel based on their previous spend data.\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan.",
+          text: "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan.",
         },
         {
           role: "mia",
