@@ -283,6 +283,11 @@
   gap: 10px;
 }
 
+.duplicateBudgetField {
+  margin-top: -2px;
+  padding: 0 12px;
+}
+
 .methodCard {
   display: flex;
   align-items: center;
