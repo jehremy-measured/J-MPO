@@ -38,7 +38,9 @@ export function ModelSelectList({ currentModelDate, selectedModelId, onSelect, v
           <span className={styles.modelBody}>
             <span className={styles.modelDate}>Use current model</span>
             <span className={styles.modelSubtext}>
-              Plan will be {verb} using the same MIM data ({currentModelDate}) as your current plan.
+              {verb === "updated"
+                ? `This plan currently uses data from the ${currentModelDate} MIM update.`
+                : `Plan will be ${verb} using the same MIM data (${currentModelDate}) as your current plan.`}
             </span>
           </span>
         </label>

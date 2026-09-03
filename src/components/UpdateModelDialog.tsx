@@ -34,7 +34,7 @@ export function UpdateModelDialog({ currentModelDate, onClose, onConfirm }: Prop
       >
         <div className={styles.header}>
           <h3 id="update-model-title" className={styles.title}>
-            Update model
+            Refresh plan data
           </h3>
           <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
             <CloseIcon size={20} />

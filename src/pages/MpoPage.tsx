@@ -299,7 +299,7 @@ export function MpoPage() {
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}
-                          currentModelLabel={`Current: ${activeModelDate}`}
+                          currentModelLabel={`Current model: ${activeModelDate}`}
                           modelUpToDate={isModelUpToDate(activeModelDate)}
                           variant="chevron"
                         />

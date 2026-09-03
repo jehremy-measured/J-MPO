@@ -149,7 +149,7 @@ export function PlanOptionsMenu({
               >
                 <MaterialIcon name="autorenew" size={20} />
                 <span className={styles.stackedItemText}>
-                  <span className={styles.stackedItemLabel}>Update model</span>
+                  <span className={styles.stackedItemLabel}>Refresh plan data</span>
                   {currentModelLabel && <span className={styles.stackedItemSub}>{currentModelLabel}</span>}
                 </span>
                 {modelUpToDate && (
