@@ -107,7 +107,7 @@ function computeMetricDiff(
   const pct = ((actualValue - projectedValue) / projectedValue) * 100;
   const sign = pct >= 0 ? "+" : "";
   const good = higherIsBetter ? pct >= 0 : pct <= 0;
-  return { label: `${sign}${pct.toFixed(1)}% vs plan`, good };
+  return { label: `${sign}${pct.toFixed(1)}%`, good };
 }
 
 function MetricDiffTag({ diff }: { diff: MetricDiff | null }) {
