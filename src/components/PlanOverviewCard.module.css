@@ -165,56 +165,17 @@
   margin: 0;
 }
 
-.actualsToggle {
+.actualsTag {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  height: 32px;
-  gap: 6px;
-  padding: 0;
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.actualsToggle:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.actualsToggleTrack {
-  position: relative;
-  width: 36px;
-  height: 20px;
-  flex-shrink: 0;
+  height: 22px;
+  padding: 0 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--blue-700);
+  background: var(--blue-100);
   border-radius: 999px;
-  background: var(--gray-400);
-  transition: background 0.15s ease;
-}
-
-.actualsToggleOn .actualsToggleTrack {
-  background: var(--blue-700);
-}
-
-.actualsToggleThumb {
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--gray-000);
-  transition: transform 0.15s ease;
-}
-
-.actualsToggleOn .actualsToggleThumb {
-  transform: translateX(16px);
-}
-
-.actualsToggleLabel {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--gray-800);
   white-space: nowrap;
 }
 
@@ -290,6 +251,27 @@
   color: var(--gray-1000);
   line-height: 1.3;
   white-space: nowrap;
+}
+
+.statValueCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.statDiff {
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.statDiffUp {
+  color: var(--green-800);
+}
+
+.statDiffDown {
+  color: var(--red-700);
 }
 
 .chartCol {

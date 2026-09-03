@@ -29,7 +29,7 @@ type Props = {
   showActuals?: boolean;
 };
 
-type WeekPoint = {
+export type WeekPoint = {
   index: number;
   label: string;
   fullLabel: string;
@@ -148,6 +148,20 @@ export function buildActualWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
     const salesVariance = ACTUAL_VARIANCE[w.index % ACTUAL_VARIANCE.length];
     const spendVariance = ACTUAL_SPEND_VARIANCE[w.index % ACTUAL_SPEND_VARIANCE.length];
     result.push({ ...w, sales: w.sales * salesVariance * fraction, budget: w.budget * spendVariance * fraction });
+  }
+  return result;
+}
+
+/** The "if everything had landed exactly on the projected pace" baseline for weeks that have
+ * started — same elapsed-fraction math as buildActualWeeks, without the demo variance. Used to
+ * diff actual-to-date figures against where the plan expected to be by now. */
+export function buildProjectedToDateWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
+  const result: WeekPoint[] = [];
+  for (const w of weeks) {
+    if (isBefore(today, w.start)) break;
+    const elapsedDays = Math.min(w.days, daysBetweenInclusive(w.start, today));
+    const fraction = elapsedDays / w.days;
+    result.push({ ...w, sales: w.sales * fraction, budget: w.budget * fraction });
   }
   return result;
 }
