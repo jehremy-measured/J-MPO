@@ -25,6 +25,7 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
     shared: true,
+    modelDate: LATEST_MODEL_DATE,
   },
   {
     id: "sim-q3-inflight",
@@ -37,7 +38,6 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 1),
     planEnd: new Date(2026, 8, 30),
     shared: false,
-    modelDate: LATEST_MODEL_DATE,
   },
   {
     id: "sim-default-copy",
