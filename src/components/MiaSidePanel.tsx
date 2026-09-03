@@ -171,12 +171,35 @@ export function MiaSidePanel({
   const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
   const [expandedSummaryCards, setExpandedSummaryCards] = useState<Set<string>>(new Set());
+  const summaryCardRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  // Expanding/collapsing the channel table mutates the messages container's DOM, which would
+  // otherwise trigger the auto-scroll-to-bottom observer below — suppress that for this one
+  // state change so the toggle can control the scroll position itself (or leave it untouched).
+  const suppressAutoScrollRef = useRef(false);
   const toggleSummaryCardExpanded = (id: string) => {
+    const wasExpanded = expandedSummaryCards.has(id);
+    suppressAutoScrollRef.current = true;
     setExpandedSummaryCards((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
+    });
+    // Wait a couple of frames so the collapsed/expanded DOM has actually painted before either
+    // scrolling to the card (collapse) or releasing the auto-scroll suppression.
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (wasExpanded) {
+          const container = messagesContainerRef.current;
+          const card = summaryCardRefs.current.get(id);
+          if (container && card) {
+            const containerRect = container.getBoundingClientRect();
+            const cardRect = card.getBoundingClientRect();
+            container.scrollTop += cardRect.top - containerRect.top - 12;
+          }
+        }
+        suppressAutoScrollRef.current = false;
+      });
     });
   };
   const [draft, setDraft] = useState("");
@@ -426,6 +449,7 @@ export function MiaSidePanel({
     const container = messagesContainerRef.current;
     if (!container || typeof MutationObserver === "undefined") return;
     const observer = new MutationObserver(() => {
+      if (suppressAutoScrollRef.current) return;
       container.scrollTop = container.scrollHeight;
     });
     observer.observe(container, { childList: true, subtree: true, characterData: true });
@@ -671,7 +695,14 @@ export function MiaSidePanel({
               </span>
             </button>
           ) : msg.kind === "plan-ready-card" ? (
-            <div key={msg.id} className={styles.readyCard}>
+            <div
+              key={msg.id}
+              className={styles.readyCard}
+              ref={(el) => {
+                if (el) summaryCardRefs.current.set(msg.id, el);
+                else summaryCardRefs.current.delete(msg.id);
+              }}
+            >
               <div className={styles.readyCardHeader}>
                 <span className={styles.planCardIcon} aria-hidden>
                   <FileIcon size={20} />
@@ -733,11 +764,10 @@ export function MiaSidePanel({
               <div className={styles.readyCardActionsSplit}>
                 <button
                   type="button"
-                  className={styles.rcBtnIcon}
-                  aria-label={expandedSummaryCards.has(msg.id) ? "Collapse" : "Expand"}
+                  className={styles.rcBtnTertiary}
                   onClick={() => toggleSummaryCardExpanded(msg.id)}
                 >
-                  <ExpandIcon size={18} />
+                  {expandedSummaryCards.has(msg.id) ? "Show less" : "Show more"}
                 </button>
                 <button
                   type="button"

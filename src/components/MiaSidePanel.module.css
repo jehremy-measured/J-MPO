@@ -649,22 +649,22 @@
   border-color: #254f9e;
 }
 
-.rcBtnIcon {
+.rcBtnTertiary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
   height: 32px;
-  padding: 0;
+  padding: 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-700);
+  background: none;
+  border: none;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--gray-400);
-  color: var(--gray-1000);
-  background: var(--gray-000);
 }
 
-.rcBtnIcon:hover {
-  background: var(--gray-100);
-  border-color: var(--gray-500);
+.rcBtnTertiary:hover {
+  background: var(--blue-100);
 }
 
 .readyCardActionsSplit {
