@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { isModelUpToDate, LATEST_MODEL_DATE, type ModelOption } from "../../mpo/modelOptions";
+import { LATEST_MODEL_DATE, type ModelOption } from "../../mpo/modelOptions";
+import { formatBudget } from "../../mpo/types";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 const STEP_DELAY_MS = 300;
@@ -10,6 +11,8 @@ type Screen = "budget" | "model";
 
 export type DuplicatePlanFlowResult = {
   adjustBudget: boolean;
+  /** The edited total budget, only meaningful when adjustBudget is true. */
+  newBudget: number | null;
   model: ModelOption;
 };
 
@@ -17,6 +20,9 @@ type Props = {
   /** The MIM model date of the plan being duplicated — drives the "Use current model" option
    * and whether the model question has anything left to choose. */
   currentModelDate: string;
+  /** The source plan's current total budget — pre-fills the editable field shown once "Make
+   * changes to total budget" is selected. */
+  currentBudget: number;
   onExchange: (question: string, answer: string) => void;
   onDone: (result: DuplicatePlanFlowResult) => void;
 };
@@ -31,16 +37,42 @@ function TypingIndicator() {
   );
 }
 
+function BudgetValueInput({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+  const [text, setText] = useState(value.toLocaleString("en-US"));
+  return (
+    <div className={styles.targetFieldRow}>
+      <div className={styles.targetInputWrap}>
+        <span className={styles.dol}>$</span>
+        <input
+          className={`${styles.targetInput} ${styles.targetInputPrefixed}`}
+          inputMode="numeric"
+          aria-label="New total budget"
+          value={text}
+          onChange={(e) => {
+            setText(e.target.value);
+            const n = parseInt(e.target.value.replace(/[^0-9]/g, ""), 10);
+            onChange(isNaN(n) ? 0 : n);
+          }}
+          onBlur={() => {
+            const n = parseInt(text.replace(/[^0-9]/g, ""), 10);
+            setText(isNaN(n) ? "" : n.toLocaleString("en-US"));
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 const BUDGET_QUESTION = "Would you like to make any changes to the budget?";
 const MODEL_QUESTION = "Which model should this new plan use?";
 
-export function MiaDuplicatePlanFlow({ currentModelDate, onExchange, onDone }: Props) {
+export function MiaDuplicatePlanFlow({ currentModelDate, currentBudget, onExchange, onDone }: Props) {
   const [screen, setScreen] = useState<Screen>("budget");
   const [pending, setPending] = useState(false);
   const [budgetChoice, setBudgetChoice] = useState<BudgetChoice | null>(null);
+  const [budgetValue, setBudgetValue] = useState(currentBudget);
   const [modelChoice, setModelChoice] = useState<ModelChoice | null>(null);
   const timeoutRef = useRef<number | null>(null);
-  const upToDate = isModelUpToDate(currentModelDate);
 
   useEffect(() => {
     return () => {
@@ -75,6 +107,11 @@ export function MiaDuplicatePlanFlow({ currentModelDate, onExchange, onDone }: P
                 <p>Tactic budgets will be auto-adjusted based on their current budget.</p>
               </div>
             </button>
+            {budgetChoice === "adjust" && (
+              <div className={styles.duplicateBudgetField}>
+                <BudgetValueInput value={budgetValue} onChange={setBudgetValue} />
+              </div>
+            )}
             <button
               type="button"
               className={`${styles.methodCard} ${budgetChoice === "keep" ? styles.methodCardSelected : ""}`}
@@ -95,7 +132,9 @@ export function MiaDuplicatePlanFlow({ currentModelDate, onExchange, onDone }: P
             onClick={() => {
               if (!budgetChoice) return;
               const label =
-                budgetChoice === "adjust" ? "Make changes to total budget" : "Keep budget as is";
+                budgetChoice === "adjust"
+                  ? `Make changes to total budget (${formatBudget(budgetValue)})`
+                  : "Keep budget as is";
               commit(BUDGET_QUESTION, label, () => setScreen("model"));
             }}
           >
@@ -106,33 +145,12 @@ export function MiaDuplicatePlanFlow({ currentModelDate, onExchange, onDone }: P
     );
   }
 
-  const finish = (model: ModelOption) => onDone({ adjustBudget: budgetChoice === "adjust", model });
-
-  if (upToDate) {
-    return (
-      <div className={styles.turn}>
-        <p className={styles.q}>{MODEL_QUESTION}</p>
-        <div className={styles.turnContent}>
-          <p className={styles.miaText}>
-            Plan will be created using data from the latest MIM update ({LATEST_MODEL_DATE}).
-          </p>
-        </div>
-        <div className={styles.turnActions}>
-          <button
-            type="button"
-            className={`${styles.btn} ${styles.btnPrimary}`}
-            onClick={() =>
-              commit(MODEL_QUESTION, `Latest model (${LATEST_MODEL_DATE})`, () =>
-                finish({ id: "latest", date: LATEST_MODEL_DATE })
-              )
-            }
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const finish = (model: ModelOption) =>
+    onDone({
+      adjustBudget: budgetChoice === "adjust",
+      newBudget: budgetChoice === "adjust" ? budgetValue : null,
+      model,
+    });
 
   return (
     <div className={styles.turn}>

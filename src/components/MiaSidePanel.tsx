@@ -135,9 +135,20 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
-type DuplicateSignal = { token: number; planId: string; planLabel: string; modelDate: string };
+type DuplicateSignal = {
+  token: number;
+  planId: string;
+  planLabel: string;
+  modelDate: string;
+  currentBudget: number;
+};
 
-export type DuplicatePlanChoices = { label: string; modelDate: string; adjustBudget: boolean };
+export type DuplicatePlanChoices = {
+  label: string;
+  modelDate: string;
+  adjustBudget: boolean;
+  newBudget: number | null;
+};
 
 type Props = {
   open: boolean;
@@ -211,6 +222,7 @@ export function MiaSidePanel({
     planId: string;
     planLabel: string;
     modelDate: string;
+    currentBudget: number;
   } | null>(null);
   const [duplicateLoading, setDuplicateLoading] = useState(false);
   const [duplicateFlowActive, setDuplicateFlowActive] = useState(false);
@@ -329,7 +341,7 @@ export function MiaSidePanel({
   }, [open, optimizeSignal, startOptimizeFlow]);
 
   const startDuplicateFlow = useCallback(
-    (planId: string, planLabel: string, modelDate: string) => {
+    (planId: string, planLabel: string, modelDate: string, currentBudget: number) => {
       appendMessages([{ role: "user", text: `Duplicate "${planLabel}"` }]);
       setFlowActive(false);
       setUploadState(null);
@@ -338,7 +350,7 @@ export function MiaSidePanel({
       setDraft("");
       setPresetPlanType(null);
       setDuplicateFlowActive(false);
-      setDuplicateContext({ planId, planLabel, modelDate });
+      setDuplicateContext({ planId, planLabel, modelDate, currentBudget });
       setDuplicateLoading(true);
     },
     [appendMessages]
@@ -348,7 +360,12 @@ export function MiaSidePanel({
     if (!open || !duplicateSignal || duplicateSignal.token === lastDuplicateTokenRef.current) return;
     lastDuplicateTokenRef.current = duplicateSignal.token;
     setMessages([]);
-    startDuplicateFlow(duplicateSignal.planId, duplicateSignal.planLabel, duplicateSignal.modelDate);
+    startDuplicateFlow(
+      duplicateSignal.planId,
+      duplicateSignal.planLabel,
+      duplicateSignal.modelDate,
+      duplicateSignal.currentBudget
+    );
   }, [open, duplicateSignal, startDuplicateFlow]);
 
   useEffect(() => {
@@ -969,6 +986,7 @@ export function MiaSidePanel({
           <MiaDuplicatePlanFlow
             key={duplicateFlowKey}
             currentModelDate={duplicateContext.modelDate}
+            currentBudget={duplicateContext.currentBudget}
             onExchange={(question, answer) =>
               appendMessages([
                 { role: "mia", text: question },
@@ -988,7 +1006,10 @@ export function MiaSidePanel({
                   text: label,
                   rows: [
                     { label: "Source plan", value: ctx.planLabel },
-                    { label: "Budget", value: result.adjustBudget ? "Auto-adjusted" : "Same as source" },
+                    {
+                      label: "Budget",
+                      value: result.adjustBudget ? currencyFormatter.format(result.newBudget ?? 0) : "Same as source",
+                    },
                     {
                       label: "Model",
                       value: `${result.model.id === "latest" ? "Latest" : "Current"} (${result.model.date})`,
@@ -996,7 +1017,12 @@ export function MiaSidePanel({
                   ],
                   duplicatePayload: {
                     planId: ctx.planId,
-                    choices: { label, modelDate: result.model.date, adjustBudget: result.adjustBudget },
+                    choices: {
+                      label,
+                      modelDate: result.model.date,
+                      adjustBudget: result.adjustBudget,
+                      newBudget: result.newBudget,
+                    },
                   },
                 },
               ]);
