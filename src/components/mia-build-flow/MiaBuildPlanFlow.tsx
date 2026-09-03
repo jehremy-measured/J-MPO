@@ -16,7 +16,7 @@ import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { Checkbox } from "../Checkbox";
 import { RollupHint } from "../RollupHint";
-import { HistoryIcon, ResetIcon, UploadIcon } from "../icons/BuildPlanIcons";
+import { LayersIcon, ResetIcon, TargetIcon, UploadIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
@@ -27,6 +27,46 @@ type Props = {
 };
 
 const STEP_DELAY_MS = 300;
+
+type BudgetInputChoice = "tactic" | "channel" | "total" | null;
+
+/** Granularity to add budget at. Only "tactic" has a real entry mechanism today (the xls
+ * upload); "channel" and "total" don't have a dedicated input UI yet, so they fall back to
+ * the same auto-filled reference-period path "Fetch from past period" used to — see
+ * BUDGET_INPUT_METHOD below. */
+const BUDGET_INPUT_OPTIONS: {
+  id: Exclude<BudgetInputChoice, null>;
+  icon: typeof UploadIcon;
+  label: string;
+  desc: string;
+  recommended?: boolean;
+}[] = [
+  {
+    id: "tactic",
+    icon: UploadIcon,
+    label: "Add tactic budgets",
+    desc: "Add tactic-wise budgets in an xls file",
+    recommended: true,
+  },
+  {
+    id: "channel",
+    icon: LayersIcon,
+    label: "Add channel budgets",
+    desc: "Set a budget per channel; we'll split it across tactics",
+  },
+  {
+    id: "total",
+    icon: TargetIcon,
+    label: "Add a total budget",
+    desc: "Set one overall number; we'll allocate it across tactics",
+  },
+];
+
+const BUDGET_INPUT_METHOD: Record<Exclude<BudgetInputChoice, null>, "upload" | "fetch"> = {
+  tactic: "upload",
+  channel: "fetch",
+  total: "fetch",
+};
 
 function MiaTurn({ children }: { children: ReactNode }) {
   return <div className={styles.turn}>{children}</div>;
@@ -114,7 +154,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [planTypeChoice, setPlanTypeChoice] = useState<PlanTypeChoice>(null);
-  const [methodChoice, setMethodChoice] = useState<"upload" | "fetch" | null>(null);
+  const [methodChoice, setMethodChoice] = useState<BudgetInputChoice>(null);
   const [pending, setPending] = useState(false);
   const timeoutRef = useRef<number | null>(null);
 
@@ -302,32 +342,25 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
           <p className={styles.q}>What is your budget for this period?</p>
           <div className={styles.turnContent}>
             <div className={styles.methods}>
-              <button
-                type="button"
-                className={`${styles.methodCard} ${methodChoice === "upload" ? styles.methodCardSelected : ""}`}
-                onClick={() => setMethodChoice("upload")}
-              >
-                <div className={styles.methodIcon}>
-                  <UploadIcon size={20} />
-                </div>
-                <div>
-                  <h4>Upload budget</h4>
-                  <p>Add tactic-wise budgets in an xls file</p>
-                </div>
-              </button>
-              <button
-                type="button"
-                className={`${styles.methodCard} ${methodChoice === "fetch" ? styles.methodCardSelected : ""}`}
-                onClick={() => setMethodChoice("fetch")}
-              >
-                <div className={styles.methodIcon}>
-                  <HistoryIcon size={20} />
-                </div>
-                <div>
-                  <h4>Fetch from past period</h4>
-                  <p>Use a prior period's actual spend.</p>
-                </div>
-              </button>
+              {BUDGET_INPUT_OPTIONS.map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  className={`${styles.methodCard} ${methodChoice === opt.id ? styles.methodCardSelected : ""}`}
+                  onClick={() => setMethodChoice(opt.id)}
+                >
+                  <div className={styles.methodIcon}>
+                    <opt.icon size={20} />
+                  </div>
+                  <div>
+                    <div className={styles.methodTitleRow}>
+                      <h4>{opt.label}</h4>
+                      {opt.recommended && <span className={styles.recommendedTag}>Recommended</span>}
+                    </div>
+                    <p>{opt.desc}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </div>
           <div className={styles.turnActions}>
@@ -338,14 +371,13 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
               onClick={() => {
                 if (!methodChoice) return;
                 const choice = methodChoice;
-                onExchange(
-                  "What is your budget for this period?",
-                  choice === "upload" ? "Upload budget" : "Fetch from past period"
-                );
+                const label = BUDGET_INPUT_OPTIONS.find((o) => o.id === choice)!.label;
+                const method = BUDGET_INPUT_METHOD[choice];
+                onExchange("What is your budget for this period?", label);
                 setPending(true);
                 timeoutRef.current = window.setTimeout(() => {
-                  const nextState = applyMethodChoice(state, choice);
-                  if (choice === "upload") {
+                  const nextState = applyMethodChoice(state, method);
+                  if (method === "upload") {
                     onAwaitUpload(nextState);
                   } else {
                     onFetchReady(nextState);
