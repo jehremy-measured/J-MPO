@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
 import type { PlanTarget } from "../mpo/types";
 import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
@@ -95,6 +96,37 @@ function pctOf(value: number, total: number): string {
   return `${((value / total) * 100).toFixed(1)}%`;
 }
 
+type RowDiff = { label: string; good: boolean };
+
+/** Deterministic per-row variance so each row's actual-vs-plan figure looks organic without
+ * jittering on every re-render — mirrors the chart's own per-week variance approach, just
+ * seeded by row index instead of week index. Budget and the primary metric use different
+ * sequences so the two columns don't move in lockstep. */
+const ROW_BUDGET_VARIANCE = [0.97, 1.08, 0.92, 1.04, 0.99, 1.06, 0.91, 1.03];
+const ROW_VOLUME_VARIANCE = [1.06, 0.94, 1.11, 0.9, 1.05, 0.97, 1.09, 0.93];
+
+/** Budget is a cost metric — coming in under plan is favorable — while the primary volume
+ * metric reads as a magnitude to climb toward, so beating plan is favorable. */
+function rowDiff(index: number, kind: "budget" | "volume"): RowDiff {
+  const variance =
+    kind === "budget"
+      ? ROW_BUDGET_VARIANCE[index % ROW_BUDGET_VARIANCE.length]
+      : ROW_VOLUME_VARIANCE[index % ROW_VOLUME_VARIANCE.length];
+  const pct = (variance - 1) * 100;
+  const sign = pct >= 0 ? "+" : "";
+  const higherIsBetter = kind === "volume";
+  const good = higherIsBetter ? pct >= 0 : pct <= 0;
+  return { label: `${sign}${pct.toFixed(1)}%`, good };
+}
+
+function RowDiffTag({ diff }: { diff: RowDiff }) {
+  return (
+    <span className={`${styles.rowDiff} ${diff.good ? styles.rowDiffUp : styles.rowDiffDown}`}>
+      {diff.label}
+    </span>
+  );
+}
+
 type ChannelRow = {
   name: string;
   budget: number;
@@ -121,6 +153,8 @@ type BudgetTableView = "channels" | "tactics";
 export function BudgetTable({ target, planStart, planEnd, allowActual = true }: Props) {
   const [view, setView] = useState<BudgetTableView>("channels");
   const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
+  const today = new Date();
+  const actualsAvailable = allowActual && !isBefore(today, planStart) && !isAfter(today, planEnd);
   const showOrders = target === "incremental-orders" || target === "incremental-cpo";
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
   const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
@@ -198,7 +232,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
               <td />
             </tr>
             {view === "channels"
-              ? channelRows.map((row) => {
+              ? channelRows.map((row, i) => {
                   const primaryValue = showOrders ? row.orders : row.sales;
                   const secondaryValue = showOrders
                     ? row.budget / (row.orders || 1)
@@ -216,7 +250,11 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                       <td>
                         <div className={styles.cellStack}>
                           <span className={styles.value}>{formatCurrency(row.budget)}</span>
-                          <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
+                          {actualsAvailable ? (
+                            <RowDiffTag diff={rowDiff(i, "budget")} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -224,7 +262,11 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                           <span className={styles.value}>
                             {showOrders ? Math.round(primaryValue).toLocaleString() : formatCurrency(primaryValue)}
                           </span>
-                          <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
+                          {actualsAvailable ? (
+                            <RowDiffTag diff={rowDiff(i, "volume")} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
+                          )}
                         </div>
                       </td>
                       <td>
@@ -234,7 +276,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                     </tr>
                   );
                 })
-              : rows.map((row) => (
+              : rows.map((row, i) => (
                   <tr key={row.name}>
                     <td>
                       <div className={styles.tacticCell}>
@@ -258,15 +300,23 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                     <td>
                       <div className={styles.cellStack}>
                         <span className={styles.value}>{row.budget}</span>
-                        <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                        {actualsAvailable ? (
+                          <RowDiffTag diff={rowDiff(i, "budget")} />
+                        ) : (
+                          <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                        )}
                       </div>
                     </td>
                     <td>
                       <div className={styles.cellStack}>
                         <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
-                        <span className={styles.pctOfTotal}>
-                          {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
-                        </span>
+                        {actualsAvailable ? (
+                          <RowDiffTag diff={rowDiff(i, "volume")} />
+                        ) : (
+                          <span className={styles.pctOfTotal}>
+                            {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+                          </span>
+                        )}
                       </div>
                     </td>
                     <td>

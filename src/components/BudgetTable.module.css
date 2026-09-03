@@ -211,6 +211,19 @@
   color: var(--gray-800);
 }
 
+.rowDiff {
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.rowDiffUp {
+  color: var(--green-800);
+}
+
+.rowDiffDown {
+  color: var(--red-700);
+}
+
 .value {
   color: var(--gray-1000);
   font-weight: 500;
