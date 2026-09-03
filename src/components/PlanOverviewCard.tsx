@@ -1,9 +1,16 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import { isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { SparkleIcon } from "./icons/SparkleIcon";
-import { WeeklyProjectionChart, formatFullCurrency, formatVolumeFull } from "./WeeklyProjectionChart";
+import {
+  WeeklyProjectionChart,
+  buildActualWeeks,
+  buildProjectedToDateWeeks,
+  buildWeeklyProjection,
+  formatFullCurrency,
+  formatVolumeFull,
+} from "./WeeklyProjectionChart";
 import styles from "./PlanOverviewCard.module.css";
 
 type Props = {
@@ -54,34 +61,61 @@ function formatPrimaryDisplayValue(target: PlanTarget, value: number): string {
  * project an actual figure from. */
 const OPTIMIZATION_UPLIFT_PCT = 0.15;
 
-/** Sits at the right end of the "Plan Summary" title, mirroring the invisible spacer it
- * replaces so the header's height/alignment doesn't shift. Disabled (not just visually, but
- * non-interactive) until the plan has actually accrued some real days to compare against. */
-function CompareActualsToggle({
-  available,
-  checked,
-  onChange,
-}: {
-  available: boolean;
-  checked: boolean;
-  onChange: (next: boolean) => void;
-}) {
+type MetricDiff = { label: string; good: boolean };
+
+/** Aggregate actual-to-date vs. expected-to-date totals for the two series the chart tracks
+ * (the plotted volume metric and spend), used to diff every stat row against actuals. */
+type PacingTotals = { volume: number; budget: number };
+
+/** actual-vs-projected-to-date diff for one stat row, formatted as a signed percent. Budget and
+ * CPO are cost metrics (coming in under the expected pace is favorable); the rest read as a
+ * magnitude to climb toward, so beating the expected pace is favorable. */
+function computeMetricDiff(
+  key: "total-budget" | PlanTarget,
+  actual: PacingTotals,
+  projected: PacingTotals
+): MetricDiff | null {
+  let actualValue: number;
+  let projectedValue: number;
+  let higherIsBetter: boolean;
+  switch (key) {
+    case "total-budget":
+      actualValue = actual.budget;
+      projectedValue = projected.budget;
+      higherIsBetter = false;
+      break;
+    case "incremental-sales":
+    case "incremental-orders":
+      actualValue = actual.volume;
+      projectedValue = projected.volume;
+      higherIsBetter = true;
+      break;
+    case "incremental-roas":
+      actualValue = actual.budget > 0 ? actual.volume / actual.budget : 0;
+      projectedValue = projected.budget > 0 ? projected.volume / projected.budget : 0;
+      higherIsBetter = true;
+      break;
+    case "incremental-cpo":
+      actualValue = actual.volume > 0 ? actual.budget / actual.volume : 0;
+      projectedValue = projected.volume > 0 ? projected.budget / projected.volume : 0;
+      higherIsBetter = false;
+      break;
+    default:
+      return null;
+  }
+  if (!(projectedValue > 0)) return null;
+  const pct = ((actualValue - projectedValue) / projectedValue) * 100;
+  const sign = pct >= 0 ? "+" : "";
+  const good = higherIsBetter ? pct >= 0 : pct <= 0;
+  return { label: `${sign}${pct.toFixed(1)}% vs plan`, good };
+}
+
+function MetricDiffTag({ diff }: { diff: MetricDiff | null }) {
+  if (!diff) return null;
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={available && checked}
-      aria-label="Compare with actuals"
-      title={available ? undefined : "Actuals aren't available yet for this period"}
-      disabled={!available}
-      className={`${styles.actualsToggle} ${available && checked ? styles.actualsToggleOn : ""}`}
-      onClick={() => onChange(!checked)}
-    >
-      <span className={styles.actualsToggleTrack} aria-hidden>
-        <span className={styles.actualsToggleThumb} />
-      </span>
-      <span className={styles.actualsToggleLabel}>Compare actuals</span>
-    </button>
+    <span className={`${styles.statDiff} ${diff.good ? styles.statDiffUp : styles.statDiffDown}`}>
+      {diff.label}
+    </span>
   );
 }
 
@@ -99,16 +133,40 @@ export function PlanOverviewCard({
   allowActual = true,
 }: Props) {
   // Actuals only exist once the plan is in-flight (mirrors WeeklyProjectionChart's own
-  // gating) — the toggle stays disabled until there's real data for it to compare against.
+  // gating) — comparison is shown automatically whenever there's real data to compare against.
   const today = new Date();
   const actualsAvailable = allowActual && !isBefore(today, planStart) && !isAfter(today, planEnd);
-  const [compareActuals, setCompareActuals] = useState(true);
 
   // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
   // Forecast column's secondary metric row) follows whichever pair the target belongs to.
   const isOrdersFamily = target === "incremental-orders" || target === "incremental-cpo";
   const volumeMetric = isOrdersFamily ? incrementalOrders : incrementalSales;
   const volumeNoun = isOrdersFamily ? "Orders" : "Sales";
+
+  // Actual-to-date vs. expected-to-date totals, used to diff every stat row against actuals —
+  // built from the same weekly pacing model the chart itself plots, so the figures agree.
+  const weeks = useMemo(
+    () => buildWeeklyProjection(planStart, planEnd, volumeMetric, totalBudget),
+    [planStart, planEnd, volumeMetric, totalBudget]
+  );
+  const actualTotals = useMemo<PacingTotals>(() => {
+    if (!actualsAvailable) return { volume: 0, budget: 0 };
+    const actualWeeks = buildActualWeeks(weeks, today);
+    return actualWeeks.reduce(
+      (acc, w) => ({ volume: acc.volume + w.sales, budget: acc.budget + w.budget }),
+      { volume: 0, budget: 0 }
+    );
+  }, [actualsAvailable, weeks, today]);
+  const projectedToDateTotals = useMemo<PacingTotals>(() => {
+    if (!actualsAvailable) return { volume: 0, budget: 0 };
+    const projectedWeeks = buildProjectedToDateWeeks(weeks, today);
+    return projectedWeeks.reduce(
+      (acc, w) => ({ volume: acc.volume + w.sales, budget: acc.budget + w.budget }),
+      { volume: 0, budget: 0 }
+    );
+  }, [actualsAvailable, weeks, today]);
+  const diffFor = (key: "total-budget" | PlanTarget): MetricDiff | null =>
+    actualsAvailable ? computeMetricDiff(key, actualTotals, projectedToDateTotals) : null;
 
   const hasTarget = target != null && targetValue != null && targetValue > 0;
   const progress = hasTarget
@@ -157,24 +215,28 @@ export function PlanOverviewCard({
               <>
                 <div className={styles.statsHeader}>
                   <h2 className={styles.colTitle}>Plan Summary</h2>
-                  <CompareActualsToggle
-                    available={actualsAvailable}
-                    checked={compareActuals}
-                    onChange={setCompareActuals}
-                  />
+                  {actualsAvailable && <span className={styles.actualsTag}>Compared to actuals</span>}
                 </div>
 
                 {secondaryMetricRows.map((row) => (
                   <div className={styles.stat} key={row.key}>
                     <div className={styles.statLabel}>{row.label}</div>
-                    <div className={styles.statValue}>{row.value}</div>
+                    <div className={styles.statValueCol}>
+                      <div className={styles.statValue}>{row.value}</div>
+                      <MetricDiffTag diff={diffFor(row.key)} />
+                    </div>
                   </div>
                 ))}
 
                 <div className={styles.primaryStat}>
                   <div className={styles.stat}>
                     <span className={styles.statLabel}>{GOAL_METRIC_LABEL[target as PlanTarget]}</span>
-                    <span className={styles.statValue}>{formatPrimaryDisplayValue(target as PlanTarget, progress.actual)}</span>
+                    <div className={styles.statValueCol}>
+                      <span className={styles.statValue}>
+                        {formatPrimaryDisplayValue(target as PlanTarget, progress.actual)}
+                      </span>
+                      <MetricDiffTag diff={diffFor(target as PlanTarget)} />
+                    </div>
                   </div>
                 </div>
               </>
@@ -182,23 +244,28 @@ export function PlanOverviewCard({
               <>
                 <div className={styles.statsHeader}>
                   <h2 className={styles.colTitle}>Plan Summary</h2>
-                  <CompareActualsToggle
-                    available={actualsAvailable}
-                    checked={compareActuals}
-                    onChange={setCompareActuals}
-                  />
+                  {actualsAvailable && <span className={styles.actualsTag}>Compared to actuals</span>}
                 </div>
                 <div className={styles.stat}>
                   <div className={styles.statLabel}>Total budget</div>
-                  <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
+                  <div className={styles.statValueCol}>
+                    <div className={styles.statValue}>{formatBudget(totalBudget)}</div>
+                    <MetricDiffTag diff={diffFor("total-budget")} />
+                  </div>
                 </div>
                 <div className={styles.stat}>
                   <div className={styles.statLabel}>Incremental Sales</div>
-                  <div className={styles.statValue}>{formatBudget(incrementalSales)}</div>
+                  <div className={styles.statValueCol}>
+                    <div className={styles.statValue}>{formatBudget(incrementalSales)}</div>
+                    <MetricDiffTag diff={diffFor("incremental-sales")} />
+                  </div>
                 </div>
                 <div className={styles.stat}>
                   <div className={styles.statLabel}>Incremental ROAS</div>
-                  <div className={styles.statValue}>${incrementalRoas.toFixed(2)}</div>
+                  <div className={styles.statValueCol}>
+                    <div className={styles.statValue}>${incrementalRoas.toFixed(2)}</div>
+                    <MetricDiffTag diff={diffFor("incremental-roas")} />
+                  </div>
                 </div>
               </>
             )}
@@ -223,7 +290,6 @@ export function PlanOverviewCard({
             volumeNoun={volumeNoun}
             isOrdersFamily={isOrdersFamily}
             allowActual={allowActual}
-            showActuals={compareActuals}
           />
         </div>
       </div>
