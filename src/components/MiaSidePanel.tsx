@@ -3,6 +3,7 @@ import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { currencyFormatter } from "../mpo/buildPlan/data";
 import {
   applyUploadedBudget,
+  channelBudgetRows,
   downloadBudgetTemplate,
   includedCount,
   includedTotal,
@@ -180,6 +181,15 @@ export function MiaSidePanel({
   const chatsMenuRef = useRef<HTMLDivElement>(null);
   const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [expandedSummaryCards, setExpandedSummaryCards] = useState<Set<string>>(new Set());
+  const toggleSummaryCardExpanded = (id: string) => {
+    setExpandedSummaryCards((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
   const [draft, setDraft] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [flowActive, setFlowActive] = useState(false);
@@ -751,13 +761,53 @@ export function MiaSidePanel({
                   ))}
                 </dl>
               )}
-              <div className={styles.readyCardActions}>
+              {msg.planState && (() => {
+                const channelRows = channelBudgetRows(msg.planState);
+                const isExpanded = expandedSummaryCards.has(msg.id);
+                return (
+                  <>
+                    <div className={styles.readyCardDivider} />
+                    <div className={styles.channelBudgetHeader}>
+                      <span>Channel</span>
+                      <span>Budget</span>
+                    </div>
+                    <div
+                      className={`${styles.channelBudgetWrap} ${
+                        !isExpanded ? styles.channelBudgetClipped : ""
+                      }`}
+                    >
+                      <div className={styles.channelBudgetTable}>
+                        {channelRows.map((row) => (
+                          <div key={row.channel}>
+                            <div className={styles.channelBudgetRow}>
+                              <span className={styles.channelBudgetChannelName}>{row.channel}</span>
+                              <span className={styles.channelBudgetValue}>
+                                {currencyFormatter.format(row.value)}
+                              </span>
+                            </div>
+                            {isExpanded &&
+                              row.tactics.map((t) => (
+                                <div key={t.name} className={styles.channelBudgetTacticRow}>
+                                  <span>{t.name}</span>
+                                  <span>{currencyFormatter.format(t.value)}</span>
+                                </div>
+                              ))}
+                          </div>
+                        ))}
+                      </div>
+                      {!isExpanded && <div className={styles.channelBudgetFade} aria-hidden />}
+                    </div>
+                  </>
+                );
+              })()}
+              <div className={styles.readyCardActionsSplit}>
                 <button
                   type="button"
-                  className={styles.rcBtn}
-                  onClick={() => msg.planState && onEditInMainFlow(msg.planState)}
+                  className={styles.rcBtnIcon}
+                  aria-label={expandedSummaryCards.has(msg.id) ? "Collapse" : "Expand"}
+                  onClick={() => toggleSummaryCardExpanded(msg.id)}
                 >
-                  Edit
+                  <ExpandIcon size={18} />
                 </button>
                 <button
                   type="button"
