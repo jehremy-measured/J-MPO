@@ -49,7 +49,7 @@ const BUDGET_INPUT_OPTIONS: {
     id: "total",
     icon: TargetIcon,
     label: "I only have a total budget",
-    desc: "I'll assign tactic-wise budgets based on past spend data",
+    desc: "Tactic-wise budgets will be assigned based on past spend data",
   },
 ];
 
