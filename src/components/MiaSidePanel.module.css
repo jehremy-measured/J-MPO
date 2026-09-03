@@ -267,6 +267,7 @@
   font-size: 13px;
   line-height: 20px;
   color: var(--gray-1000);
+  white-space: pre-line;
   animation: bubbleIn 0.18s ease-out;
 }
 
