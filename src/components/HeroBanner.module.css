@@ -43,7 +43,7 @@
 
 .title {
   margin: 0;
-  font-family: var(--font-plex);
+  font-family: var(--font-inter);
   font-weight: 300;
   font-size: 40px;
   line-height: 48px;
@@ -52,7 +52,7 @@
 
 .subtitle {
   max-width: 640px;
-  font-family: var(--font-plex);
+  font-family: var(--font-inter);
   font-size: 20px;
   line-height: 28px;
   color: var(--gray-900);
@@ -60,26 +60,46 @@
 
 .actions {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
 }
 
 .primaryBtn {
-  padding: 5px 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px 0 8px;
   border-radius: var(--radius-sm);
   background: var(--gray-1000);
   color: var(--gray-000);
   font-size: 14px;
   font-weight: 500;
-  line-height: 22px;
 }
 
-.link {
+.tutorialBtn {
+  position: absolute;
+  z-index: 2;
+  top: 20px;
+  right: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  color: var(--blue-800);
   font-size: 14px;
   font-weight: 500;
-  line-height: 22px;
-  color: var(--blue-700);
-  text-decoration: none;
+  line-height: 20px;
+  backdrop-filter: blur(3px);
+}
+
+.tutorialBtn:hover {
+  background: rgba(255, 255, 255, 0.5);
 }
 

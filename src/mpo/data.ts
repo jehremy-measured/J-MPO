@@ -1,15 +1,56 @@
 import { assets } from "../assets/figma";
+import { LATEST_MODEL_DATE } from "./modelOptions";
 import type { Plan, Tactic } from "./types";
 
 export const PLANS: Plan[] = [
-  { id: "default", label: "Default Plan" },
-  { id: "q1-2025", label: "Optimized budget Q1 2025" },
-  { id: "quick", label: "Quick calc" },
-  { id: "trevor", label: "Trevor's plan" },
-  { id: "quarterly", label: "Quarterly Expense Tracker" },
-  { id: "q3-2024", label: "Q3 2024 scenario" },
-  { id: "pacing", label: "My Plan & Pacing" },
-  { id: "test-2026", label: "Test Plan 2026" },
+  {
+    id: "default",
+    label: "Default Plan",
+    kind: "optimization",
+    createdBy: "AS",
+    lastEdited: new Date(2026, 7, 1),
+    target: "incremental-roas",
+    planStart: new Date(2026, 6, 2),
+    planEnd: new Date(2026, 7, 1),
+    shared: true,
+  },
+  {
+    id: "sim-default",
+    label: "Q3 2026 media simulation",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 10),
+    target: "incremental-sales",
+    targetValue: 9_500_000,
+    planStart: new Date(2026, 6, 12),
+    planEnd: new Date(2026, 7, 10),
+    shared: true,
+    modelDate: LATEST_MODEL_DATE,
+  },
+  {
+    id: "sim-q3-inflight",
+    label: "Q3 2026 quarterly simulation",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 20),
+    target: "incremental-sales",
+    targetValue: 24_000_000,
+    planStart: new Date(2026, 6, 1),
+    planEnd: new Date(2026, 8, 30),
+    shared: false,
+  },
+  {
+    id: "sim-default-copy",
+    label: "Q3 2026 media simulation (copy)",
+    kind: "simulation",
+    createdBy: "JH",
+    lastEdited: new Date(2026, 7, 10),
+    target: "incremental-roas",
+    targetValue: 12,
+    planStart: new Date(2026, 6, 12),
+    planEnd: new Date(2026, 7, 10),
+    editVariant: "sidebar",
+  },
 ];
 
 export const INITIAL_TACTICS: Tactic[] = [

@@ -1,21 +1,27 @@
-import { assets } from "../assets/figma";
+import { useState } from "react";
+import { isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
+import type { PlanTarget } from "../mpo/types";
+import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
+import { TacticChartModal } from "./TacticChartModal";
 import styles from "./BudgetTable.module.css";
+
+type Props = {
+  target: PlanTarget;
+  planStart: Date;
+  planEnd: Date;
+  /** Forces the tactic popup chart's Actual overlay off — e.g. right after creating a plan. */
+  allowActual?: boolean;
+};
 
 type TacticRow = {
   name: string;
   channel: string;
-  logo: string;
-  budgetNew: string;
-  budgetOld: string;
-  adjustment: string;
-  adjustmentUp: boolean;
-  locked?: boolean;
-  salesNew: string;
-  salesOld: string;
-  salesUp: boolean;
-  roasNew: string;
-  roasOld: string;
-  roasUp: boolean;
+  budget: string;
+  sales: string;
+  roas: string;
+  orders: string;
+  cpo: string;
   marginal: string;
 };
 
@@ -23,220 +29,319 @@ const rows: TacticRow[] = [
   {
     name: "Google Performance Max",
     channel: "Search",
-    logo: assets.google,
-    budgetNew: "$318,638",
-    budgetOld: "$243,988",
-    adjustment: "$3,426",
-    adjustmentUp: true,
-    salesNew: "$1,234,567",
-    salesOld: "$1,100,000",
-    salesUp: true,
-    roasNew: "$4.12",
-    roasOld: "$3.98",
-    roasUp: true,
+    budget: "$318,638",
+    sales: "$1,234,567",
+    roas: "$4.12",
+    orders: "8,230",
+    cpo: "$38.72",
     marginal: "$5.21",
   },
   {
     name: "Facebook Prospecting",
     channel: "Social",
-    logo: assets.meta,
-    budgetNew: "$124,995",
-    budgetOld: "$111,245",
-    adjustment: "$2,100",
-    adjustmentUp: true,
-    salesNew: "$890,000",
-    salesOld: "$850,000",
-    salesUp: true,
-    roasNew: "$3.45",
-    roasOld: "$3.20",
-    roasUp: true,
+    budget: "$124,995",
+    sales: "$890,000",
+    roas: "$3.45",
+    orders: "5,933",
+    cpo: "$21.07",
     marginal: "$4.80",
   },
   {
     name: "TikTok Prospecting",
     channel: "Social",
-    logo: assets.tiktok,
-    budgetNew: "$98,500",
-    budgetOld: "$98,500",
-    adjustment: "$0",
-    adjustmentUp: true,
-    locked: true,
-    salesNew: "$450,000",
-    salesOld: "$450,000",
-    salesUp: true,
-    roasNew: "$2.90",
-    roasOld: "$2.90",
-    roasUp: true,
+    budget: "$98,500",
+    sales: "$450,000",
+    roas: "$2.90",
+    orders: "3,000",
+    cpo: "$32.83",
     marginal: "$3.10",
   },
   {
     name: "Bing Non-Brand Search",
     channel: "Search",
-    logo: assets.bing,
-    budgetNew: "$45,200",
-    budgetOld: "$51,096",
-    adjustment: "$5,896",
-    adjustmentUp: false,
-    salesNew: "$5,333,463",
-    salesOld: "$5,400,000",
-    salesUp: false,
-    roasNew: "$2.10",
-    roasOld: "$2.25",
-    roasUp: false,
+    budget: "$45,200",
+    sales: "$5,333,463",
+    roas: "$2.10",
+    orders: "1,205",
+    cpo: "$37.51",
     marginal: "$1.95",
   },
   {
     name: "Snapchat Search",
     channel: "Social",
-    logo: assets.snapchat,
-    budgetNew: "$32,000",
-    budgetOld: "$32,000",
-    adjustment: "$0",
-    adjustmentUp: true,
-    locked: true,
-    salesNew: "$120,000",
-    salesOld: "$120,000",
-    salesUp: true,
-    roasNew: "$1.80",
-    roasOld: "$1.80",
-    roasUp: true,
+    budget: "$32,000",
+    sales: "$120,000",
+    roas: "$1.80",
+    orders: "800",
+    cpo: "$40.00",
     marginal: "$2.00",
   },
 ];
 
-export function BudgetTable() {
+function parseCurrency(value: string): number {
+  return Number(value.replace(/[^0-9.-]/g, "")) || 0;
+}
+
+function formatCurrency(value: number): string {
+  return `$${Math.round(value).toLocaleString()}`;
+}
+
+function formatPercentOfTotal(value: string, total: number): string {
+  if (total <= 0) return "—";
+  return `${((parseCurrency(value) / total) * 100).toFixed(1)}%`;
+}
+
+function pctOf(value: number, total: number): string {
+  if (total <= 0) return "—";
+  return `${((value / total) * 100).toFixed(1)}%`;
+}
+
+type RowDiff = { label: string; good: boolean };
+
+/** Deterministic per-row variance so each row's actual-vs-plan figure looks organic without
+ * jittering on every re-render — mirrors the chart's own per-week variance approach, just
+ * seeded by row index instead of week index. Budget and the primary metric use different
+ * sequences so the two columns don't move in lockstep. */
+const ROW_BUDGET_VARIANCE = [0.97, 1.08, 0.92, 1.04, 0.99, 1.06, 0.91, 1.03];
+const ROW_VOLUME_VARIANCE = [1.06, 0.94, 1.11, 0.9, 1.05, 0.97, 1.09, 0.93];
+
+/** Budget is a cost metric — coming in under plan is favorable — while the primary volume
+ * metric reads as a magnitude to climb toward, so beating plan is favorable. */
+function rowDiff(index: number, kind: "budget" | "volume"): RowDiff {
+  const variance =
+    kind === "budget"
+      ? ROW_BUDGET_VARIANCE[index % ROW_BUDGET_VARIANCE.length]
+      : ROW_VOLUME_VARIANCE[index % ROW_VOLUME_VARIANCE.length];
+  const pct = (variance - 1) * 100;
+  const sign = pct >= 0 ? "+" : "";
+  const higherIsBetter = kind === "volume";
+  const good = higherIsBetter ? pct >= 0 : pct <= 0;
+  return { label: `${sign}${pct.toFixed(1)}%`, good };
+}
+
+function RowDiffTag({ diff }: { diff: RowDiff }) {
+  return (
+    <span className={`${styles.rowDiff} ${diff.good ? styles.rowDiffUp : styles.rowDiffDown}`}>
+      {diff.label}
+    </span>
+  );
+}
+
+type ChannelRow = {
+  name: string;
+  budget: number;
+  sales: number;
+  orders: number;
+};
+
+function buildChannelRows(tacticRows: TacticRow[]): ChannelRow[] {
+  const byChannel = new Map<string, ChannelRow>();
+  for (const row of tacticRows) {
+    const existing = byChannel.get(row.channel) ?? { name: row.channel, budget: 0, sales: 0, orders: 0 };
+    existing.budget += parseCurrency(row.budget);
+    existing.sales += parseCurrency(row.sales);
+    existing.orders += parseCurrency(row.orders);
+    byChannel.set(row.channel, existing);
+  }
+  return [...byChannel.values()];
+}
+
+const channelRows = buildChannelRows(rows);
+
+type BudgetTableView = "channels" | "tactics";
+
+export function BudgetTable({ target, planStart, planEnd, allowActual = true }: Props) {
+  const [view, setView] = useState<BudgetTableView>("channels");
+  const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
+  const today = new Date();
+  const actualsAvailable = allowActual && !isBefore(today, planStart) && !isAfter(today, planEnd);
+  const showOrders = target === "incremental-orders" || target === "incremental-cpo";
+  const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
+  const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
+  const marginalLabel = showOrders ? "Marginal CPO" : "Marginal ROAS";
+  const totalBudgetValue = rows.reduce((sum, row) => sum + parseCurrency(row.budget), 0);
+  const totalPrimaryValue = rows.reduce(
+    (sum, row) => sum + parseCurrency(showOrders ? row.orders : row.sales),
+    0
+  );
+  // Budget and the primary volume metric sum directly across tactics; ROAS/CPO are ratios, so
+  // the aggregate is recomputed from the summed totals rather than averaged row by row.
+  const aggregateSecondaryValue = showOrders
+    ? totalBudgetValue / (totalPrimaryValue || 1)
+    : totalPrimaryValue / (totalBudgetValue || 1);
+
   return (
     <section className={styles.section} data-node-id="1:34016">
       <div className={styles.header}>
-        <h2>Budget Recommendations</h2>
+        <h2>Plan Breakdown</h2>
         <div className={styles.headerControls}>
-          <select className={styles.select} defaultValue="us">
-            <option value="us">US Online Orders</option>
-          </select>
           <div className={styles.viewToggle}>
             <button type="button">Segments</button>
-            <button type="button">Channels</button>
-            <button type="button" className={styles.viewActive}>
+            <button
+              type="button"
+              className={view === "channels" ? styles.viewActive : undefined}
+              onClick={() => setView("channels")}
+            >
+              Channels
+            </button>
+            <button
+              type="button"
+              className={view === "tactics" ? styles.viewActive : undefined}
+              onClick={() => setView("tactics")}
+            >
               Tactics
             </button>
           </div>
           <input className={styles.search} type="search" placeholder="Search" />
-          <button type="button" className={styles.iconBtn} aria-label="Layout">
-            ⊞
+          <button type="button" className={`${styles.textBtn} ${styles.textBtnChevron}`}>
+            Options
+            <MaterialIcon name="expand_more" size={18} />
           </button>
-          <button type="button" className={styles.iconBtn} aria-label="Export">
-            ↑
+          <button type="button" className={styles.textBtn}>
+            <MaterialIcon name="file_upload" size={18} />
+            Export
           </button>
         </div>
-      </div>
-
-      <div className={styles.banner}>
-        <span aria-hidden>📣</span>
-        It&apos;s a big season — let us help! Connect with your CS rep to confirm
-        your MPO budget plan is accurate and ready to activate.
       </div>
 
       <div className={styles.tableWrap}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Tactic</th>
+              <th>{view === "channels" ? "Channel" : "Tactic"}</th>
               <th>Budget</th>
-              <th>Budget Adjustments</th>
-              <th>Incremental Sales</th>
-              <th>Incremental ROAS</th>
-              <th>Marginal ROAS</th>
-              <th>Return Curve</th>
+              <th>{primaryLabel}</th>
+              <th>{secondaryLabel}</th>
+              <th>{marginalLabel}</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((row) => (
-              <tr key={row.name}>
-                <td>
-                  <div className={styles.tacticCell}>
-                    <img src={row.logo} alt="" className={styles.logo} />
-                    <div>
-                      <div className={styles.tacticName}>{row.name}</div>
-                      <div className={styles.tacticChannel}>{row.channel}</div>
-                    </div>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={styles.valueTeal}>{row.budgetNew}</span>
-                    <span className={styles.valueMuted}>{row.budgetOld}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.adjustCell}>
-                    <div className={styles.adjustBar}>
-                      <span
-                        className={
-                          row.adjustmentUp
-                            ? styles.adjustFillUp
-                            : styles.adjustFillDown
-                        }
-                        style={{ width: row.locked ? "0%" : "55%" }}
-                      />
-                    </div>
-                    <span
-                      className={
-                        row.adjustmentUp ? styles.changeUp : styles.changeDown
-                      }
-                    >
-                      {row.adjustmentUp ? "↑" : "↓"} {row.adjustment}
-                    </span>
-                    {row.locked && (
-                      <img src={assets.lock} alt="Locked" className={styles.lock} />
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={row.salesUp ? styles.valueTeal : styles.valueRed}>
-                      {row.salesNew}
-                    </span>
-                    <span className={styles.valueMuted}>{row.salesOld}</span>
-                  </div>
-                </td>
-                <td>
-                  <div className={styles.stack}>
-                    <span className={row.roasUp ? styles.valueTeal : styles.valueRed}>
-                      {row.roasNew}
-                    </span>
-                    <span className={styles.valueMuted}>{row.roasOld}</span>
-                  </div>
-                </td>
-                <td>{row.marginal}</td>
-                <td>
-                  <img src={assets.sparkline} alt="" className={styles.sparkline} />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-          <tfoot>
-            <tr>
+            <tr className={styles.totalsRow}>
               <td>
                 <strong>Total</strong>
               </td>
               <td>
-                <strong>$9,394,384</strong>
-              </td>
-              <td />
-              <td>
-                <strong>$12.34</strong>
+                <strong>{formatCurrency(totalBudgetValue)}</strong>
               </td>
               <td>
-                <strong>$9.11</strong>
+                <strong>{showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}</strong>
               </td>
               <td>
-                <strong>$10,999,283</strong>
+                <strong>${aggregateSecondaryValue.toFixed(2)}</strong>
               </td>
               <td />
             </tr>
-          </tfoot>
+            {view === "channels"
+              ? channelRows.map((row, i) => {
+                  const primaryValue = showOrders ? row.orders : row.sales;
+                  const secondaryValue = showOrders
+                    ? row.budget / (row.orders || 1)
+                    : row.sales / (row.budget || 1);
+                  return (
+                    <tr key={row.name}>
+                      <td>
+                        <div className={styles.tacticCell}>
+                          <span className={styles.logoPlaceholder} aria-hidden>
+                            {row.name.charAt(0)}
+                          </span>
+                          <div className={styles.tacticName}>{row.name}</div>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={styles.value}>{formatCurrency(row.budget)}</span>
+                          {actualsAvailable ? (
+                            <RowDiffTag diff={rowDiff(i, "budget")} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={styles.value}>
+                            {showOrders ? Math.round(primaryValue).toLocaleString() : formatCurrency(primaryValue)}
+                          </span>
+                          {actualsAvailable ? (
+                            <RowDiffTag diff={rowDiff(i, "volume")} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <span className={styles.value}>${secondaryValue.toFixed(2)}</span>
+                      </td>
+                      <td>—</td>
+                    </tr>
+                  );
+                })
+              : rows.map((row, i) => (
+                  <tr key={row.name}>
+                    <td>
+                      <div className={styles.tacticCell}>
+                        <span className={styles.logoPlaceholder} aria-hidden>
+                          {row.name.charAt(0)}
+                        </span>
+                        <div>
+                          <div className={styles.tacticName}>{row.name}</div>
+                          <div className={styles.tacticChannel}>{row.channel}</div>
+                        </div>
+                        <button
+                          type="button"
+                          className={styles.sparkline}
+                          aria-label={`View projections by week for ${row.name}`}
+                          onClick={() => setActiveTactic(row)}
+                        >
+                          <ReturnCurveIcon size={20} />
+                        </button>
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.cellStack}>
+                        <span className={styles.value}>{row.budget}</span>
+                        {actualsAvailable ? (
+                          <RowDiffTag diff={rowDiff(i, "budget")} />
+                        ) : (
+                          <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <div className={styles.cellStack}>
+                        <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
+                        {actualsAvailable ? (
+                          <RowDiffTag diff={rowDiff(i, "volume")} />
+                        ) : (
+                          <span className={styles.pctOfTotal}>
+                            {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                    <td>
+                      <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
+                    </td>
+                    <td>{row.marginal}</td>
+                  </tr>
+                ))}
+          </tbody>
         </table>
       </div>
+
+      <TacticChartModal
+        open={activeTactic != null}
+        tacticName={activeTactic?.name ?? ""}
+        channel={activeTactic?.channel ?? ""}
+        planStart={planStart}
+        planEnd={planEnd}
+        totalBudget={activeTactic ? parseCurrency(activeTactic.budget) : 0}
+        volumeMetric={activeTactic ? parseCurrency(showOrders ? activeTactic.orders : activeTactic.sales) : 0}
+        volumeNoun={showOrders ? "Orders" : "Sales"}
+        isOrdersFamily={showOrders}
+        onClose={() => setActiveTactic(null)}
+        allowActual={allowActual}
+      />
     </section>
   );
 }

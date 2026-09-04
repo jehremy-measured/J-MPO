@@ -1,31 +1,53 @@
 import { useCallback, useMemo, useState } from "react";
-import { DEFAULT_PLAN_END, DEFAULT_PLAN_START } from "./data";
-import { budgetFromUpload, budgetFromWindow, defaultIncludes } from "./logic";
-import type { BuildPlanState, BuildScreen } from "./types";
+import type { PlanTarget } from "../types";
+import { DEFAULT_PLAN_END, DEFAULT_PLAN_START, defaultSourceStart } from "./data";
+import { daysBetweenInclusive } from "./dateUtils";
+import {
+  applyMethodChoice,
+  applyUploadedBudget,
+  budgetFromUpload,
+  budgetFromWindow,
+  channelsPresent,
+  defaultBudgetFor,
+} from "./logic";
+import type { BuildPlanState, BuildScreen, PlanTypeChoice } from "./types";
 
-function initialState(): BuildPlanState {
+export function defaultBuildPlanState(): BuildPlanState {
   return {
-    screen: "period",
+    screen: "plan-type",
+    planType: null,
     planStart: DEFAULT_PLAN_START,
     planEnd: DEFAULT_PLAN_END,
+    target: null,
+    targetValue: null,
     singleCT: null,
     attrs: [],
     method: null,
     source: "",
-    win: "w0",
+    sourceStart: defaultSourceStart(daysBetweenInclusive(DEFAULT_PLAN_START, DEFAULT_PLAN_END)),
     budget: {},
     overridden: {},
     included: {},
     query: "",
-    channel: "All",
+    channels: channelsPresent(),
   };
 }
 
 export function useBuildPlanFlow(seed?: BuildPlanState) {
-  const [state, setState] = useState<BuildPlanState>(() => seed ?? initialState());
+  const [state, setState] = useState<BuildPlanState>(() => seed ?? defaultBuildPlanState());
 
   const goTo = useCallback((screen: BuildScreen) => {
     setState((s) => ({ ...s, screen }));
+  }, []);
+
+  const setPlanType = useCallback((planType: PlanTypeChoice) => {
+    setState((s) => ({ ...s, planType }));
+  }, []);
+
+  const continueFromPlanType = useCallback(() => goTo("period"), [goTo]);
+
+  const choosePlanType = useCallback((planType: PlanTypeChoice) => {
+    setState((s) => ({ ...s, planType, screen: "period" }));
   }, []);
 
   const setPeriod = useCallback((planStart: Date, planEnd: Date) => {
@@ -33,6 +55,16 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   }, []);
 
   const continueFromPeriod = useCallback(() => goTo("ct"), [goTo]);
+
+  const setTarget = useCallback((target: PlanTarget) => {
+    setState((s) => ({ ...s, target, targetValue: null }));
+  }, []);
+
+  const setTargetValue = useCallback((targetValue: number | null) => {
+    setState((s) => ({ ...s, targetValue }));
+  }, []);
+
+  const continueFromTarget = useCallback(() => goTo("method"), [goTo]);
 
   const toggleSingleCT = useCallback((id: string) => {
     setState((s) => ({
@@ -50,27 +82,15 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }));
   }, []);
 
-  const continueFromCT = useCallback(() => goTo("method"), [goTo]);
+  // The target step only applies to the "optimize spend" flow (solving for a budget that hits
+  // a target outcome) — the "project outcomes" flow starts from a budget instead, so it skips
+  // straight to picking that budget's source.
+  const continueFromCT = useCallback(() => {
+    setState((s) => ({ ...s, screen: s.planType === "spend" ? "target" : "method" }));
+  }, []);
 
   const chooseMethod = useCallback((method: "upload" | "fetch") => {
-    setState((s) => {
-      const reset: BuildPlanState = {
-        ...s,
-        method,
-        overridden: {},
-        budget: {},
-        win: "w0",
-        source: "",
-        included: {},
-        query: "",
-        channel: "All",
-      };
-      if (method === "upload") {
-        return { ...reset, screen: "upload" };
-      }
-      const { budget } = budgetFromWindow(reset);
-      return { ...reset, budget, included: defaultIncludes("fetch", budget), screen: "review" };
-    });
+    setState((s) => applyMethodChoice(s, method));
   }, []);
 
   const markUploadFilled = useCallback(() => {
@@ -78,23 +98,12 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
   }, []);
 
   const continueFromUpload = useCallback(() => {
-    setState((s) => {
-      const budget = budgetFromUpload();
-      return {
-        ...s,
-        budget,
-        source: "budget_plan.xlsx",
-        included: defaultIncludes("upload", budget),
-        query: "",
-        channel: "All",
-        screen: "review",
-      };
-    });
+    setState((s) => applyUploadedBudget(s));
   }, []);
 
-  const changeWindow = useCallback((win: string) => {
+  const setSourceStart = useCallback((sourceStart: Date) => {
     setState((s) => {
-      const next = { ...s, win, overridden: {} };
+      const next = { ...s, sourceStart, overridden: {} };
       const { budget } = budgetFromWindow(next);
       return { ...next, budget };
     });
@@ -108,12 +117,27 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     setState((s) => ({ ...s, query }));
   }, []);
 
-  const setChannel = useCallback((channel: string) => {
-    setState((s) => ({ ...s, channel }));
+  const toggleChannel = useCallback((channel: string) => {
+    setState((s) => ({
+      ...s,
+      channels: s.channels.includes(channel)
+        ? s.channels.filter((c) => c !== channel)
+        : [...s.channels, channel],
+    }));
   }, []);
 
   const toggleInclude = useCallback((id: string) => {
     setState((s) => ({ ...s, included: { ...s.included, [id]: !s.included[id] } }));
+  }, []);
+
+  const setIncludedForIds = useCallback((ids: string[], value: boolean) => {
+    setState((s) => {
+      const included = { ...s.included };
+      ids.forEach((id) => {
+        included[id] = value;
+      });
+      return { ...s, included };
+    });
   }, []);
 
   const setBudget = useCallback((id: string, value: number | null) => {
@@ -124,13 +148,32 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     }));
   }, []);
 
+  const resetBudget = useCallback((id: string) => {
+    setState((s) => {
+      const overridden = { ...s.overridden };
+      delete overridden[id];
+      return { ...s, overridden, budget: { ...s.budget, [id]: defaultBudgetFor(s, id) } };
+    });
+  }, []);
+
+  const resetAllBudgets = useCallback(() => {
+    setState((s) => {
+      const budget = s.method === "upload" ? budgetFromUpload() : budgetFromWindow({ ...s, overridden: {} }).budget;
+      return { ...s, overridden: {}, budget };
+    });
+  }, []);
+
   const back = useCallback(() => {
     setState((s) => {
       switch (s.screen) {
+        case "period":
+          return { ...s, screen: "plan-type" };
         case "ct":
           return { ...s, screen: "period" };
-        case "method":
+        case "target":
           return { ...s, screen: "ct" };
+        case "method":
+          return { ...s, screen: s.planType === "spend" ? "target" : "ct" };
         case "upload":
           return { ...s, screen: "method" };
         case "review":
@@ -141,52 +184,60 @@ export function useBuildPlanFlow(seed?: BuildPlanState) {
     });
   }, []);
 
-  const completePlan = useCallback(() => goTo("done"), [goTo]);
-
-  const restart = useCallback(() => {
-    setState(initialState());
-  }, []);
-
   const actions = useMemo(
     () => ({
       goTo,
+      setPlanType,
+      continueFromPlanType,
+      choosePlanType,
       setPeriod,
       continueFromPeriod,
+      setTarget,
+      setTargetValue,
+      continueFromTarget,
       toggleSingleCT,
       toggleAttr,
       continueFromCT,
       chooseMethod,
       markUploadFilled,
       continueFromUpload,
-      changeWindow,
+      setSourceStart,
       reupload,
       setQuery,
-      setChannel,
+      toggleChannel,
       toggleInclude,
+      setIncludedForIds,
       setBudget,
+      resetBudget,
+      resetAllBudgets,
       back,
-      completePlan,
-      restart,
     }),
     [
       goTo,
+      setPlanType,
+      continueFromPlanType,
+      choosePlanType,
       setPeriod,
       continueFromPeriod,
+      setTarget,
+      setTargetValue,
+      continueFromTarget,
       toggleSingleCT,
       toggleAttr,
       continueFromCT,
       chooseMethod,
       markUploadFilled,
       continueFromUpload,
-      changeWindow,
+      setSourceStart,
       reupload,
       setQuery,
-      setChannel,
+      toggleChannel,
       toggleInclude,
+      setIncludedForIds,
       setBudget,
+      resetBudget,
+      resetAllBudgets,
       back,
-      completePlan,
-      restart,
     ]
   );
 

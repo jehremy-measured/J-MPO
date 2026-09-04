@@ -1,3 +1,4 @@
+import { AVERAGE_ORDER_VALUE } from "./types";
 import type { OptimizationMode, Tactic } from "./types";
 
 const TARGET_MIN = 500_000;
@@ -40,6 +41,17 @@ export function blendedRoas(tactics: Tactic[], mode: OptimizationMode): number {
   const budget = totalBudget(tactics);
   if (budget <= 0) return 0;
   return totalSales(tactics, mode) / budget;
+}
+
+/** Order count derived from total sales via the shared average-order-value assumption. */
+export function totalOrders(tactics: Tactic[], mode: OptimizationMode): number {
+  return Math.round(totalSales(tactics, mode) / AVERAGE_ORDER_VALUE);
+}
+
+export function blendedCpo(tactics: Tactic[], mode: OptimizationMode): number {
+  const orders = totalOrders(tactics, mode);
+  if (orders <= 0) return 0;
+  return totalBudget(tactics) / orders;
 }
 
 export function adjustmentFillPercent(tactic: Tactic): number {

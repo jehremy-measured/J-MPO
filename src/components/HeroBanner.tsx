@@ -1,15 +1,24 @@
 import { assets } from "../assets/figma";
+import { PlayIcon } from "./icons/BuildPlanIcons";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./HeroBanner.module.css";
 
 type Props = {
-  onCreatePlan?: () => void;
+  onSimulate?: () => void;
+  onOptimize?: () => void;
+  onWatchTutorial?: () => void;
 };
 
-export function HeroBanner({ onCreatePlan }: Props) {
+export function HeroBanner({ onSimulate, onOptimize, onWatchTutorial }: Props) {
   return (
     <section className={styles.banner} data-node-id="1:33654">
       <img src={assets.heroVectorLeft} alt="" className={styles.waveLeft} aria-hidden />
       <img src={assets.heroVectorRight} alt="" className={styles.waveRight} aria-hidden />
+
+      <button type="button" className={styles.tutorialBtn} onClick={onWatchTutorial}>
+        <PlayIcon size={20} />
+        Watch tutorial
+      </button>
 
       <div className={styles.content}>
         <h1 className={styles.title}>Welcome to Media Plan Optimizer</h1>
@@ -18,12 +27,14 @@ export function HeroBanner({ onCreatePlan }: Props) {
           improve returns.
         </p>
         <div className={styles.actions}>
-          <button type="button" className={styles.primaryBtn} onClick={onCreatePlan}>
-            Create a plan
+          <button type="button" className={styles.primaryBtn} onClick={onSimulate}>
+            <SparkleIcon size={16} variant="fill" />
+            Simulate
           </button>
-          <a href="#" className={styles.link}>
-            Watch tutorial
-          </a>
+          <button type="button" className={styles.primaryBtn} onClick={onOptimize}>
+            <SparkleIcon size={16} variant="fill" />
+            Optimize
+          </button>
         </div>
       </div>
     </section>
