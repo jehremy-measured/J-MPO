@@ -231,7 +231,7 @@
 .bubbleUser {
   display: flex;
   gap: 8px;
-  max-width: 92%;
+  width: 80%;
   align-self: flex-end;
   flex-direction: row-reverse;
   animation: bubbleIn 0.18s ease-out;
@@ -249,6 +249,8 @@
 }
 
 .bubbleUser p {
+  width: 100%;
+  box-sizing: border-box;
   margin: 0;
   padding: 8px 12px;
   font-family: var(--font-inter);
