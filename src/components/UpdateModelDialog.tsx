@@ -42,12 +42,18 @@ export function UpdateModelDialog({ currentModelDate, onClose, onConfirm }: Prop
         </div>
 
         <div className={styles.body}>
+          <p className={styles.dialogIntro}>Every plan uses MIM data to project results.</p>
           <ModelSelectList
             currentModelDate={currentModelDate}
             selectedModelId={selectedModelId}
             onSelect={setSelectedModelId}
             verb="updated"
           />
+          {!isModelUpToDate(currentModelDate) && selectedModelId === "latest" && (
+            <p className={styles.warningText}>
+              Once updated to the latest model, you can't revert to using older model data.
+            </p>
+          )}
         </div>
 
         <div className={styles.footer}>

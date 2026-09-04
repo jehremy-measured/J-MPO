@@ -88,6 +88,23 @@
   color: var(--gray-800);
 }
 
+.dialogIntro {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--gray-800);
+}
+
+.warningText {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #8b5300;
+  background: #fff7ec;
+  border-radius: var(--radius-sm);
+}
+
 .modelList {
   display: flex;
   flex-direction: column;
