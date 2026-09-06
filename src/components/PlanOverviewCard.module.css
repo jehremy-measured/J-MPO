@@ -109,8 +109,26 @@
   background: var(--green-800);
 }
 
-.swatchRoas {
+.swatchLine {
+  width: 14px;
+  height: 2px;
+  border-radius: 0;
+  flex-shrink: 0;
   background: var(--gold-600);
+}
+
+.swatchLineDotted {
+  width: 14px;
+  height: 2px;
+  border-radius: 0;
+  flex-shrink: 0;
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--gold-600) 0,
+    var(--gold-600) 3px,
+    transparent 3px,
+    transparent 5px
+  );
 }
 
 .swatchActualSales {

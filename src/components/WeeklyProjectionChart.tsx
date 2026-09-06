@@ -310,7 +310,7 @@ export function WeeklyProjectionChart({
           </span>
           {chartView === "weekly" && (
             <span className={styles.legendItem}>
-              <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+              <span className={styles.swatchLine} aria-hidden />
               Projected Incremental ROAS
             </span>
           )}
@@ -327,7 +327,7 @@ export function WeeklyProjectionChart({
             </span>
             {chartView === "weekly" && (
               <span className={styles.legendItem}>
-                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                <span className={styles.swatchLineDotted} aria-hidden />
                 Actual Incremental ROAS
               </span>
             )}
@@ -608,7 +608,7 @@ export function WeeklyProjectionChart({
             </div>
             {chartView === "weekly" && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                <span className={styles.swatchLine} aria-hidden />
                 <span className={styles.tooltipRowLabel}>Projected Incremental ROAS</span>
                 <strong>{formatRoasFull(roasFor(hit))}</strong>
               </div>
@@ -633,7 +633,7 @@ export function WeeklyProjectionChart({
             )}
             {chartView === "weekly" && hitActual && (
               <div className={styles.tooltipRow}>
-                <span className={`${styles.swatch} ${styles.swatchRoas}`} aria-hidden />
+                <span className={styles.swatchLineDotted} aria-hidden />
                 <span className={styles.tooltipRowLabel}>Actual Incremental ROAS</span>
                 <strong>{formatRoasFull(roasFor(hitActual))}</strong>
               </div>
