@@ -420,9 +420,25 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
   };
 }
 
-export function downloadBudgetTemplate(): void {
+export async function downloadBudgetTemplate(): Promise<void> {
   const bytes = Uint8Array.from(atob(BUDGET_TEMPLATE_BASE64), (c) => c.charCodeAt(0));
   const blob = new Blob([bytes], { type: BUDGET_TEMPLATE_MIME });
+
+  const claude = (window as { claude?: { use: (name: string) => Promise<unknown> } }).claude;
+  if (claude) {
+    const downloads = (await claude.use("downloads")) as
+      | { save: (req: { filename: string; data: Blob }) => Promise<unknown> }
+      | null;
+    if (downloads) {
+      try {
+        await downloads.save({ filename: BUDGET_TEMPLATE_FILENAME, data: blob });
+      } catch {
+        // Viewer declined or the prompt was rate-limited; nothing more to do.
+      }
+      return;
+    }
+  }
+
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
   a.download = BUDGET_TEMPLATE_FILENAME;

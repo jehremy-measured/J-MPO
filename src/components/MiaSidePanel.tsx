@@ -539,7 +539,6 @@ export function MiaSidePanel({
   };
 
   const submitComposer = () => {
-    if (flowActive) return;
     const trimmed = draft.trim();
     if (!trimmed) return;
     setDraft("");
@@ -558,12 +557,10 @@ export function MiaSidePanel({
     ? "Setting up your plan…"
     : settingConstraints
       ? "Setting constraints using AI…"
-      : flowActive
-        ? "Finish the setup above"
-        : uploadState
-          ? "Attach your budget file…"
-          : "Type your message…";
-  const canSend = !flowActive && !settingUp && !settingConstraints && draft.trim().length > 0;
+      : uploadState
+        ? "Attach your budget file…"
+        : "Type your message…";
+  const canSend = !settingUp && !settingConstraints && draft.trim().length > 0;
 
   const handleDragOver = (e: DragEvent) => {
     if (!uploadState) return;
@@ -906,7 +903,7 @@ export function MiaSidePanel({
             onChange={(e) => setDraft(e.target.value)}
             placeholder={placeholder}
             aria-label="Message Mia"
-            disabled={flowActive || settingUp || settingConstraints}
+            disabled={settingUp || settingConstraints}
             className={styles.composerInput}
           />
           <div className={styles.composerToolbar}>
@@ -914,7 +911,7 @@ export function MiaSidePanel({
               type="button"
               className={styles.attachBtn}
               aria-label="Attach file"
-              disabled={flowActive || settingUp || settingConstraints}
+              disabled={settingUp || settingConstraints}
               onClick={() => fileAttachRef.current?.click()}
             >
               <PlusIcon size={18} />
