@@ -192,8 +192,6 @@ export function WeeklyProjectionChart({
   showActuals = true,
 }: Props) {
   const gradientId = useId();
-  const salesStripeId = useId();
-  const budgetStripeId = useId();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
   const [uncontrolledChartView, setUncontrolledChartView] = useState<"cumulative" | "weekly">("weekly");
   const chartView = controlledChartView ?? uncontrolledChartView;
@@ -353,28 +351,6 @@ export function WeeklyProjectionChart({
               <stop offset="0%" stopColor="var(--blue-700)" stopOpacity="0.16" />
               <stop offset="100%" stopColor="var(--blue-700)" stopOpacity="0" />
             </linearGradient>
-            {/* Actual bars reuse the projected bar's own color, just hatched, so the pair reads
-             * as "the same metric" rather than two unrelated series. */}
-            <pattern
-              id={salesStripeId}
-              width="6"
-              height="6"
-              patternTransform="rotate(45)"
-              patternUnits="userSpaceOnUse"
-            >
-              <rect width="6" height="6" className={styles.stripeSalesBg} />
-              <rect width="3" height="6" className={styles.stripeSalesFg} />
-            </pattern>
-            <pattern
-              id={budgetStripeId}
-              width="6"
-              height="6"
-              patternTransform="rotate(45)"
-              patternUnits="userSpaceOnUse"
-            >
-              <rect width="6" height="6" className={styles.stripeBudgetBg} />
-              <rect width="3" height="6" className={styles.stripeBudgetFg} />
-            </pattern>
           </defs>
 
           {gridSteps.map((step) => {
@@ -468,24 +444,45 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              const barWidth = Math.max(2, Math.min(22, bandWidth * 0.18));
-              const gap = Math.max(2, barWidth * 0.3);
+              // The actual value sits behind its projected counterpart as a lighter, broader
+              // container — the solid, narrower bar in front reads as "the plan", the pale
+              // wider one behind it as "what actually happened".
+              const containerWidth = Math.max(4, Math.min(26, bandWidth * 0.2));
+              const barWidth = Math.max(2, containerWidth * 0.5);
+              const gap = Math.max(2, containerWidth * 0.3);
               const center = bandCenter(i);
-              const groupWidth = barWidth * 2 + gap;
+              const groupWidth = containerWidth * 2 + gap;
               const groupStart = center - groupWidth / 2;
-              const salesX = groupStart;
-              const budgetX = groupStart + barWidth + gap;
-              // The actual bar overlaps its projected counterpart instead of sitting beside it —
-              // narrower and centered within the same footprint, painted on top.
-              const actualWidth = Math.max(2, barWidth * 0.5);
-              const actualSalesX = salesX + (barWidth - actualWidth) / 2;
-              const actualBudgetX = budgetX + (barWidth - actualWidth) / 2;
+              const salesContainerX = groupStart;
+              const budgetContainerX = groupStart + containerWidth + gap;
+              const salesX = salesContainerX + (containerWidth - barWidth) / 2;
+              const budgetX = budgetContainerX + (containerWidth - barWidth) / 2;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
               const active = hoverIndex === i;
               return (
                 <g key={w.index} opacity={hoverIndex == null || active ? 1 : 0.45}>
+                  {actualForWeek && (
+                    <rect
+                      x={salesContainerX}
+                      y={yFor(actualForWeek.sales)}
+                      width={containerWidth}
+                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
+                      rx={3}
+                      className={styles.salesBarActual}
+                    />
+                  )}
+                  {actualForWeek && (
+                    <rect
+                      x={budgetContainerX}
+                      y={yFor(actualForWeek.budget)}
+                      width={containerWidth}
+                      height={Math.max(0, baseline - yFor(actualForWeek.budget))}
+                      rx={3}
+                      className={styles.budgetBarActual}
+                    />
+                  )}
                   <rect
                     x={salesX}
                     y={salesY}
@@ -502,28 +499,6 @@ export function WeeklyProjectionChart({
                     rx={2}
                     className={styles.budgetBar}
                   />
-                  {actualForWeek && (
-                    <rect
-                      x={actualSalesX}
-                      y={yFor(actualForWeek.sales)}
-                      width={actualWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
-                      rx={1}
-                      fill={`url(#${salesStripeId})`}
-                      className={styles.actualBarOutline}
-                    />
-                  )}
-                  {actualForWeek && (
-                    <rect
-                      x={actualBudgetX}
-                      y={yFor(actualForWeek.budget)}
-                      width={actualWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.budget))}
-                      rx={1}
-                      fill={`url(#${budgetStripeId})`}
-                      className={styles.actualBarOutline}
-                    />
-                  )}
                 </g>
               );
             })}

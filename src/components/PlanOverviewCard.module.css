@@ -54,28 +54,15 @@
   fill: var(--green-800);
 }
 
-.stripeSalesBg {
-  fill: var(--blue-700);
+/* The actual value renders as a lighter, broader container behind its solid, narrower
+ * projected/budget bar — the same primary color, just tinted down, so the pair reads as
+ * two distinct overlapping bars instead of one shape. */
+.salesBarActual {
+  fill: color-mix(in srgb, var(--blue-700) 20%, white);
 }
 
-.stripeSalesFg {
-  fill: rgba(255, 255, 255, 0.7);
-}
-
-.stripeBudgetBg {
-  fill: var(--green-800);
-}
-
-.stripeBudgetFg {
-  fill: rgba(255, 255, 255, 0.7);
-}
-
-/* The "actual" bar sits centered on top of its wider "projected" counterpart in the same
- * hue, so without a border the two read as one bar with diagonal shading. A light outline
- * traces where the narrower bar ends and the solid one peeks out on either side. */
-.actualBarOutline {
-  stroke: var(--gray-000);
-  stroke-width: 1;
+.budgetBarActual {
+  fill: color-mix(in srgb, var(--green-800) 20%, white);
 }
 
 .legend {
@@ -139,24 +126,14 @@
   );
 }
 
+/* Tinted lighter than the solid dots but kept saturated enough to still read as blue/green
+ * against the tooltip's dark background, unlike the wider, paler bar container behind it. */
 .swatchActualSales {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--blue-700),
-    var(--blue-700) 2px,
-    rgba(255, 255, 255, 0.55) 2px,
-    rgba(255, 255, 255, 0.55) 4px
-  );
+  background: color-mix(in srgb, var(--blue-700) 45%, white);
 }
 
 .swatchActualBudget {
-  background: repeating-linear-gradient(
-    45deg,
-    var(--green-800),
-    var(--green-800) 2px,
-    rgba(255, 255, 255, 0.55) 2px,
-    rgba(255, 255, 255, 0.55) 4px
-  );
+  background: color-mix(in srgb, var(--green-800) 45%, white);
 }
 
 .body {
