@@ -59,7 +59,7 @@
 }
 
 .stripeSalesFg {
-  fill: rgba(255, 255, 255, 0.55);
+  fill: rgba(255, 255, 255, 0.7);
 }
 
 .stripeBudgetBg {
@@ -67,7 +67,15 @@
 }
 
 .stripeBudgetFg {
-  fill: rgba(255, 255, 255, 0.55);
+  fill: rgba(255, 255, 255, 0.7);
+}
+
+/* The "actual" bar sits centered on top of its wider "projected" counterpart in the same
+ * hue, so without a border the two read as one bar with diagonal shading. A light outline
+ * traces where the narrower bar ends and the solid one peeks out on either side. */
+.actualBarOutline {
+  stroke: var(--gray-000);
+  stroke-width: 1;
 }
 
 .legend {

@@ -510,6 +510,7 @@ export function WeeklyProjectionChart({
                       height={Math.max(0, baseline - yFor(actualForWeek.sales))}
                       rx={1}
                       fill={`url(#${salesStripeId})`}
+                      className={styles.actualBarOutline}
                     />
                   )}
                   {actualForWeek && (
@@ -520,6 +521,7 @@ export function WeeklyProjectionChart({
                       height={Math.max(0, baseline - yFor(actualForWeek.budget))}
                       rx={1}
                       fill={`url(#${budgetStripeId})`}
+                      className={styles.actualBarOutline}
                     />
                   )}
                 </g>
