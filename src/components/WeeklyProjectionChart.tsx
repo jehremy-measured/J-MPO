@@ -176,6 +176,14 @@ export function formatRoasFull(value: number): string {
   return `$${value.toFixed(2)}`;
 }
 
+/** A bar rect with rounded top corners and square bottom corners, so it still reads as a
+ * bar rising from a flat baseline rather than a floating pill. */
+function roundedTopRectPath(x: number, y: number, width: number, height: number, radius: number): string {
+  if (width <= 0 || height <= 0) return "";
+  const r = Math.max(0, Math.min(radius, width / 2, height));
+  return `M${x},${y + height} V${y + r} Q${x},${y} ${x + r},${y} H${x + width - r} Q${x + width},${y} ${x + width},${y + r} V${y + height} Z`;
+}
+
 export function WeeklyProjectionChart({
   planStart,
   planEnd,
@@ -444,61 +452,57 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              // The actual value sits behind its projected counterpart as a saturated,
-              // broader container — the paler, narrower bar in front is exactly half its
-              // width, reading as "the plan" against "what actually happened" behind it.
-              const containerWidth = Math.max(4, Math.min(26, bandWidth * 0.2));
-              const barWidth = containerWidth / 2;
-              const gap = Math.max(2, containerWidth * 0.3);
+              // The projected/planned value is the darker, wider outer bar — always
+              // present. The actual value is the lighter, narrower inner bar in front,
+              // exactly half the outer bar's width, shown only once actuals exist.
+              const outerWidth = Math.max(4, Math.min(26, bandWidth * 0.2));
+              const innerWidth = outerWidth / 2;
+              const gap = Math.max(2, outerWidth * 0.3);
               const center = bandCenter(i);
-              const groupWidth = containerWidth * 2 + gap;
+              const groupWidth = outerWidth * 2 + gap;
               const groupStart = center - groupWidth / 2;
-              const salesContainerX = groupStart;
-              const budgetContainerX = groupStart + containerWidth + gap;
-              const salesX = salesContainerX + (containerWidth - barWidth) / 2;
-              const budgetX = budgetContainerX + (containerWidth - barWidth) / 2;
+              const salesOuterX = groupStart;
+              const budgetOuterX = groupStart + outerWidth + gap;
+              const salesInnerX = salesOuterX + (outerWidth - innerWidth) / 2;
+              const budgetInnerX = budgetOuterX + (outerWidth - innerWidth) / 2;
               const baseline = MARGIN.top + PLOT_HEIGHT;
               const salesY = yFor(w.sales);
               const budgetY = yFor(w.budget);
               const active = hoverIndex === i;
               return (
                 <g key={w.index} opacity={hoverIndex == null || active ? 1 : 0.45}>
+                  <path
+                    d={roundedTopRectPath(salesOuterX, salesY, outerWidth, Math.max(0, baseline - salesY), 3)}
+                    className={styles.salesBarOuter}
+                  />
+                  <path
+                    d={roundedTopRectPath(budgetOuterX, budgetY, outerWidth, Math.max(0, baseline - budgetY), 3)}
+                    className={styles.budgetBarOuter}
+                  />
                   {actualForWeek && (
-                    <rect
-                      x={salesContainerX}
-                      y={yFor(actualForWeek.sales)}
-                      width={containerWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.sales))}
-                      rx={3}
-                      className={styles.salesBarActual}
+                    <path
+                      d={roundedTopRectPath(
+                        salesInnerX,
+                        yFor(actualForWeek.sales),
+                        innerWidth,
+                        Math.max(0, baseline - yFor(actualForWeek.sales)),
+                        2
+                      )}
+                      className={styles.salesBarInner}
                     />
                   )}
                   {actualForWeek && (
-                    <rect
-                      x={budgetContainerX}
-                      y={yFor(actualForWeek.budget)}
-                      width={containerWidth}
-                      height={Math.max(0, baseline - yFor(actualForWeek.budget))}
-                      rx={3}
-                      className={styles.budgetBarActual}
+                    <path
+                      d={roundedTopRectPath(
+                        budgetInnerX,
+                        yFor(actualForWeek.budget),
+                        innerWidth,
+                        Math.max(0, baseline - yFor(actualForWeek.budget)),
+                        2
+                      )}
+                      className={styles.budgetBarInner}
                     />
                   )}
-                  <rect
-                    x={salesX}
-                    y={salesY}
-                    width={barWidth}
-                    height={Math.max(0, baseline - salesY)}
-                    rx={2}
-                    className={styles.salesBar}
-                  />
-                  <rect
-                    x={budgetX}
-                    y={budgetY}
-                    width={barWidth}
-                    height={Math.max(0, baseline - budgetY)}
-                    rx={2}
-                    className={styles.budgetBar}
-                  />
                 </g>
               );
             })}

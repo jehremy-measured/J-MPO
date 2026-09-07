@@ -1,8 +1,11 @@
 :root {
-  /* Base hues for the weekly comparison bars — a richer indigo-blue and teal than the
-   * app's default blue/green, matched to the reference two-tone bar pairing. */
-  --chart-sales-hue: #5468dd;
-  --chart-budget-hue: #3aab97;
+  /* Weekly comparison bar colors: a dark/light pair per metric, plus a coral for the ROAS
+   * line — dark for projected/planned, light for actual. */
+  --chart-sales-dark: #457ae5;
+  --chart-sales-light: #b5caf5;
+  --chart-budget-dark: #1da696;
+  --chart-budget-light: #91e2d8;
+  --chart-roas-hue: #ff764d;
 }
 
 .section {
@@ -53,23 +56,23 @@
   background: var(--gray-400);
 }
 
-/* The weekly comparison bars pair a saturated, wider "actual" container with a paler,
- * narrower "projected"/"budget" bar in front — both in the same hue so the pair reads as
- * one matched set. */
-.salesBar {
-  fill: color-mix(in srgb, var(--chart-sales-hue) 38%, white);
+/* The weekly comparison bars pair a darker, wider "projected"/"planned" bar with a
+ * lighter, narrower "actual" bar in front — both in the same hue so the pair reads as one
+ * matched set. Only the top corners are rounded; see roundedTopRectPath in the component. */
+.salesBarOuter {
+  fill: var(--chart-sales-dark);
 }
 
-.budgetBar {
-  fill: color-mix(in srgb, var(--chart-budget-hue) 38%, white);
+.budgetBarOuter {
+  fill: var(--chart-budget-dark);
 }
 
-.salesBarActual {
-  fill: var(--chart-sales-hue);
+.salesBarInner {
+  fill: var(--chart-sales-light);
 }
 
-.budgetBarActual {
-  fill: var(--chart-budget-hue);
+.budgetBarInner {
+  fill: var(--chart-budget-light);
 }
 
 .legend {
@@ -104,11 +107,11 @@
 }
 
 .swatchSales {
-  background: color-mix(in srgb, var(--chart-sales-hue) 38%, white);
+  background: var(--chart-sales-dark);
 }
 
 .swatchBudget {
-  background: color-mix(in srgb, var(--chart-budget-hue) 38%, white);
+  background: var(--chart-budget-dark);
 }
 
 .swatchLine {
@@ -116,7 +119,7 @@
   height: 2px;
   border-radius: 0;
   flex-shrink: 0;
-  background: var(--gold-600);
+  background: var(--chart-roas-hue);
 }
 
 .swatchLineDotted {
@@ -126,19 +129,19 @@
   flex-shrink: 0;
   background-image: repeating-linear-gradient(
     to right,
-    var(--gold-600) 0,
-    var(--gold-600) 3px,
+    var(--chart-roas-hue) 0,
+    var(--chart-roas-hue) 3px,
     transparent 3px,
     transparent 5px
   );
 }
 
 .swatchActualSales {
-  background: var(--chart-sales-hue);
+  background: var(--chart-sales-light);
 }
 
 .swatchActualBudget {
-  background: var(--chart-budget-hue);
+  background: var(--chart-budget-light);
 }
 
 .body {
@@ -382,7 +385,7 @@
 }
 
 .roasLine {
-  stroke: var(--gold-600);
+  stroke: var(--chart-roas-hue);
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
@@ -390,12 +393,12 @@
 
 .roasDot {
   fill: var(--gray-000);
-  stroke: var(--gold-600);
+  stroke: var(--chart-roas-hue);
   stroke-width: 2;
 }
 
 .actualRoasLine {
-  stroke: var(--gold-600);
+  stroke: var(--chart-roas-hue);
   stroke-width: 2;
   stroke-dasharray: 2 3;
   stroke-linecap: round;
@@ -404,7 +407,7 @@
 
 .actualRoasDot {
   fill: var(--gray-000);
-  stroke: var(--gold-600);
+  stroke: var(--chart-roas-hue);
   stroke-width: 2;
 }
 
