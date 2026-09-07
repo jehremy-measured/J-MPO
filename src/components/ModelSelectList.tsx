@@ -25,8 +25,8 @@ export function ModelSelectList({ currentModelDate, selectedModelId, onSelect, v
 
   return (
     <>
-      <p className={styles.sectionLabel}>Select model</p>
-      <div className={styles.modelList} role="radiogroup" aria-label="Select model">
+      <p className={styles.sectionLabel}>Select model data</p>
+      <div className={styles.modelList} role="radiogroup" aria-label="Select model data">
         <label className={`${styles.modelRow} ${selectedModelId === "current" ? styles.modelRowSelected : ""}`}>
           <input
             type="radio"
@@ -36,12 +36,8 @@ export function ModelSelectList({ currentModelDate, selectedModelId, onSelect, v
             onChange={() => onSelect("current")}
           />
           <span className={styles.modelBody}>
-            <span className={styles.modelDate}>Use current model</span>
-            <span className={styles.modelSubtext}>
-              {verb === "updated"
-                ? `This plan currently uses data from the ${currentModelDate} MIM update.`
-                : `Plan will be ${verb} using the same MIM data (${currentModelDate}) as your current plan.`}
-            </span>
+            <span className={styles.modelDate}>Current plan's model data</span>
+            <span className={styles.modelSubtext}>{currentModelDate} MIM update</span>
           </span>
         </label>
         <label className={`${styles.modelRow} ${selectedModelId === "latest" ? styles.modelRowSelected : ""}`}>
@@ -53,10 +49,8 @@ export function ModelSelectList({ currentModelDate, selectedModelId, onSelect, v
             onChange={() => onSelect("latest")}
           />
           <span className={styles.modelBody}>
-            <span className={styles.modelDate}>Use latest model</span>
-            <span className={styles.modelSubtext}>
-              Plan will be {verb} using data from the latest MIM update ({LATEST_MODEL_DATE}).
-            </span>
+            <span className={styles.modelDate}>Latest model data</span>
+            <span className={styles.modelSubtext}>{LATEST_MODEL_DATE} MIM update</span>
           </span>
         </label>
       </div>
