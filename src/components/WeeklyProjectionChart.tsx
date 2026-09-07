@@ -444,11 +444,11 @@ export function WeeklyProjectionChart({
             <>
             {chartWeeks.map((w, i) => {
               const actualForWeek = showActual ? actualByIndex.get(w.index) : undefined;
-              // The actual value sits behind its projected counterpart as a lighter, broader
-              // container — the solid, narrower bar in front reads as "the plan", the pale
-              // wider one behind it as "what actually happened".
+              // The actual value sits behind its projected counterpart as a saturated,
+              // broader container — the paler, narrower bar in front is exactly half its
+              // width, reading as "the plan" against "what actually happened" behind it.
               const containerWidth = Math.max(4, Math.min(26, bandWidth * 0.2));
-              const barWidth = Math.max(2, containerWidth * 0.5);
+              const barWidth = containerWidth / 2;
               const gap = Math.max(2, containerWidth * 0.3);
               const center = bandCenter(i);
               const groupWidth = containerWidth * 2 + gap;

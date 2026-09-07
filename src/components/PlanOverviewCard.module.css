@@ -1,3 +1,10 @@
+:root {
+  /* Base hues for the weekly comparison bars — a richer indigo-blue and teal than the
+   * app's default blue/green, matched to the reference two-tone bar pairing. */
+  --chart-sales-hue: #5468dd;
+  --chart-budget-hue: #3aab97;
+}
+
 .section {
   padding: 0 24px 24px;
 }
@@ -46,23 +53,23 @@
   background: var(--gray-400);
 }
 
+/* The weekly comparison bars pair a saturated, wider "actual" container with a paler,
+ * narrower "projected"/"budget" bar in front — both in the same hue so the pair reads as
+ * one matched set. */
 .salesBar {
-  fill: var(--blue-700);
+  fill: color-mix(in srgb, var(--chart-sales-hue) 38%, white);
 }
 
 .budgetBar {
-  fill: var(--green-800);
+  fill: color-mix(in srgb, var(--chart-budget-hue) 38%, white);
 }
 
-/* The actual value renders as a lighter, broader container behind its solid, narrower
- * projected/budget bar — the same primary color, just tinted down, so the pair reads as
- * two distinct overlapping bars instead of one shape. */
 .salesBarActual {
-  fill: color-mix(in srgb, var(--blue-700) 20%, white);
+  fill: var(--chart-sales-hue);
 }
 
 .budgetBarActual {
-  fill: color-mix(in srgb, var(--green-800) 20%, white);
+  fill: var(--chart-budget-hue);
 }
 
 .legend {
@@ -97,11 +104,11 @@
 }
 
 .swatchSales {
-  background: var(--blue-700);
+  background: color-mix(in srgb, var(--chart-sales-hue) 38%, white);
 }
 
 .swatchBudget {
-  background: var(--green-800);
+  background: color-mix(in srgb, var(--chart-budget-hue) 38%, white);
 }
 
 .swatchLine {
@@ -126,14 +133,12 @@
   );
 }
 
-/* Tinted lighter than the solid dots but kept saturated enough to still read as blue/green
- * against the tooltip's dark background, unlike the wider, paler bar container behind it. */
 .swatchActualSales {
-  background: color-mix(in srgb, var(--blue-700) 45%, white);
+  background: var(--chart-sales-hue);
 }
 
 .swatchActualBudget {
-  background: color-mix(in srgb, var(--green-800) 45%, white);
+  background: var(--chart-budget-hue);
 }
 
 .body {
