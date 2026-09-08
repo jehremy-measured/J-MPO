@@ -185,8 +185,8 @@ export function MpoPage() {
     openBuildPlanPage(seeded, "edit");
   };
 
-  // Opens the Mia panel straight to "How do you want to set your budget?", seeded from the
-  // given plan, for the Plan settings screen's "Edit" link next to Budget from.
+  // Opens the Mia panel straight to the upload-budget step (template download + drop file),
+  // seeded from the given plan, for the Plan settings screen's "Re-upload" link.
   const openMiaBudgetEdit = (planId: string) => {
     const plan = state.plans.find((p) => p.id === planId);
     if (!plan) return;
@@ -195,7 +195,6 @@ export function MpoPage() {
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
     seed.singleCT = "total";
-    seed.screen = "method";
     setMiaOpen(true);
     setEditBudgetSignal({ token: Date.now(), state: seed });
   };

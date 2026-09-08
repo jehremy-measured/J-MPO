@@ -797,7 +797,7 @@ function ReviewScreen({
                 )}
               </div>
               <button type="button" className={styles.linkBtn} onClick={onEditBudgetViaMia}>
-                Replace
+                Re-upload
               </button>
             </div>
           ) : (

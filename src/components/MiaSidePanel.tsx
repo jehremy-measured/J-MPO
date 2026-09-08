@@ -2,6 +2,7 @@ import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type 
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { currencyFormatter } from "../mpo/buildPlan/data";
 import {
+  applyMethodChoice,
   applyUploadedBudget,
   channelBudgetRows,
   downloadBudgetTemplate,
@@ -309,16 +310,25 @@ export function MiaSidePanel({
 
   const startEditBudgetFlow = useCallback(
     (seed: BuildPlanState) => {
+      // Skips the "How do you want to set your budget?" method-choice screen entirely --
+      // re-uploading a budget always means uploading a file, so go straight to the
+      // template-download + drop-file step, same as picking "Upload" in the normal flow.
       setMessages([]);
-      setUploadState(null);
       setLoadingReviewState(null);
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(null);
-      setCustomFlowSeed(seed);
-      appendMessages([{ role: "mia", text: "Let's update this plan's budget." }]);
-      setFlowKey((k) => k + 1);
-      setFlowActive(true);
+      setCustomFlowSeed(null);
+      setFlowActive(false);
+      setUploadState(applyMethodChoice(seed, "upload"));
+      appendMessages([
+        { role: "mia", text: "Let's update this plan's budget." },
+        {
+          role: "mia",
+          kind: "download-card",
+          text: "Download and fill the budget for tactics you want to plan for. Once done, drop the completed template here.",
+        },
+      ]);
     },
     [appendMessages]
   );
