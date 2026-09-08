@@ -179,7 +179,7 @@
   align-items: center;
   gap: 6px;
   height: 32px;
-  padding: 0 8px 0 12px;
+  padding: 0 12px 0 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--gray-1000);
@@ -1062,10 +1062,18 @@
   white-space: nowrap;
 }
 
+.toolbarDivider {
+  width: 1px;
+  height: 20px;
+  flex-shrink: 0;
+  background: var(--gray-300);
+}
+
 .tblStickyLeft,
 .tblStickyRight {
   position: sticky;
   z-index: 1;
+  align-self: stretch;
   background: var(--gray-000);
 }
 

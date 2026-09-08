@@ -27,6 +27,7 @@ import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import { Checkbox } from "./Checkbox";
+import { Switch } from "./Switch";
 import { RollupHint } from "./RollupHint";
 import {
   BackArrowIcon,
@@ -43,7 +44,6 @@ import {
 } from "./icons/BuildPlanIcons";
 import { CloseIcon } from "./icons/CloseIcon";
 import { MaterialIcon } from "./icons/MaterialIcon";
-import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./BuildPlanPage.module.css";
 
 type Props = {
@@ -793,8 +793,7 @@ function ReviewScreen({
                 )}
               </div>
               <button type="button" className={styles.linkBtn} onClick={onEditBudgetViaMia}>
-                <SparkleIcon size={16} variant="fill" />
-                Edit
+                Replace
               </button>
             </div>
           ) : (
@@ -850,9 +849,10 @@ function ReviewScreen({
         </h2>
         <div className={styles.reviewToolbarControls}>
         <label className={styles.weeklyToggle}>
-          <Checkbox checked={showWeekly} onChange={() => setShowWeekly((v) => !v)} size={17} />
+          <Switch checked={showWeekly} onChange={() => setShowWeekly((v) => !v)} ariaLabel="View weekly budget" />
           <span>View weekly budget</span>
         </label>
+        <div className={styles.toolbarDivider} />
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
@@ -866,9 +866,16 @@ function ReviewScreen({
 
       <div
         className={styles.tbl}
-        style={showWeekly ? { overflowX: "auto", overflowY: "auto" } : undefined}
+        style={
+          showWeekly
+            ? { overflowX: "auto", overflowY: "auto", maxHeight: "calc(100vh - 260px)" }
+            : undefined
+        }
       >
-        <div className={styles.tblHead} style={{ gridTemplateColumns: tblGridColumns }}>
+        <div
+          className={styles.tblHead}
+          style={{ gridTemplateColumns: tblGridColumns, ...(showWeekly ? { top: 0 } : null) }}
+        >
           <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`}>
             <Checkbox
               checked={allVisibleIncluded}
@@ -962,7 +969,10 @@ function ReviewScreen({
             );
           })
         )}
-        <div className={styles.tblFoot} style={{ gridTemplateColumns: tblGridColumns }}>
+        <div
+          className={styles.tblFoot}
+          style={{ gridTemplateColumns: tblGridColumns, ...(showWeekly ? { bottom: 0 } : null) }}
+        >
           <span className={showWeekly ? styles.tblStickyLeft : ""} />
           {weekColumns.map((_, i) => {
             const weekTotal = rows.reduce((sum, t) => {
