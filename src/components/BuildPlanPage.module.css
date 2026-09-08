@@ -183,7 +183,7 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--gray-1000);
-  background: var(--gray-100);
+  background: var(--gray-200);
   border: none;
   border-radius: var(--radius-sm);
   white-space: nowrap;
