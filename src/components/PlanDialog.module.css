@@ -88,6 +88,53 @@
   color: var(--gray-800);
 }
 
+.sectionLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.sectionLabelRow .sectionLabel {
+  margin: 0;
+}
+
+.infoBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--gray-600, var(--gray-800));
+  outline: none;
+}
+
+.infoBadge:hover .infoTooltip,
+.infoBadge:focus-visible .infoTooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.infoTooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  width: max-content;
+  max-width: 240px;
+  background: var(--gray-1000);
+  color: var(--gray-000);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 20px rgba(13, 45, 66, 0.25);
+  z-index: 40;
+  pointer-events: none;
+}
+
 .dialogIntro {
   margin: 0 0 16px;
   font-size: 13.5px;

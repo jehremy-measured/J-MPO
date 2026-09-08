@@ -1,4 +1,5 @@
 import { isModelUpToDate, LATEST_MODEL_DATE, type ModelOption } from "../mpo/modelOptions";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import styles from "./PlanDialog.module.css";
 
 type Props = {
@@ -25,7 +26,15 @@ export function ModelSelectList({ currentModelDate, selectedModelId, onSelect, v
 
   return (
     <>
-      <p className={styles.sectionLabel}>Select model data</p>
+      <div className={styles.sectionLabelRow}>
+        <p className={styles.sectionLabel}>Select model data</p>
+        <span className={styles.infoBadge} tabIndex={0}>
+          <MaterialIcon name="help" size={14} />
+          <span className={styles.infoTooltip} role="tooltip">
+            Every plan uses model data to create projections.
+          </span>
+        </span>
+      </div>
       <div className={styles.modelList} role="radiogroup" aria-label="Select model data">
         <label className={`${styles.modelRow} ${selectedModelId === "current" ? styles.modelRowSelected : ""}`}>
           <input
