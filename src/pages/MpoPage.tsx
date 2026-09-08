@@ -471,7 +471,6 @@ export function MpoPage() {
       )}
       {updateModelDialogOpen && activePlan && (
         <UpdateModelDialog
-          currentModelDate={activeModelDate}
           onClose={() => setUpdateModelDialogOpen(false)}
           onConfirm={(model) => {
             state.notify(`Updated "${activePlan.label}" to the ${model.date} model`);

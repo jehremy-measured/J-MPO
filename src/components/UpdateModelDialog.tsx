@@ -1,26 +1,17 @@
-import { useState } from "react";
-import { isModelUpToDate, LATEST_MODEL_DATE, type ModelOption } from "../mpo/modelOptions";
+import { LATEST_MODEL_DATE, type ModelOption } from "../mpo/modelOptions";
 import { CloseIcon } from "./icons/CloseIcon";
-import { ModelSelectList } from "./ModelSelectList";
 import styles from "./PlanDialog.module.css";
 
 type Props = {
-  currentModelDate: string;
   onClose: () => void;
   onConfirm: (model: ModelOption) => void;
 };
 
-/** Same "Select model" list as the Duplicate-plan dialog, minus the plan-name field — for
- * switching the plan's current model to a different weekly refresh. */
-export function UpdateModelDialog({ currentModelDate, onClose, onConfirm }: Props) {
-  const [selectedModelId, setSelectedModelId] = useState<ModelOption["id"]>("current");
-
+/** Refreshing a plan always pulls the latest MIM update — unlike duplicating a plan, there's
+ * no "which model" choice here, just a heads-up that the switch can't be undone. */
+export function UpdateModelDialog({ onClose, onConfirm }: Props) {
   const handleConfirm = () => {
-    const useLatest = isModelUpToDate(currentModelDate) || selectedModelId === "latest";
-    const model: ModelOption = useLatest
-      ? { id: "latest", date: LATEST_MODEL_DATE }
-      : { id: "current", date: currentModelDate };
-    onConfirm(model);
+    onConfirm({ id: "latest", date: LATEST_MODEL_DATE });
   };
 
   return (
@@ -42,18 +33,10 @@ export function UpdateModelDialog({ currentModelDate, onClose, onConfirm }: Prop
         </div>
 
         <div className={styles.body}>
-          <p className={styles.dialogIntro}>Every plan uses MIM data to project results.</p>
-          <ModelSelectList
-            currentModelDate={currentModelDate}
-            selectedModelId={selectedModelId}
-            onSelect={setSelectedModelId}
-            verb="updated"
-          />
-          {!isModelUpToDate(currentModelDate) && selectedModelId === "latest" && (
-            <p className={styles.warningText}>
-              Once updated to the latest model, you can't revert to using older model data.
-            </p>
-          )}
+          <p className={styles.dialogIntro}>
+            This plan will be refreshed based on data from the latest MIM update ({LATEST_MODEL_DATE}).
+          </p>
+          <p className={styles.dialogIntro}>Once refreshed, you will not be able to revert to earlier model updates.</p>
         </div>
 
         <div className={styles.footer}>
@@ -61,7 +44,7 @@ export function UpdateModelDialog({ currentModelDate, onClose, onConfirm }: Prop
             Cancel
           </button>
           <button type="button" className={styles.confirmBtn} onClick={handleConfirm}>
-            Update
+            Confirm
           </button>
         </div>
       </div>
