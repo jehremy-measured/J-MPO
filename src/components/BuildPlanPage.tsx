@@ -565,6 +565,10 @@ function ReviewScreen({
   const tblGridColumns = showWeekly
     ? `260px repeat(${weekColumns.length}, 120px) 188px`
     : "1fr 188px";
+  // Fixed-width weekly columns can overflow .tbl's own visible width; without an explicit
+  // max-content width here, each row's background stops at the viewport edge while its
+  // (still-visible) overflowing cells keep rendering past it, exposing whatever sits underneath.
+  const tblRowWidth = showWeekly ? { width: "max-content" as const } : {};
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
@@ -874,7 +878,7 @@ function ReviewScreen({
       >
         <div
           className={styles.tblHead}
-          style={{ gridTemplateColumns: tblGridColumns, ...(showWeekly ? { top: 0 } : null) }}
+          style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth, ...(showWeekly ? { top: 0 } : null) }}
         >
           <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`}>
             <Checkbox
@@ -932,7 +936,7 @@ function ReviewScreen({
               <div
                 key={t.id}
                 className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}
-                style={{ gridTemplateColumns: tblGridColumns }}
+                style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth }}
               >
                 <div className={`${styles.tcell} ${showWeekly ? styles.tblStickyLeft : ""}`}>
                   <Checkbox
@@ -971,7 +975,7 @@ function ReviewScreen({
         )}
         <div
           className={styles.tblFoot}
-          style={{ gridTemplateColumns: tblGridColumns, ...(showWeekly ? { bottom: 0 } : null) }}
+          style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth, ...(showWeekly ? { bottom: 0 } : null) }}
         >
           <span className={showWeekly ? styles.tblStickyLeft : ""} />
           {weekColumns.map((_, i) => {
