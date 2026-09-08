@@ -19,6 +19,8 @@ import {
   referenceTargetDefault,
   targetNeedsValue,
   visibleTactics,
+  weekColumnsFor,
+  weeklyBudgetSplit,
 } from "../mpo/buildPlan/logic";
 import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
 import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
@@ -558,6 +560,11 @@ function ReviewScreen({
     null
   );
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
+  const [showWeekly, setShowWeekly] = useState(false);
+  const weekColumns = showWeekly ? weekColumnsFor(state) : [];
+  const tblGridColumns = showWeekly
+    ? `260px repeat(${weekColumns.length}, 100px) 188px`
+    : "1fr 188px";
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
@@ -842,6 +849,10 @@ function ReviewScreen({
           </span>
         </h2>
         <div className={styles.reviewToolbarControls}>
+        <label className={styles.weeklyToggle}>
+          <Checkbox checked={showWeekly} onChange={() => setShowWeekly((v) => !v)} size={17} />
+          <span>View weekly budget</span>
+        </label>
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
@@ -853,9 +864,12 @@ function ReviewScreen({
         </div>
       </div>
 
-      <div className={styles.tbl}>
-        <div className={styles.tblHead}>
-          <div className={styles.tblHeadTactic}>
+      <div
+        className={styles.tbl}
+        style={showWeekly ? { overflowX: "auto", overflowY: "auto" } : undefined}
+      >
+        <div className={styles.tblHead} style={{ gridTemplateColumns: tblGridColumns }}>
+          <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`}>
             <Checkbox
               checked={allVisibleIncluded}
               indeterminate={someVisibleIncluded}
@@ -864,8 +878,14 @@ function ReviewScreen({
             />
             <span>Tactic</span>
           </div>
-          <div className={styles.tblHeadBudget}>
-            <span>Budget</span>
+          {weekColumns.map((w) => (
+            <div key={w.label} className={styles.tblHeadWeek}>
+              <span>{w.label}</span>
+              <span className={styles.tblHeadWeekDate}>{w.dateLabel}</span>
+            </div>
+          ))}
+          <div className={`${styles.tblHeadBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
+            <span>{showWeekly ? "Total Budget" : "Budget"}</span>
             <div className={styles.moreWrap}>
               <button
                 type="button"
@@ -898,9 +918,16 @@ function ReviewScreen({
             const included = state.included[t.id];
             const edited = state.overridden[t.id];
             const reason = excludeReason(state, t.id);
+            const weeklyAmounts = weekColumns.length
+              ? weeklyBudgetSplit(state.budget[t.id] ?? 0, weekColumns.length)
+              : [];
             return (
-              <div key={t.id} className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}>
-                <div className={styles.tcell}>
+              <div
+                key={t.id}
+                className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}
+                style={{ gridTemplateColumns: tblGridColumns }}
+              >
+                <div className={`${styles.tcell} ${showWeekly ? styles.tblStickyLeft : ""}`}>
                   <Checkbox
                     checked={Boolean(included)}
                     onChange={() => flow.toggleInclude(t.id)}
@@ -916,21 +943,41 @@ function ReviewScreen({
                     <div className={styles.tch}>{t.channel}</div>
                   </div>
                 </div>
-                <BudgetInput
-                  value={state.budget[t.id] ?? null}
-                  defaultValue={defaultBudgetFor(state, t.id)}
-                  disabled={!included}
-                  edited={Boolean(edited)}
-                  onChange={(v) => flow.setBudget(t.id, v)}
-                  onReset={() => flow.resetBudget(t.id)}
-                />
+                {weeklyAmounts.map((amount, i) => (
+                  <div key={i} className={styles.tblWeekCell}>
+                    {currencyFormatter.format(amount)}
+                  </div>
+                ))}
+                <div className={`${styles.tblCellBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
+                  <BudgetInput
+                    value={state.budget[t.id] ?? null}
+                    defaultValue={defaultBudgetFor(state, t.id)}
+                    disabled={!included}
+                    edited={Boolean(edited)}
+                    onChange={(v) => flow.setBudget(t.id, v)}
+                    onReset={() => flow.resetBudget(t.id)}
+                  />
+                </div>
               </div>
             );
           })
         )}
-        <div className={styles.tblFoot}>
-          <span />
-          <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+        <div className={styles.tblFoot} style={{ gridTemplateColumns: tblGridColumns }}>
+          <span className={showWeekly ? styles.tblStickyLeft : ""} />
+          {weekColumns.map((_, i) => {
+            const weekTotal = rows.reduce((sum, t) => {
+              if (!state.included[t.id]) return sum;
+              return sum + weeklyBudgetSplit(state.budget[t.id] ?? 0, weekColumns.length)[i];
+            }, 0);
+            return (
+              <div key={i} className={styles.tblWeekCell}>
+                {currencyFormatter.format(weekTotal)}
+              </div>
+            );
+          })}
+          <div className={`${styles.tblCellBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
+            <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+          </div>
         </div>
       </div>
       </Card>

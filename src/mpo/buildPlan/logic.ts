@@ -8,6 +8,7 @@ import {
   CT_LOOKUP,
   DAILY_RATE,
   currencyFormatter,
+  formatShortDate,
   REFERENCE_CPO,
   REFERENCE_DAILY_INCREMENTAL_ORDERS,
   REFERENCE_DAILY_INCREMENTAL_SALES,
@@ -21,11 +22,34 @@ import {
   defaultSourceStart,
   windowFromStart,
 } from "./data";
-import { daysBetweenInclusive, formatRangeLabel, isSameDay, subtractYears } from "./dateUtils";
+import { addDays, daysBetweenInclusive, formatRangeLabel, isSameDay, subtractYears } from "./dateUtils";
 import type { BuildPlanState, BuildTactic, SourceWindow } from "./types";
 
 export function planDaysFor(state: BuildPlanState): number {
   return daysBetweenInclusive(state.planStart, state.planEnd);
+}
+
+export type WeekColumn = { label: string; dateLabel: string };
+
+/** Splits the plan's date range into calendar weeks starting from planStart, for the Tactics
+ * table's "view weekly budget" columns — mirrors the layout of the downloadable budget template
+ * (Wk 1, Wk 2, ... each labeled with that week's start date). */
+export function weekColumnsFor(state: BuildPlanState): WeekColumn[] {
+  const weekCount = Math.ceil(planDaysFor(state) / 7);
+  return Array.from({ length: weekCount }, (_, i) => ({
+    label: `Wk ${i + 1}`,
+    dateLabel: formatShortDate(addDays(state.planStart, i * 7)),
+  }));
+}
+
+/** Evenly splits a tactic's total budget across the plan's weeks, nudging the final week so the
+ * columns sum back to the exact total instead of drifting from rounding. */
+export function weeklyBudgetSplit(total: number, weekCount: number): number[] {
+  if (weekCount <= 0) return [];
+  const base = Math.round(total / weekCount);
+  const amounts = Array.from({ length: weekCount }, () => base);
+  amounts[amounts.length - 1] += total - base * weekCount;
+  return amounts;
 }
 
 export function activeWindow(state: BuildPlanState): SourceWindow {

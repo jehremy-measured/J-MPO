@@ -981,8 +981,7 @@
   min-height: 0;
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-lg);
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
 }
 
 .tblHead,
@@ -996,7 +995,7 @@
   position: sticky;
   top: 0;
   z-index: 2;
-  padding: 12px 20px;
+  padding: 12px 0;
   background: var(--gray-100);
   border-bottom: 1px solid var(--gray-300);
 }
@@ -1017,6 +1016,8 @@
   display: flex;
   align-items: center;
   gap: 13px;
+  padding-left: 20px;
+  min-width: 0;
 }
 
 .tblHeadBudget {
@@ -1024,6 +1025,67 @@
   align-items: center;
   justify-content: flex-end;
   gap: 4px;
+  padding-right: 20px;
+}
+
+.tblHeadWeek {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding: 0 8px;
+}
+
+.tblHeadWeekDate {
+  font-size: 11px;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: normal;
+  color: var(--gray-800);
+}
+
+.tblWeekCell {
+  text-align: right;
+  padding: 0 8px;
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.weeklyToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--gray-1000);
+  cursor: pointer;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.tblStickyLeft,
+.tblStickyRight {
+  position: sticky;
+  z-index: 1;
+  background: var(--gray-000);
+}
+
+.tblStickyLeft {
+  left: 0;
+  box-shadow: 1px 0 0 var(--gray-300);
+}
+
+.tblStickyRight {
+  right: 0;
+  box-shadow: -1px 0 0 var(--gray-300);
+}
+
+.tblHead .tblStickyLeft,
+.tblHead .tblStickyRight,
+.tblFoot .tblStickyLeft,
+.tblFoot .tblStickyRight,
+.trowExcluded .tblStickyLeft,
+.trowExcluded .tblStickyRight {
+  background: var(--gray-100);
 }
 
 .tblHeadMenuBtn {
@@ -1042,7 +1104,7 @@
 }
 
 .trow {
-  padding: 11px 20px;
+  padding: 11px 0;
   border-bottom: 1px solid var(--gray-200);
 }
 
@@ -1067,6 +1129,13 @@
   align-items: center;
   gap: 13px;
   min-width: 0;
+  padding-left: 20px;
+}
+
+.tblCellBudget {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 20px;
 }
 
 
@@ -1225,7 +1294,7 @@
   display: grid;
   grid-template-columns: 1fr 188px;
   align-items: center;
-  padding: 15px 20px;
+  padding: 15px 0;
   background: var(--gray-100);
   border-top: 1px solid var(--gray-300);
 }
