@@ -118,12 +118,35 @@ function rowActual(planValue: number, index: number, kind: "budget" | "volume"):
   return { value, good };
 }
 
-function RowActualTag({ actual, isCount }: { actual: RowActual; isCount?: boolean }) {
-  return (
-    <span className={`${styles.rowDiff} ${actual.good ? styles.rowDiffUp : styles.rowDiffDown}`}>
-      {isCount ? Math.round(actual.value).toLocaleString() : formatCurrency(actual.value)}
-    </span>
-  );
+/** Actual ROAS/CPO derived from the actual sales-vs-budget ratio, compared against the
+ * planned ratio the same way the budget/volume columns compare against their plan figure. */
+function ratioActual(actualPrimary: number, actualBudget: number, planRatio: number, showOrders: boolean): RowActual {
+  const value = showOrders
+    ? actualPrimary > 0
+      ? actualBudget / actualPrimary
+      : 0
+    : actualBudget > 0
+      ? actualPrimary / actualBudget
+      : 0;
+  const higherIsBetter = !showOrders;
+  const good = higherIsBetter ? value >= planRatio : value <= planRatio;
+  return { value, good };
+}
+
+/** The plan/projected figure, colored green/red by whether the actual figure beat it. */
+function trendClass(good: boolean): string {
+  return `${styles.value} ${good ? styles.trendUp : styles.trendDown}`;
+}
+
+/** The actual figure shown under the plan value — plain grey, since the color now lives on
+ * the plan figure above it. */
+function ActualValue({ value, isCount, isRatio }: { value: number; isCount?: boolean; isRatio?: boolean }) {
+  const label = isRatio
+    ? `$${value.toFixed(2)}`
+    : isCount
+      ? Math.round(value).toLocaleString()
+      : formatCurrency(value);
+  return <span className={styles.actualValue}>{label}</span>;
 }
 
 type ChannelRow = {
@@ -188,6 +211,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
   );
   const totalBudgetActualGood = totalBudgetActual <= totalBudgetValue;
   const totalPrimaryActualGood = totalPrimaryActual >= totalPrimaryValue;
+  const totalSecondaryActual = ratioActual(totalPrimaryActual, totalBudgetActual, aggregateSecondaryValue, showOrders);
 
   return (
     <section className={styles.section} data-node-id="1:34016">
@@ -237,30 +261,31 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
           <tbody>
             <tr className={styles.totalsRow}>
               <td>
-                <strong>Total</strong>
+                <span className={styles.totalValue}>Total</span>
               </td>
               <td>
                 <div className={styles.cellStack}>
-                  <strong>{formatCurrency(totalBudgetValue)}</strong>
-                  {actualsAvailable && (
-                    <span className={`${styles.rowDiff} ${totalBudgetActualGood ? styles.rowDiffUp : styles.rowDiffDown}`}>
-                      {formatCurrency(totalBudgetActual)}
-                    </span>
-                  )}
+                  <span className={actualsAvailable ? `${styles.totalValue} ${totalBudgetActualGood ? styles.trendUp : styles.trendDown}` : styles.totalValue}>
+                    {formatCurrency(totalBudgetValue)}
+                  </span>
+                  {actualsAvailable && <ActualValue value={totalBudgetActual} />}
                 </div>
               </td>
               <td>
                 <div className={styles.cellStack}>
-                  <strong>{showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}</strong>
-                  {actualsAvailable && (
-                    <span className={`${styles.rowDiff} ${totalPrimaryActualGood ? styles.rowDiffUp : styles.rowDiffDown}`}>
-                      {showOrders ? Math.round(totalPrimaryActual).toLocaleString() : formatCurrency(totalPrimaryActual)}
-                    </span>
-                  )}
+                  <span className={actualsAvailable ? `${styles.totalValue} ${totalPrimaryActualGood ? styles.trendUp : styles.trendDown}` : styles.totalValue}>
+                    {showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}
+                  </span>
+                  {actualsAvailable && <ActualValue value={totalPrimaryActual} isCount={showOrders} />}
                 </div>
               </td>
               <td>
-                <strong>${aggregateSecondaryValue.toFixed(2)}</strong>
+                <div className={styles.cellStack}>
+                  <span className={actualsAvailable ? `${styles.totalValue} ${totalSecondaryActual.good ? styles.trendUp : styles.trendDown}` : styles.totalValue}>
+                    ${aggregateSecondaryValue.toFixed(2)}
+                  </span>
+                  {actualsAvailable && <ActualValue value={totalSecondaryActual.value} isRatio />}
+                </div>
               </td>
               <td />
             </tr>
@@ -270,6 +295,9 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                   const secondaryValue = showOrders
                     ? row.budget / (row.orders || 1)
                     : row.sales / (row.budget || 1);
+                  const budgetActual = rowActual(row.budget, i, "budget");
+                  const primaryActual = rowActual(primaryValue, i, "volume");
+                  const secondaryActual = ratioActual(primaryActual.value, budgetActual.value, secondaryValue, showOrders);
                   return (
                     <tr key={row.name}>
                       <td>
@@ -282,9 +310,11 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                       </td>
                       <td>
                         <div className={styles.cellStack}>
-                          <span className={styles.value}>{formatCurrency(row.budget)}</span>
+                          <span className={actualsAvailable ? trendClass(budgetActual.good) : styles.value}>
+                            {formatCurrency(row.budget)}
+                          </span>
                           {actualsAvailable ? (
-                            <RowActualTag actual={rowActual(row.budget, i, "budget")} />
+                            <ActualValue value={budgetActual.value} />
                           ) : (
                             <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
                           )}
@@ -292,75 +322,92 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                       </td>
                       <td>
                         <div className={styles.cellStack}>
-                          <span className={styles.value}>
+                          <span className={actualsAvailable ? trendClass(primaryActual.good) : styles.value}>
                             {showOrders ? Math.round(primaryValue).toLocaleString() : formatCurrency(primaryValue)}
                           </span>
                           {actualsAvailable ? (
-                            <RowActualTag actual={rowActual(primaryValue, i, "volume")} isCount={showOrders} />
+                            <ActualValue value={primaryActual.value} isCount={showOrders} />
                           ) : (
                             <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
                           )}
                         </div>
                       </td>
                       <td>
-                        <span className={styles.value}>${secondaryValue.toFixed(2)}</span>
+                        <div className={styles.cellStack}>
+                          <span className={actualsAvailable ? trendClass(secondaryActual.good) : styles.value}>
+                            ${secondaryValue.toFixed(2)}
+                          </span>
+                          {actualsAvailable && <ActualValue value={secondaryActual.value} isRatio />}
+                        </div>
                       </td>
                       <td>—</td>
                     </tr>
                   );
                 })
-              : rows.map((row, i) => (
-                  <tr key={row.name}>
-                    <td>
-                      <div className={styles.tacticCell}>
-                        <span className={styles.logoPlaceholder} aria-hidden>
-                          {row.name.charAt(0)}
-                        </span>
-                        <div>
-                          <div className={styles.tacticName}>{row.name}</div>
-                          <div className={styles.tacticChannel}>{row.channel}</div>
-                        </div>
-                        <button
-                          type="button"
-                          className={styles.sparkline}
-                          aria-label={`View projections by week for ${row.name}`}
-                          onClick={() => setActiveTactic(row)}
-                        >
-                          <ReturnCurveIcon size={20} />
-                        </button>
-                      </div>
-                    </td>
-                    <td>
-                      <div className={styles.cellStack}>
-                        <span className={styles.value}>{row.budget}</span>
-                        {actualsAvailable ? (
-                          <RowActualTag actual={rowActual(parseCurrency(row.budget), i, "budget")} />
-                        ) : (
-                          <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <div className={styles.cellStack}>
-                        <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
-                        {actualsAvailable ? (
-                          <RowActualTag
-                            actual={rowActual(parseCurrency(showOrders ? row.orders : row.sales), i, "volume")}
-                            isCount={showOrders}
-                          />
-                        ) : (
-                          <span className={styles.pctOfTotal}>
-                            {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+              : rows.map((row, i) => {
+                  const budgetActual = rowActual(parseCurrency(row.budget), i, "budget");
+                  const primaryActual = rowActual(parseCurrency(showOrders ? row.orders : row.sales), i, "volume");
+                  const planRatio = parseCurrency(showOrders ? row.cpo : row.roas);
+                  const secondaryActual = ratioActual(primaryActual.value, budgetActual.value, planRatio, showOrders);
+                  return (
+                    <tr key={row.name}>
+                      <td>
+                        <div className={styles.tacticCell}>
+                          <span className={styles.logoPlaceholder} aria-hidden>
+                            {row.name.charAt(0)}
                           </span>
-                        )}
-                      </div>
-                    </td>
-                    <td>
-                      <span className={styles.value}>{showOrders ? row.cpo : row.roas}</span>
-                    </td>
-                    <td>{row.marginal}</td>
-                  </tr>
-                ))}
+                          <div>
+                            <div className={styles.tacticName}>{row.name}</div>
+                            <div className={styles.tacticChannel}>{row.channel}</div>
+                          </div>
+                          <button
+                            type="button"
+                            className={styles.sparkline}
+                            aria-label={`View projections by week for ${row.name}`}
+                            onClick={() => setActiveTactic(row)}
+                          >
+                            <ReturnCurveIcon size={20} />
+                          </button>
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={actualsAvailable ? trendClass(budgetActual.good) : styles.value}>
+                            {row.budget}
+                          </span>
+                          {actualsAvailable ? (
+                            <ActualValue value={budgetActual.value} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={actualsAvailable ? trendClass(primaryActual.good) : styles.value}>
+                            {showOrders ? row.orders : row.sales}
+                          </span>
+                          {actualsAvailable ? (
+                            <ActualValue value={primaryActual.value} isCount={showOrders} />
+                          ) : (
+                            <span className={styles.pctOfTotal}>
+                              {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td>
+                        <div className={styles.cellStack}>
+                          <span className={actualsAvailable ? trendClass(secondaryActual.good) : styles.value}>
+                            {showOrders ? row.cpo : row.roas}
+                          </span>
+                          {actualsAvailable && <ActualValue value={secondaryActual.value} isRatio />}
+                        </div>
+                      </td>
+                      <td>{row.marginal}</td>
+                    </tr>
+                  );
+                })}
           </tbody>
         </table>
       </div>
