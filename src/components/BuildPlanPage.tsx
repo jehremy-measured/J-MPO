@@ -563,7 +563,7 @@ function ReviewScreen({
   const [showWeekly, setShowWeekly] = useState(false);
   const weekColumns = showWeekly ? weekColumnsFor(state) : [];
   const tblGridColumns = showWeekly
-    ? `260px repeat(${weekColumns.length}, 100px) 188px`
+    ? `260px repeat(${weekColumns.length}, 120px) 188px`
     : "1fr 188px";
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";

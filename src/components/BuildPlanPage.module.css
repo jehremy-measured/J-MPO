@@ -1042,6 +1042,7 @@
   text-transform: none;
   letter-spacing: normal;
   color: var(--gray-800);
+  white-space: nowrap;
 }
 
 .tblWeekCell {
