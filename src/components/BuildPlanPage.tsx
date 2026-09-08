@@ -569,6 +569,32 @@ function ReviewScreen({
   // max-content width here, each row's background stops at the viewport edge while its
   // (still-visible) overflowing cells keep rendering past it, exposing whatever sits underneath.
   const tblRowWidth = showWeekly ? { width: "max-content" as const } : {};
+  const [scrolledX, setScrolledX] = useState(false);
+  useEffect(() => {
+    if (!showWeekly) setScrolledX(false);
+  }, [showWeekly]);
+  // The frozen-column dividers are drawn as a background on .tbl itself, not as per-row
+  // borders -- background-attachment:scroll pins a background to the element's own box in
+  // both axes, so it renders as one continuous line spanning the table's visible height at
+  // any scroll position, rather than N separate (and potentially misaligned) per-row lines.
+  // The left divider (Tactic | first week column) only appears once something is actually
+  // scrolled underneath it; at scrollLeft 0 there's nothing hidden there yet.
+  const tblSeparatorStyle = !showWeekly
+    ? {}
+    : scrolledX
+    ? {
+        backgroundImage:
+          "linear-gradient(var(--gray-300), var(--gray-300)), linear-gradient(var(--gray-300), var(--gray-300))",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "1px 100%, 1px 100%",
+        backgroundPosition: "260px 0, right 188px top 0",
+      }
+    : {
+        backgroundImage: "linear-gradient(var(--gray-300), var(--gray-300))",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "1px 100%",
+        backgroundPosition: "right 188px top 0",
+      };
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
@@ -870,9 +896,15 @@ function ReviewScreen({
 
       <div
         className={styles.tbl}
+        onScroll={showWeekly ? (e) => setScrolledX(e.currentTarget.scrollLeft > 0) : undefined}
         style={
           showWeekly
-            ? { overflowX: "auto", overflowY: "auto", maxHeight: "calc(100vh - 260px)" }
+            ? {
+                overflowX: "auto",
+                overflowY: "auto",
+                maxHeight: "calc(100vh - 260px)",
+                ...tblSeparatorStyle,
+              }
             : undefined
         }
       >
