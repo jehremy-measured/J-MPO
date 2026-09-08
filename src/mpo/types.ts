@@ -16,6 +16,7 @@ export type Tactic = {
   id: string;
   name: string;
   channel: string;
+  segment: string;
   logo: string;
   budgetOld: number;
   budgetNew: number;

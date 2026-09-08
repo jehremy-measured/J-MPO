@@ -58,6 +58,7 @@ export const INITIAL_TACTICS: Tactic[] = [
     id: "gpm",
     name: "Google Performance Max",
     channel: "Search",
+    segment: "Online Orders",
     logo: assets.google,
     budgetOld: 243_988,
     budgetNew: 318_638,
@@ -69,6 +70,7 @@ export const INITIAL_TACTICS: Tactic[] = [
     id: "fb",
     name: "Facebook Prospecting",
     channel: "Social",
+    segment: "Online Orders",
     logo: assets.meta,
     budgetOld: 111_245,
     budgetNew: 124_995,
@@ -80,6 +82,7 @@ export const INITIAL_TACTICS: Tactic[] = [
     id: "tiktok",
     name: "TikTok Prospecting",
     channel: "Social",
+    segment: "Online Orders",
     logo: assets.tiktok,
     budgetOld: 98_500,
     budgetNew: 98_500,
@@ -91,6 +94,7 @@ export const INITIAL_TACTICS: Tactic[] = [
     id: "bing",
     name: "Bing Non-Brand Search",
     channel: "Search",
+    segment: "Online Orders",
     logo: assets.bing,
     budgetOld: 51_096,
     budgetNew: 45_200,
@@ -102,6 +106,7 @@ export const INITIAL_TACTICS: Tactic[] = [
     id: "snap",
     name: "Snapchat Search",
     channel: "Social",
+    segment: "Online Orders",
     logo: assets.snapchat,
     budgetOld: 32_000,
     budgetNew: 32_000,
@@ -110,5 +115,9 @@ export const INITIAL_TACTICS: Tactic[] = [
     marginalRoas: 2.0,
   },
 ];
+
+/** Per-plan tactic rosters. Populated with real Lulus baseline data (scaled per plan) in a
+ * follow-up commit; falls back to the generic INITIAL_TACTICS set until then. */
+export const PLAN_TACTICS: Record<string, Tactic[]> = {};
 
 export const DEFAULT_TARGET_BUDGET = 1_500_000;

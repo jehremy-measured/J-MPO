@@ -421,6 +421,8 @@ export function MpoPage() {
                     target={currentTarget}
                     planStart={currentPlanStart}
                     planEnd={currentPlanEnd}
+                    tactics={state.tactics}
+                    optimizationMode={state.optimizationMode}
                     allowActual={!isNewlyCreatedPlan}
                   />
                 </div>

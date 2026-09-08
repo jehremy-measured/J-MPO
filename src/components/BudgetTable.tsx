@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { isAfter, isBefore } from "../mpo/buildPlan/dateUtils";
-import type { PlanTarget } from "../mpo/types";
+import { tacticRoasNew, tacticSalesNew } from "../mpo/calc";
+import { AVERAGE_ORDER_VALUE, type OptimizationMode, type PlanTarget, type Tactic } from "../mpo/types";
 import { ReturnCurveIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
 import { TacticChartModal } from "./TacticChartModal";
@@ -10,6 +11,8 @@ type Props = {
   target: PlanTarget;
   planStart: Date;
   planEnd: Date;
+  tactics: Tactic[];
+  optimizationMode: OptimizationMode;
   /** Forces the tactic popup chart's Actual overlay off — e.g. right after creating a plan. */
   allowActual?: boolean;
 };
@@ -17,6 +20,7 @@ type Props = {
 type TacticRow = {
   name: string;
   channel: string;
+  segment: string;
   budget: string;
   sales: string;
   roas: string;
@@ -25,58 +29,24 @@ type TacticRow = {
   marginal: string;
 };
 
-const rows: TacticRow[] = [
-  {
-    name: "Google Performance Max",
-    channel: "Search",
-    budget: "$318,638",
-    sales: "$1,234,567",
-    roas: "$4.12",
-    orders: "8,230",
-    cpo: "$38.72",
-    marginal: "$5.21",
-  },
-  {
-    name: "Facebook Prospecting",
-    channel: "Social",
-    budget: "$124,995",
-    sales: "$890,000",
-    roas: "$3.45",
-    orders: "5,933",
-    cpo: "$21.07",
-    marginal: "$4.80",
-  },
-  {
-    name: "TikTok Prospecting",
-    channel: "Social",
-    budget: "$98,500",
-    sales: "$450,000",
-    roas: "$2.90",
-    orders: "3,000",
-    cpo: "$32.83",
-    marginal: "$3.10",
-  },
-  {
-    name: "Bing Non-Brand Search",
-    channel: "Search",
-    budget: "$45,200",
-    sales: "$5,333,463",
-    roas: "$2.10",
-    orders: "1,205",
-    cpo: "$37.51",
-    marginal: "$1.95",
-  },
-  {
-    name: "Snapchat Search",
-    channel: "Social",
-    budget: "$32,000",
-    sales: "$120,000",
-    roas: "$1.80",
-    orders: "800",
-    cpo: "$40.00",
-    marginal: "$2.00",
-  },
-];
+/** Converts a plan's live Tactic figures into the table's formatted-string row shape. */
+function tacticToRow(tactic: Tactic, mode: OptimizationMode): TacticRow {
+  const sales = tacticSalesNew(tactic, mode);
+  const roas = tacticRoasNew(tactic, mode);
+  const orders = Math.round(sales / AVERAGE_ORDER_VALUE);
+  const cpo = orders > 0 ? tactic.budgetNew / orders : 0;
+  return {
+    name: tactic.name,
+    channel: tactic.channel,
+    segment: tactic.segment,
+    budget: `$${Math.round(tactic.budgetNew).toLocaleString()}`,
+    sales: `$${Math.round(sales).toLocaleString()}`,
+    roas: `$${roas.toFixed(2)}`,
+    orders: orders.toLocaleString(),
+    cpo: `$${cpo.toFixed(2)}`,
+    marginal: `$${tactic.marginalRoas.toFixed(2)}`,
+  };
+}
 
 function parseCurrency(value: string): number {
   return Number(value.replace(/[^0-9.-]/g, "")) || 0;
@@ -149,30 +119,31 @@ function ActualValue({ value, isCount, isRatio }: { value: number; isCount?: boo
   return <span className={styles.actualValue}>{label}</span>;
 }
 
-type ChannelRow = {
+type GroupRow = {
   name: string;
   budget: number;
   sales: number;
   orders: number;
 };
 
-function buildChannelRows(tacticRows: TacticRow[]): ChannelRow[] {
-  const byChannel = new Map<string, ChannelRow>();
+/** Groups tactic rows by channel or segment, summing their formatted-string figures. Shared by
+ * the Channels and Segments views since both are just a different grouping key on the same rows. */
+function buildGroupedRows(tacticRows: TacticRow[], key: "channel" | "segment"): GroupRow[] {
+  const byKey = new Map<string, GroupRow>();
   for (const row of tacticRows) {
-    const existing = byChannel.get(row.channel) ?? { name: row.channel, budget: 0, sales: 0, orders: 0 };
+    const name = row[key];
+    const existing = byKey.get(name) ?? { name, budget: 0, sales: 0, orders: 0 };
     existing.budget += parseCurrency(row.budget);
     existing.sales += parseCurrency(row.sales);
     existing.orders += parseCurrency(row.orders);
-    byChannel.set(row.channel, existing);
+    byKey.set(name, existing);
   }
-  return [...byChannel.values()];
+  return [...byKey.values()];
 }
 
-const channelRows = buildChannelRows(rows);
+type BudgetTableView = "segments" | "channels" | "tactics";
 
-type BudgetTableView = "channels" | "tactics";
-
-export function BudgetTable({ target, planStart, planEnd, allowActual = true }: Props) {
+export function BudgetTable({ target, planStart, planEnd, tactics, optimizationMode, allowActual = true }: Props) {
   const [view, setView] = useState<BudgetTableView>("channels");
   const [activeTactic, setActiveTactic] = useState<TacticRow | null>(null);
   const today = new Date();
@@ -181,6 +152,15 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
   const primaryLabel = showOrders ? "Incremental Orders" : "Incremental Sales";
   const secondaryLabel = showOrders ? "Incremental CPO" : "Incremental ROAS";
   const marginalLabel = showOrders ? "Marginal CPO" : "Marginal ROAS";
+
+  const rows = useMemo(
+    () => tactics.map((tactic) => tacticToRow(tactic, optimizationMode)),
+    [tactics, optimizationMode]
+  );
+  const channelRows = useMemo(() => buildGroupedRows(rows, "channel"), [rows]);
+  const segmentRows = useMemo(() => buildGroupedRows(rows, "segment"), [rows]);
+  const groupRows = view === "segments" ? segmentRows : channelRows;
+
   const totalBudgetValue = rows.reduce((sum, row) => sum + parseCurrency(row.budget), 0);
   const totalPrimaryValue = rows.reduce(
     (sum, row) => sum + parseCurrency(showOrders ? row.orders : row.sales),
@@ -193,14 +173,14 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
     : totalPrimaryValue / (totalBudgetValue || 1);
 
   // The totals row's actual figures are the sum of whichever rows are currently displayed
-  // (channels or tactics) — each row's own actual-vs-plan variance, added up.
+  // (channels, segments, or tactics) — each row's own actual-vs-plan variance, added up.
   const viewRows =
-    view === "channels"
-      ? channelRows.map((row) => ({ budget: row.budget, primary: showOrders ? row.orders : row.sales }))
-      : rows.map((row) => ({
+    view === "tactics"
+      ? rows.map((row) => ({
           budget: parseCurrency(row.budget),
           primary: parseCurrency(showOrders ? row.orders : row.sales),
-        }));
+        }))
+      : groupRows.map((row) => ({ budget: row.budget, primary: showOrders ? row.orders : row.sales }));
   const totalBudgetActual = viewRows.reduce(
     (sum, row, i) => sum + rowActual(row.budget, i, "budget").value,
     0
@@ -219,7 +199,13 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
         <h2>Plan Breakdown</h2>
         <div className={styles.headerControls}>
           <div className={styles.viewToggle}>
-            <button type="button">Segments</button>
+            <button
+              type="button"
+              className={view === "segments" ? styles.viewActive : undefined}
+              onClick={() => setView("segments")}
+            >
+              Segments
+            </button>
             <button
               type="button"
               className={view === "channels" ? styles.viewActive : undefined}
@@ -251,7 +237,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>{view === "channels" ? "Channel" : "Tactic"}</th>
+              <th>{view === "channels" ? "Channel" : view === "segments" ? "Segment" : "Tactic"}</th>
               <th>Budget</th>
               <th>{primaryLabel}</th>
               <th>{secondaryLabel}</th>
@@ -289,8 +275,8 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
               </td>
               <td />
             </tr>
-            {view === "channels"
-              ? channelRows.map((row, i) => {
+            {view !== "tactics"
+              ? groupRows.map((row, i) => {
                   const primaryValue = showOrders ? row.orders : row.sales;
                   const secondaryValue = showOrders
                     ? row.budget / (row.orders || 1)

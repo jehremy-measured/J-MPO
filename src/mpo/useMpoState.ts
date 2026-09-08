@@ -10,7 +10,7 @@ import {
   totalOrders,
   totalSales,
 } from "./calc";
-import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLANS } from "./data";
+import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLAN_TACTICS, PLANS } from "./data";
 import { formatRangeLabel, subtractYears } from "./buildPlan/dateUtils";
 import type {
   BudgetView,
@@ -27,8 +27,14 @@ function cloneTactics(tactics: Tactic[]): Tactic[] {
   return tactics.map((t) => ({ ...t }));
 }
 
-function freshSnapshot(): PlanSnapshot {
-  const tactics = cloneTactics(INITIAL_TACTICS);
+/** A plan's tactic roster, keyed off the real Lulus baseline (falling back to the generic
+ * starter set for plans without a curated roster of their own, e.g. new Mia-created plans). */
+function tacticsForPlan(planId: string): Tactic[] {
+  return PLAN_TACTICS[planId] ?? INITIAL_TACTICS;
+}
+
+function snapshotForTactics(planTactics: Tactic[]): PlanSnapshot {
+  const tactics = cloneTactics(planTactics);
   return {
     tactics,
     baseline: cloneTactics(tactics),
@@ -42,9 +48,13 @@ function freshSnapshot(): PlanSnapshot {
     totalSalesGoal: 0,
     baselineSalesForecast: totalBudget(tactics) * 16,
     pacingEnabled: false,
-    conversionType: "All Orders",
-    channelCount: 3,
+    conversionType: "Online Orders",
+    channelCount: new Set(tactics.map((t) => t.channel)).size,
   };
+}
+
+function freshSnapshot(): PlanSnapshot {
+  return snapshotForTactics(INITIAL_TACTICS);
 }
 
 function snapshotFromInput(input: CreatePlanInput): PlanSnapshot {
@@ -71,7 +81,7 @@ function initialPlanData(): Record<string, PlanSnapshot> {
   const data: Record<string, PlanSnapshot> = {};
   for (const plan of PLANS) {
     data[plan.id] = {
-      ...freshSnapshot(),
+      ...snapshotForTactics(tacticsForPlan(plan.id)),
       referencePeriod: formatRangeLabel(subtractYears(plan.planStart, 1), subtractYears(plan.planEnd, 1)),
     };
   }
@@ -83,10 +93,10 @@ export function useMpoState() {
   const [planData, setPlanData] = useState<Record<string, PlanSnapshot>>(initialPlanData);
   const [activePlanId, setActivePlanId] = useState("default");
   const [tactics, setTactics] = useState<Tactic[]>(() =>
-    cloneTactics(INITIAL_TACTICS)
+    cloneTactics(tacticsForPlan("default"))
   );
   const [baseline, setBaseline] = useState<Tactic[]>(() =>
-    cloneTactics(INITIAL_TACTICS)
+    cloneTactics(tacticsForPlan("default"))
   );
   const [targetBudget, setTargetBudget] = useState(DEFAULT_TARGET_BUDGET);
   const [optimizationMode, setOptimizationMode] =
@@ -98,11 +108,13 @@ export function useMpoState() {
   const [goalType, setGoalType] = useState<PlanSnapshot["goalType"]>("incremental-roas");
   const [totalSalesGoal, setTotalSalesGoal] = useState(0);
   const [baselineSalesForecast, setBaselineSalesForecast] = useState(
-    totalBudget(INITIAL_TACTICS) * 16
+    () => totalBudget(tacticsForPlan("default")) * 16
   );
   const [pacingEnabled, setPacingEnabled] = useState(false);
-  const [conversionType, setConversionType] = useState("All Orders");
-  const [channelCount, setChannelCount] = useState(3);
+  const [conversionType, setConversionType] = useState("Online Orders");
+  const [channelCount, setChannelCount] = useState(
+    () => new Set(tacticsForPlan("default").map((t) => t.channel)).size
+  );
   const [csBannerDismissed, setCsBannerDismissed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [budgetView, setBudgetView] = useState<BudgetView>("tactics");

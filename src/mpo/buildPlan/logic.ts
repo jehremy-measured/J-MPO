@@ -384,6 +384,7 @@ export function buildPlanToCreatePlanInput(state: BuildPlanState): CreatePlanInp
       id: t.id,
       name: t.name,
       channel: t.channel,
+      segment: "Online Orders",
       logo: tacticLogo(t),
       budgetOld: budget,
       budgetNew: budget,
