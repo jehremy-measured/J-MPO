@@ -41,6 +41,7 @@ import {
 } from "./icons/BuildPlanIcons";
 import { CloseIcon } from "./icons/CloseIcon";
 import { MaterialIcon } from "./icons/MaterialIcon";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./BuildPlanPage.module.css";
 
 type Props = {
@@ -52,6 +53,9 @@ type Props = {
    * settings (title becomes "Plan settings", the summary bar switches to labeled
    * fields, and the finish button reads "Save" instead of "Create plan"). */
   mode?: "create" | "edit";
+  /** Plan-settings only: opens the Mia panel straight to the "how do you want to set your
+   * budget" step, seeded from this plan, instead of editing the budget inline here. */
+  onEditBudgetViaMia?: () => void;
 };
 
 function Card({
@@ -235,7 +239,14 @@ function TargetValueInput({
   );
 }
 
-export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange, mode = "create" }: Props) {
+export function BuildPlanPage({
+  onComplete,
+  onExit,
+  initialState,
+  onScreenChange,
+  mode = "create",
+  onEditBudgetViaMia,
+}: Props) {
   const flow = useBuildPlanFlow(initialState);
   const { state } = flow;
   const [moreOpen, setMoreOpen] = useState(false);
@@ -515,6 +526,7 @@ export function BuildPlanPage({ onComplete, onExit, initialState, onScreenChange
           onComplete={() => onComplete(buildPlanToCreatePlanInput(state), state)}
           onExit={onExit}
           mode={mode}
+          onEditBudgetViaMia={onEditBudgetViaMia}
         />
       )}
     </div>
@@ -529,6 +541,7 @@ function ReviewScreen({
   onComplete,
   onExit,
   mode,
+  onEditBudgetViaMia,
 }: {
   state: ReturnType<typeof useBuildPlanFlow>["state"];
   flow: ReturnType<typeof useBuildPlanFlow>;
@@ -537,6 +550,7 @@ function ReviewScreen({
   onComplete: () => void;
   onExit: () => void;
   mode: "create" | "edit";
+  onEditBudgetViaMia?: () => void;
 }) {
   const rows = visibleTactics(state);
   const n = planDaysFor(state);
@@ -754,6 +768,29 @@ function ReviewScreen({
         </div>
         <div className={styles.settingsField}>
           <span className={styles.settingsLabel}>Budget from</span>
+          {mode === "edit" ? (
+            <div className={styles.settingsFieldRow}>
+              <div className={styles.settingsBoxStatic}>
+                {state.method === "fetch" ? (
+                  <>
+                    <MaterialIcon name="calendar_month" size={16} />
+                    <span>
+                      {formatShortDate(srcWindow.start)} – {formatShortDate(srcWindow.end)}
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <FileIcon size={16} />
+                    <span title={uploadedFilename}>{uploadedFilename}</span>
+                  </>
+                )}
+              </div>
+              <button type="button" className={styles.linkBtn} onClick={onEditBudgetViaMia}>
+                <SparkleIcon size={16} variant="fill" />
+                Edit
+              </button>
+            </div>
+          ) : (
           <div className={styles.settingsFieldRow}>
             {budgetControl}
             {state.method === "upload" && (
@@ -782,6 +819,7 @@ function ReviewScreen({
               </div>
             )}
           </div>
+          )}
         </div>
       </div>
       <Card

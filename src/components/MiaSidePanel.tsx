@@ -133,6 +133,7 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
+type EditBudgetSignal = { token: number; state: BuildPlanState };
 
 type Props = {
   open: boolean;
@@ -144,6 +145,9 @@ type Props = {
    * wizard entirely and goes straight to a constraints-setting loading state, then a review
    * card summarizing the plan Mia is about to optimize. */
   optimizeSignal?: OptimizeSignal | null;
+  /** Jumps the guided flow straight to its "how do you want to set your budget" step, seeded
+   * from an existing plan — used by Plan settings' "Edit" link next to Budget from. */
+  editBudgetSignal?: EditBudgetSignal | null;
   onEditConstraints?: () => void;
   onOptimizePlan?: () => void;
 };
@@ -160,6 +164,7 @@ export function MiaSidePanel({
   onCreatePlan,
   startSignal,
   optimizeSignal,
+  editBudgetSignal,
   onEditConstraints,
   onOptimizePlan,
 }: Props) {
@@ -207,8 +212,10 @@ export function MiaSidePanel({
   const [flowActive, setFlowActive] = useState(false);
   const [flowKey, setFlowKey] = useState(0);
   const [presetPlanType, setPresetPlanType] = useState<StartSignal["planType"] | null>(null);
+  const [customFlowSeed, setCustomFlowSeed] = useState<BuildPlanState | null>(null);
   const lastStartTokenRef = useRef<number | null>(null);
   const lastOptimizeTokenRef = useRef<number | null>(null);
+  const lastEditBudgetTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
   const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
@@ -253,6 +260,7 @@ export function MiaSidePanel({
   const cancelCreateFlow = useCallback(() => {
     setFlowActive(false);
     setPresetPlanType(null);
+    setCustomFlowSeed(null);
     appendMessages([
       {
         role: "mia",
@@ -275,6 +283,7 @@ export function MiaSidePanel({
     setPendingOptimizePeriod(null);
     setChatsMenuOpen(false);
     setPresetPlanType(null);
+    setCustomFlowSeed(null);
   }, []);
 
   const startCreateFlow = useCallback(
@@ -285,6 +294,7 @@ export function MiaSidePanel({
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(planType ?? null);
+      setCustomFlowSeed(null);
       setSettingUp(true);
     },
     [appendMessages]
@@ -296,6 +306,28 @@ export function MiaSidePanel({
     setMessages([]);
     startCreateFlow(PLAN_TYPE_START_LABEL[startSignal.planType], startSignal.planType);
   }, [open, startSignal, startCreateFlow]);
+
+  const startEditBudgetFlow = useCallback(
+    (seed: BuildPlanState) => {
+      setMessages([]);
+      setUploadState(null);
+      setLoadingReviewState(null);
+      setLastPlanState(null);
+      setDraft("");
+      setPresetPlanType(null);
+      setCustomFlowSeed(seed);
+      appendMessages([{ role: "mia", text: "Let's update this plan's budget." }]);
+      setFlowKey((k) => k + 1);
+      setFlowActive(true);
+    },
+    [appendMessages]
+  );
+
+  useEffect(() => {
+    if (!open || !editBudgetSignal || editBudgetSignal.token === lastEditBudgetTokenRef.current) return;
+    lastEditBudgetTokenRef.current = editBudgetSignal.token;
+    startEditBudgetFlow(editBudgetSignal.state);
+  }, [open, editBudgetSignal, startEditBudgetFlow]);
 
   const startOptimizeFlow = useCallback(
     (periodLabel: string, rows: SummaryRow[]) => {
@@ -856,7 +888,8 @@ export function MiaSidePanel({
           <MiaBuildPlanFlow
             key={flowKey}
             initialState={
-              presetPlanType ? { ...defaultBuildPlanState(), planType: presetPlanType, screen: "period" } : undefined
+              customFlowSeed ??
+              (presetPlanType ? { ...defaultBuildPlanState(), planType: presetPlanType, screen: "period" } : undefined)
             }
             onAwaitUpload={handleAwaitUpload}
             onFetchReady={handleFetchReady}

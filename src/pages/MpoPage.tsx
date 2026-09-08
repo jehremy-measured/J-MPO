@@ -19,9 +19,11 @@ import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
 import { UpdateModelDialog } from "../components/UpdateModelDialog";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
+import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
 import {
   applyMethodChoice,
+  applyUploadedBudget,
   budgetFromWindow,
   buildPlanToCreatePlanInput,
   channelsPresent,
@@ -86,6 +88,7 @@ export function MpoPage() {
     periodLabel: string;
     rows: OptimizeRow[];
   } | null>(null);
+  const [editBudgetSignal, setEditBudgetSignal] = useState<{ token: number; state: BuildPlanState } | null>(null);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
@@ -148,6 +151,10 @@ export function MpoPage() {
     }, 3000);
   };
 
+  // These two preset plans show as budget-uploaded in Plan settings (an xlsx filename under
+  // "Budget from") rather than a reference-period date range, for demo variety.
+  const UPLOAD_BUDGET_PLAN_IDS = new Set(["sim-default", "sim-q3-inflight"]);
+
   const openPlanForEdit = (planId: string) => {
     const plan = state.plans.find((p) => p.id === planId);
     if (plan?.editVariant === "sidebar") {
@@ -165,12 +172,32 @@ export function MpoPage() {
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
     seed.singleCT = "total";
+    if (UPLOAD_BUDGET_PLAN_IDS.has(planId)) {
+      const seeded = applyUploadedBudget(applyMethodChoice(seed, "upload"), BUDGET_TEMPLATE_FILENAME);
+      openBuildPlanPage(seeded, "edit");
+      return;
+    }
     const seeded = applyMethodChoice(seed, "fetch");
     // Match the reference period already shown on the plan-detail page (one year back from
     // the plan's own dates), rather than the wizard's "most recent window" default.
     seeded.sourceStart = subtractYears(plan.planStart, 1);
     seeded.budget = budgetFromWindow(seeded).budget;
     openBuildPlanPage(seeded, "edit");
+  };
+
+  // Opens the Mia panel straight to "How do you want to set your budget?", seeded from the
+  // given plan, for the Plan settings screen's "Edit" link next to Budget from.
+  const openMiaBudgetEdit = (planId: string) => {
+    const plan = state.plans.find((p) => p.id === planId);
+    if (!plan) return;
+    const seed = defaultBuildPlanState();
+    seed.planStart = plan.planStart;
+    seed.planEnd = plan.planEnd;
+    seed.target = plan.target;
+    seed.singleCT = "total";
+    seed.screen = "method";
+    setMiaOpen(true);
+    setEditBudgetSignal({ token: Date.now(), state: seed });
   };
 
   const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
@@ -251,6 +278,7 @@ export function MpoPage() {
                 onExit={() => setBuildPlanOpen(false)}
                 initialState={buildPlanSeed ?? undefined}
                 mode={buildPlanMode}
+                onEditBudgetViaMia={() => openMiaBudgetEdit(state.activePlanId)}
               />
             ) : viewMode === "list" ? (
               <>
@@ -444,6 +472,7 @@ export function MpoPage() {
           onCreatePlan={(seed) => handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create")}
           startSignal={miaStart}
           optimizeSignal={optimizeSignal}
+          editBudgetSignal={editBudgetSignal}
           onEditConstraints={() => {
             const planId = state.newPlanSummary?.planId ?? activePlan?.id;
             if (planId) openPlanForEdit(planId);
