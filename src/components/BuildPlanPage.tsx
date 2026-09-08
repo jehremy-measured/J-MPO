@@ -565,36 +565,34 @@ function ReviewScreen({
   const tblGridColumns = showWeekly
     ? `260px repeat(${weekColumns.length}, 120px) 188px`
     : "1fr 188px";
-  // Fixed-width weekly columns can overflow .tbl's own visible width; without an explicit
-  // max-content width here, each row's background stops at the viewport edge while its
-  // (still-visible) overflowing cells keep rendering past it, exposing whatever sits underneath.
-  const tblRowWidth = showWeekly ? { width: "max-content" as const } : {};
   const [scrolledX, setScrolledX] = useState(false);
   useEffect(() => {
     if (!showWeekly) setScrolledX(false);
   }, [showWeekly]);
-  // The frozen-column dividers are drawn as a background on .tbl itself, not as per-row
-  // borders -- background-attachment:scroll pins a background to the element's own box in
-  // both axes, so it renders as one continuous line spanning the table's visible height at
-  // any scroll position, rather than N separate (and potentially misaligned) per-row lines.
-  // The left divider (Tactic | first week column) only appears once something is actually
-  // scrolled underneath it; at scrollLeft 0 there's nothing hidden there yet.
-  const tblSeparatorStyle = !showWeekly
-    ? {}
-    : scrolledX
-    ? {
-        backgroundImage:
-          "linear-gradient(var(--gray-300), var(--gray-300)), linear-gradient(var(--gray-300), var(--gray-300))",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "1px 100%, 1px 100%",
-        backgroundPosition: "260px 0, right 188px top 0",
-      }
-    : {
-        backgroundImage: "linear-gradient(var(--gray-300), var(--gray-300))",
-        backgroundRepeat: "no-repeat",
-        backgroundSize: "1px 100%",
-        backgroundPosition: "right 188px top 0",
-      };
+  // The left frozen-column divider (Tactic | first week column) only appears once something
+  // is actually scrolled underneath it -- at scrollLeft 0 there's nothing hidden there yet.
+  // Applied per sticky cell (header/rows/footer) via box-shadow, same as the always-on right
+  // divider, so it lines up seamlessly row to row into what reads as a single line.
+  const leftSepStyle = scrolledX ? { boxShadow: "1px 0 0 var(--gray-300)" } : undefined;
+  // Weekly mode's wide columns need horizontal scrolling, but the outer .tbl must stay
+  // overflow:visible so its sticky header/footer keep referencing the PAGE's scroll (matching
+  // non-weekly behavior) rather than becoming their own vertical scroll container -- setting
+  // overflow-x:auto on .tbl itself would force overflow-y to auto too (a CSS rule: an element
+  // can't mix a 'visible' axis with a non-visible one), turning .tbl into an internal scrollbox.
+  // Instead, the header, each row, and the footer are each their own independent
+  // overflow-x:auto element, and their scroll positions are kept in sync here so they still
+  // read as one unified horizontally-scrolling table.
+  const tblHeadRef = useRef<HTMLDivElement | null>(null);
+  const tblFootRef = useRef<HTMLDivElement | null>(null);
+  const rowScrollRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const syncRowScroll = (scrollLeft: number, source: HTMLDivElement) => {
+    setScrolledX(scrollLeft > 0);
+    if (tblHeadRef.current && tblHeadRef.current !== source) tblHeadRef.current.scrollLeft = scrollLeft;
+    if (tblFootRef.current && tblFootRef.current !== source) tblFootRef.current.scrollLeft = scrollLeft;
+    rowScrollRefs.current.forEach((el) => {
+      if (el !== source) el.scrollLeft = scrollLeft;
+    });
+  };
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
@@ -894,25 +892,17 @@ function ReviewScreen({
         </div>
       </div>
 
-      <div
-        className={styles.tbl}
-        onScroll={showWeekly ? (e) => setScrolledX(e.currentTarget.scrollLeft > 0) : undefined}
-        style={
-          showWeekly
-            ? {
-                overflowX: "auto",
-                overflowY: "auto",
-                maxHeight: "calc(100vh - 260px)",
-                ...tblSeparatorStyle,
-              }
-            : undefined
-        }
-      >
+      <div className={styles.tbl}>
         <div
           className={styles.tblHead}
-          style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth, ...(showWeekly ? { top: 0 } : null) }}
+          ref={tblHeadRef}
+          onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
+          style={{
+            gridTemplateColumns: tblGridColumns,
+            ...(showWeekly ? { overflowX: "auto" as const } : null),
+          }}
         >
-          <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`}>
+          <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`} style={leftSepStyle}>
             <Checkbox
               checked={allVisibleIncluded}
               indeterminate={someVisibleIncluded}
@@ -968,9 +958,18 @@ function ReviewScreen({
               <div
                 key={t.id}
                 className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}
-                style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth }}
+                ref={(el) => {
+                  if (!showWeekly) return;
+                  if (el) rowScrollRefs.current.set(t.id, el);
+                  else rowScrollRefs.current.delete(t.id);
+                }}
+                onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
+                style={{
+                  gridTemplateColumns: tblGridColumns,
+                  ...(showWeekly ? { overflowX: "auto" as const } : null),
+                }}
               >
-                <div className={`${styles.tcell} ${showWeekly ? styles.tblStickyLeft : ""}`}>
+                <div className={`${styles.tcell} ${showWeekly ? styles.tblStickyLeft : ""}`} style={leftSepStyle}>
                   <Checkbox
                     checked={Boolean(included)}
                     onChange={() => flow.toggleInclude(t.id)}
@@ -1007,9 +1006,14 @@ function ReviewScreen({
         )}
         <div
           className={styles.tblFoot}
-          style={{ gridTemplateColumns: tblGridColumns, ...tblRowWidth, ...(showWeekly ? { bottom: 0 } : null) }}
+          ref={tblFootRef}
+          onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
+          style={{
+            gridTemplateColumns: tblGridColumns,
+            ...(showWeekly ? { overflowX: "auto" as const } : null),
+          }}
         >
-          <span className={showWeekly ? styles.tblStickyLeft : ""} />
+          <span className={showWeekly ? styles.tblStickyLeft : ""} style={leftSepStyle} />
           {weekColumns.map((_, i) => {
             const weekTotal = rows.reduce((sum, t) => {
               if (!state.included[t.id]) return sum;

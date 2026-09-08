@@ -991,6 +991,20 @@
   align-items: center;
 }
 
+/* In weekly view the header and each row become their own horizontal scroller (kept in sync
+ * via JS) so .tbl can stay overflow:visible for page-relative sticky positioning. Only the
+ * footer's native scrollbar stays visible, as the one interactive drag handle; the rest scroll
+ * in step with it (and still respond to trackpad/wheel scrolling directly over them). */
+.tblHead::-webkit-scrollbar,
+.trow::-webkit-scrollbar {
+  display: none;
+}
+
+.tblHead,
+.trow {
+  scrollbar-width: none;
+}
+
 .tblHead {
   position: sticky;
   top: 0;
@@ -1084,6 +1098,7 @@
 
 .tblStickyRight {
   right: 0;
+  box-shadow: -1px 0 0 var(--gray-300);
 }
 
 .tblHead .tblStickyLeft,
