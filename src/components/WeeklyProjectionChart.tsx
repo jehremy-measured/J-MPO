@@ -152,20 +152,6 @@ export function buildActualWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
   return result;
 }
 
-/** The "if everything had landed exactly on the projected pace" baseline for weeks that have
- * started — same elapsed-fraction math as buildActualWeeks, without the demo variance. Used to
- * diff actual-to-date figures against where the plan expected to be by now. */
-export function buildProjectedToDateWeeks(weeks: WeekPoint[], today: Date): WeekPoint[] {
-  const result: WeekPoint[] = [];
-  for (const w of weeks) {
-    if (isBefore(today, w.start)) break;
-    const elapsedDays = Math.min(w.days, daysBetweenInclusive(w.start, today));
-    const fraction = elapsedDays / w.days;
-    result.push({ ...w, sales: w.sales * fraction, budget: w.budget * fraction });
-  }
-  return result;
-}
-
 const MARGIN_BASE = { top: 16, right: 16, bottom: 28, left: 56 };
 
 function formatRoasTick(value: number): string {

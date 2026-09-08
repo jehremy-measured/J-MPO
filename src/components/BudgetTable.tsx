@@ -96,7 +96,7 @@ function pctOf(value: number, total: number): string {
   return `${((value / total) * 100).toFixed(1)}%`;
 }
 
-type RowDiff = { label: string; good: boolean };
+type RowActual = { value: number; good: boolean };
 
 /** Deterministic per-row variance so each row's actual-vs-plan figure looks organic without
  * jittering on every re-render — mirrors the chart's own per-week variance approach, just
@@ -107,22 +107,21 @@ const ROW_VOLUME_VARIANCE = [1.06, 0.94, 1.11, 0.9, 1.05, 0.97, 1.09, 0.93];
 
 /** Budget is a cost metric — coming in under plan is favorable — while the primary volume
  * metric reads as a magnitude to climb toward, so beating plan is favorable. */
-function rowDiff(index: number, kind: "budget" | "volume"): RowDiff {
+function rowActual(planValue: number, index: number, kind: "budget" | "volume"): RowActual {
   const variance =
     kind === "budget"
       ? ROW_BUDGET_VARIANCE[index % ROW_BUDGET_VARIANCE.length]
       : ROW_VOLUME_VARIANCE[index % ROW_VOLUME_VARIANCE.length];
-  const pct = (variance - 1) * 100;
-  const sign = pct >= 0 ? "+" : "";
+  const value = planValue * variance;
   const higherIsBetter = kind === "volume";
-  const good = higherIsBetter ? pct >= 0 : pct <= 0;
-  return { label: `${sign}${pct.toFixed(1)}%`, good };
+  const good = higherIsBetter ? value >= planValue : value <= planValue;
+  return { value, good };
 }
 
-function RowDiffTag({ diff }: { diff: RowDiff }) {
+function RowActualTag({ actual, isCount }: { actual: RowActual; isCount?: boolean }) {
   return (
-    <span className={`${styles.rowDiff} ${diff.good ? styles.rowDiffUp : styles.rowDiffDown}`}>
-      {diff.label}
+    <span className={`${styles.rowDiff} ${actual.good ? styles.rowDiffUp : styles.rowDiffDown}`}>
+      {isCount ? Math.round(actual.value).toLocaleString() : formatCurrency(actual.value)}
     </span>
   );
 }
@@ -169,6 +168,26 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
   const aggregateSecondaryValue = showOrders
     ? totalBudgetValue / (totalPrimaryValue || 1)
     : totalPrimaryValue / (totalBudgetValue || 1);
+
+  // The totals row's actual figures are the sum of whichever rows are currently displayed
+  // (channels or tactics) — each row's own actual-vs-plan variance, added up.
+  const viewRows =
+    view === "channels"
+      ? channelRows.map((row) => ({ budget: row.budget, primary: showOrders ? row.orders : row.sales }))
+      : rows.map((row) => ({
+          budget: parseCurrency(row.budget),
+          primary: parseCurrency(showOrders ? row.orders : row.sales),
+        }));
+  const totalBudgetActual = viewRows.reduce(
+    (sum, row, i) => sum + rowActual(row.budget, i, "budget").value,
+    0
+  );
+  const totalPrimaryActual = viewRows.reduce(
+    (sum, row, i) => sum + rowActual(row.primary, i, "volume").value,
+    0
+  );
+  const totalBudgetActualGood = totalBudgetActual <= totalBudgetValue;
+  const totalPrimaryActualGood = totalPrimaryActual >= totalPrimaryValue;
 
   return (
     <section className={styles.section} data-node-id="1:34016">
@@ -221,10 +240,24 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                 <strong>Total</strong>
               </td>
               <td>
-                <strong>{formatCurrency(totalBudgetValue)}</strong>
+                <div className={styles.cellStack}>
+                  <strong>{formatCurrency(totalBudgetValue)}</strong>
+                  {actualsAvailable && (
+                    <span className={`${styles.rowDiff} ${totalBudgetActualGood ? styles.rowDiffUp : styles.rowDiffDown}`}>
+                      {formatCurrency(totalBudgetActual)}
+                    </span>
+                  )}
+                </div>
               </td>
               <td>
-                <strong>{showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}</strong>
+                <div className={styles.cellStack}>
+                  <strong>{showOrders ? Math.round(totalPrimaryValue).toLocaleString() : formatCurrency(totalPrimaryValue)}</strong>
+                  {actualsAvailable && (
+                    <span className={`${styles.rowDiff} ${totalPrimaryActualGood ? styles.rowDiffUp : styles.rowDiffDown}`}>
+                      {showOrders ? Math.round(totalPrimaryActual).toLocaleString() : formatCurrency(totalPrimaryActual)}
+                    </span>
+                  )}
+                </div>
               </td>
               <td>
                 <strong>${aggregateSecondaryValue.toFixed(2)}</strong>
@@ -251,7 +284,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                         <div className={styles.cellStack}>
                           <span className={styles.value}>{formatCurrency(row.budget)}</span>
                           {actualsAvailable ? (
-                            <RowDiffTag diff={rowDiff(i, "budget")} />
+                            <RowActualTag actual={rowActual(row.budget, i, "budget")} />
                           ) : (
                             <span className={styles.pctOfTotal}>{pctOf(row.budget, totalBudgetValue)}</span>
                           )}
@@ -263,7 +296,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                             {showOrders ? Math.round(primaryValue).toLocaleString() : formatCurrency(primaryValue)}
                           </span>
                           {actualsAvailable ? (
-                            <RowDiffTag diff={rowDiff(i, "volume")} />
+                            <RowActualTag actual={rowActual(primaryValue, i, "volume")} isCount={showOrders} />
                           ) : (
                             <span className={styles.pctOfTotal}>{pctOf(primaryValue, totalPrimaryValue)}</span>
                           )}
@@ -301,7 +334,7 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                       <div className={styles.cellStack}>
                         <span className={styles.value}>{row.budget}</span>
                         {actualsAvailable ? (
-                          <RowDiffTag diff={rowDiff(i, "budget")} />
+                          <RowActualTag actual={rowActual(parseCurrency(row.budget), i, "budget")} />
                         ) : (
                           <span className={styles.pctOfTotal}>{formatPercentOfTotal(row.budget, totalBudgetValue)}</span>
                         )}
@@ -311,7 +344,10 @@ export function BudgetTable({ target, planStart, planEnd, allowActual = true }: 
                       <div className={styles.cellStack}>
                         <span className={styles.value}>{showOrders ? row.orders : row.sales}</span>
                         {actualsAvailable ? (
-                          <RowDiffTag diff={rowDiff(i, "volume")} />
+                          <RowActualTag
+                            actual={rowActual(parseCurrency(showOrders ? row.orders : row.sales), i, "volume")}
+                            isCount={showOrders}
+                          />
                         ) : (
                           <span className={styles.pctOfTotal}>
                             {formatPercentOfTotal(showOrders ? row.orders : row.sales, totalPrimaryValue)}
