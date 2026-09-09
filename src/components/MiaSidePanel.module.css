@@ -472,6 +472,27 @@
   border-color: var(--gray-500);
 }
 
+.otherOptionCard {
+  display: flex;
+  align-items: center;
+  cursor: text;
+}
+
+.otherOptionInput {
+  width: 100%;
+  border: none;
+  outline: none;
+  padding: 0;
+  background: transparent;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--gray-1000);
+}
+
+.otherOptionInput::placeholder {
+  color: var(--gray-500);
+}
+
 .planCard {
   display: flex;
   align-items: center;
@@ -738,7 +759,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 0 6px 14px;
+  padding: 6px 0;
   font-size: 12px;
   color: var(--gray-700);
   border-bottom: 1px dashed var(--gray-200);

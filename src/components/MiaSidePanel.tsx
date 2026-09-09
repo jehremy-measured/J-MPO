@@ -124,7 +124,14 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 
   useLayoutEffect(() => {
     const el = ref.current;
-    if (!el || display !== text || el.scrollWidth <= el.clientWidth) return;
+    if (!el || display !== text) return;
+
+    // Cap the subtext to the width of the value line above it (its previous sibling) so a long
+    // filename wraps into the same right-aligned column instead of stretching wider than the
+    // value it's annotating -- without this, clientWidth has no real bound to overflow against.
+    const valueEl = el.previousElementSibling as HTMLElement | null;
+    if (valueEl) el.style.maxWidth = `${valueEl.getBoundingClientRect().width}px`;
+    if (el.scrollWidth <= el.clientWidth) return;
 
     const match = text.match(/^(from )(.+)$/);
     if (!match) return;
@@ -157,7 +164,7 @@ type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
 type EditBudgetSignal = { token: number; state: BuildPlanState };
 type EditPlanSignal = { token: number; planId: string; planLabel: string; state: BuildPlanState };
-type EditChoiceId = "period" | "ct" | "budget";
+type EditChoiceId = "period" | "ct" | "budget" | "other";
 
 type Props = {
   open: boolean;
@@ -278,10 +285,12 @@ export function MiaSidePanel({
   const [editChoice, setEditChoice] = useState<EditChoiceId | null>(null);
   const [editFlowState, setEditFlowState] = useState<BuildPlanState | null>(null);
   const [editOriginalState, setEditOriginalState] = useState<BuildPlanState | null>(null);
+  const [otherChoiceText, setOtherChoiceText] = useState("");
   const resetEditPlanFlow = useCallback(() => {
     setEditingPlanId(null);
     setEditingPlanLabel(null);
     setEditFlowScreen(null);
+    setOtherChoiceText("");
     setEditChoice(null);
     setEditFlowState(null);
     setEditOriginalState(null);
@@ -433,6 +442,16 @@ export function MiaSidePanel({
 
   const handleEditChoiceNext = () => {
     if (!editChoice || !editFlowState) return;
+    if (editChoice === "other") {
+      const text = otherChoiceText.trim();
+      if (!text) return;
+      setEditFlowScreen(null);
+      setEditChoice(null);
+      setOtherChoiceText("");
+      setLastPlanState(editFlowState);
+      sendUserText(text);
+      return;
+    }
     const opt = EDIT_CHOICES.find((o) => o.id === editChoice)!;
     appendMessages([{ role: "user", text: opt.label }]);
     if (editChoice === "period") {
@@ -448,13 +467,14 @@ export function MiaSidePanel({
     setEditFlowScreen(null);
     const fileName = `${(editingPlanLabel ?? "Plan").replace(/[^\w.-]+/g, "_")}_budget.xlsx`;
     setUploadState(applyMethodChoice(editFlowState, "upload"));
+    setLastPlanState(editFlowState);
     appendMessages([
       {
         role: "mia",
         kind: "download-card",
         planState: editFlowState,
         downloadFileName: fileName,
-        text: "Download your plan's current budget, make your changes, and drop the updated file here.",
+        text: "Modify budgets in this template and reupload, or if you'd like to manually edit each one, you can type it out below and I'll make the changes.",
       },
     ]);
   };
@@ -1142,13 +1162,29 @@ export function MiaSidePanel({
                     </div>
                   </button>
                 ))}
+                <label
+                  className={`${flowStyles.methodCard} ${styles.otherOptionCard} ${
+                    editChoice === "other" ? flowStyles.methodCardSelected : ""
+                  }`}
+                >
+                  <input
+                    type="text"
+                    className={styles.otherOptionInput}
+                    placeholder="Something else…"
+                    value={otherChoiceText}
+                    onChange={(e) => {
+                      setOtherChoiceText(e.target.value);
+                      setEditChoice(e.target.value.trim() ? "other" : null);
+                    }}
+                  />
+                </label>
               </div>
             </div>
             <div className={flowStyles.turnActions}>
               <button
                 type="button"
                 className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
-                disabled={!editChoice}
+                disabled={!editChoice || (editChoice === "other" && !otherChoiceText.trim())}
                 onClick={handleEditChoiceNext}
               >
                 Next
