@@ -58,6 +58,10 @@ type Message = {
   /** plan-ready-card only: when set, this card is finishing an edit to an EXISTING plan (id),
    * so its action reads "Update plan" and calls onUpdatePlan instead of "Create plan"/onCreatePlan. */
   updateTargetPlanId?: string;
+  /** plan-ready-card only: "channel" (default) shows the expandable channel -> tactic budget
+   * table; "tactic" shows a flat, ungrouped tactic budget table instead -- used when the
+   * uploaded budget file was a per-tactic file rather than a per-channel one. */
+  summaryMode?: "channel" | "tactic";
 };
 
 type Prompt =
@@ -258,6 +262,7 @@ export function MiaSidePanel({
     intro: string;
     updateTargetPlanId?: string;
     delayMs?: number;
+    summaryMode?: "channel" | "tactic";
   } | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -297,6 +302,7 @@ export function MiaSidePanel({
         rows?: SummaryRow[];
         downloadFileName?: string;
         updateTargetPlanId?: string;
+        summaryMode?: "channel" | "tactic";
       }[]
     ) => {
       setMessages((prev) => [
@@ -311,6 +317,7 @@ export function MiaSidePanel({
           rows: item.rows,
           downloadFileName: item.downloadFileName,
           updateTargetPlanId: item.updateTargetPlanId,
+          summaryMode: item.summaryMode,
         })),
       ]);
     },
@@ -554,7 +561,7 @@ export function MiaSidePanel({
 
   useEffect(() => {
     if (!pendingReview) return;
-    const { state: reviewState, intro, updateTargetPlanId, delayMs } = pendingReview;
+    const { state: reviewState, intro, updateTargetPlanId, delayMs, summaryMode } = pendingReview;
     const timer = window.setTimeout(() => {
       setPendingReview(null);
       setLastPlanState(reviewState);
@@ -567,6 +574,7 @@ export function MiaSidePanel({
           planState: reviewState,
           rows: planSummaryRows(reviewState),
           updateTargetPlanId,
+          summaryMode,
         },
       ]);
     }, delayMs ?? 5000);
@@ -683,12 +691,20 @@ export function MiaSidePanel({
     setIsDragOver(false);
     appendMessages([{ role: "user", text: file.name || BUDGET_TEMPLATE_FILENAME }]);
     const targetPlanId = editingPlanId ?? undefined;
+    // Channel-level budget files (name contains "channel") keep the full channel-wise
+    // breakdown and the redistribution caveats; anything else is treated as a per-tactic
+    // file, whose values are already final -- so no redistribution notes, and the summary
+    // table lists tactics directly instead of grouping them under channels.
+    const isChannelBudgetFile = /channel/i.test(file.name);
     setPendingReview({
       state: reviewState,
-      intro: targetPlanId
-        ? "The plan's budget has been updated. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'update plan' to confirm, or you can tell me if you want to make changes to the plan."
-        : "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan.",
+      intro: isChannelBudgetFile
+        ? targetPlanId
+          ? "The plan's budget has been updated. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'update plan' to confirm, or you can tell me if you want to make changes to the plan."
+          : "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan."
+        : "Your plan is ready for review.",
       updateTargetPlanId: targetPlanId,
+      summaryMode: isChannelBudgetFile ? "channel" : "tactic",
     });
   };
 
@@ -919,7 +935,39 @@ export function MiaSidePanel({
                   ))}
                 </dl>
               )}
-              {msg.planState && (() => {
+              {msg.planState && msg.summaryMode === "tactic" && (() => {
+                const tacticRows = channelBudgetRows(msg.planState)
+                  .flatMap((row) => row.tactics)
+                  .sort((a, b) => b.value - a.value);
+                const isExpanded = expandedSummaryCards.has(msg.id);
+                return (
+                  <>
+                    <div className={styles.readyCardDivider} />
+                    <div className={styles.channelBudgetHeader}>
+                      <span>Tactic</span>
+                      <span>Budget</span>
+                    </div>
+                    <div
+                      className={`${styles.channelBudgetWrap} ${
+                        !isExpanded ? styles.channelBudgetClipped : ""
+                      }`}
+                    >
+                      <div className={styles.channelBudgetTable}>
+                        {tacticRows.map((t) => (
+                          <div key={t.name} className={styles.channelBudgetRow}>
+                            <span className={styles.channelBudgetChannelName}>{t.name}</span>
+                            <span className={styles.channelBudgetValue}>
+                              {currencyFormatter.format(t.value)}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                      {!isExpanded && <div className={styles.channelBudgetFade} aria-hidden />}
+                    </div>
+                  </>
+                );
+              })()}
+              {msg.planState && msg.summaryMode !== "tactic" && (() => {
                 const channelRows = channelBudgetRows(msg.planState);
                 const isExpanded = expandedSummaryCards.has(msg.id);
                 return (
