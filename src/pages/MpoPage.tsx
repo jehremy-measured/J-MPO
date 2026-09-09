@@ -89,6 +89,12 @@ export function MpoPage() {
     rows: OptimizeRow[];
   } | null>(null);
   const [editBudgetSignal, setEditBudgetSignal] = useState<{ token: number; state: BuildPlanState } | null>(null);
+  const [editPlanSignal, setEditPlanSignal] = useState<{
+    token: number;
+    planId: string;
+    planLabel: string;
+    state: BuildPlanState;
+  } | null>(null);
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
@@ -197,6 +203,48 @@ export function MpoPage() {
     seed.singleCT = "total";
     setMiaOpen(true);
     setEditBudgetSignal({ token: Date.now(), state: seed });
+  };
+
+  // Plans that support editing conversationally through Mia (the "Edit" link + sparkle icon)
+  // instead of the full-page "Plan settings" modal: any plan Mia herself just created, plus
+  // this one preset demo plan, for variety.
+  const MIA_EDIT_PLAN_IDS = new Set(["sim-q3-inflight"]);
+  const isMiaEditPlan = (planId: string) => planId.startsWith("mia-") || MIA_EDIT_PLAN_IDS.has(planId);
+
+  // Opens the Mia panel straight to "What would you like to change?" (planning period /
+  // conversion type / budgets), seeded from the given plan -- the detail page's "Edit" link
+  // for plans in isMiaEditPlan.
+  const openMiaEditPlan = (planId: string) => {
+    const plan = state.plans.find((p) => p.id === planId);
+    if (!plan) return;
+    const stored = planBuildStates[planId];
+    let seed: BuildPlanState;
+    if (stored) {
+      seed = stored;
+    } else {
+      const base = defaultBuildPlanState();
+      base.planStart = plan.planStart;
+      base.planEnd = plan.planEnd;
+      base.target = plan.target;
+      base.singleCT = "total";
+      if (UPLOAD_BUDGET_PLAN_IDS.has(planId)) {
+        seed = applyUploadedBudget(applyMethodChoice(base, "upload"), BUDGET_TEMPLATE_FILENAME);
+      } else {
+        const seeded = applyMethodChoice(base, "fetch");
+        seeded.sourceStart = subtractYears(plan.planStart, 1);
+        seeded.budget = budgetFromWindow(seeded).budget;
+        seed = seeded;
+      }
+    }
+    setMiaOpen(true);
+    setEditPlanSignal({ token: Date.now(), planId, planLabel: plan.label, state: seed });
+  };
+
+  const handleUpdatePlan = (rawState: BuildPlanState, planId: string) => {
+    const input = buildPlanToCreatePlanInput(rawState);
+    state.updatePlan(planId, input);
+    setPlanBuildStates((prev) => ({ ...prev, [planId]: { ...rawState, screen: "review" } }));
+    setViewMode("detail");
   };
 
   const sidebarEditPlan = sidebarEditPlanId ? state.plans.find((p) => p.id === sidebarEditPlanId) ?? null : null;
@@ -374,7 +422,12 @@ export function MpoPage() {
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
-                        onEditPlan={() => openPlanForEdit(state.newPlanSummary!.planId)}
+                        editVariant={isMiaEditPlan(state.newPlanSummary.planId) ? "mia" : "settings"}
+                        onEditPlan={() =>
+                          isMiaEditPlan(state.newPlanSummary!.planId)
+                            ? openMiaEditPlan(state.newPlanSummary!.planId)
+                            : openPlanForEdit(state.newPlanSummary!.planId)
+                        }
                       />
                       <PlanOverviewCard
                         planStart={state.newPlanSummary.planStart}
@@ -412,7 +465,10 @@ export function MpoPage() {
                         channelsLabel={channelsLabelFor(state.channelCount)}
                         budgetSourceLabel={state.referencePeriod}
                         tacticsIncluded={state.tactics.length}
-                        onEditPlan={() => openPlanForEdit(activePlan.id)}
+                        editVariant={isMiaEditPlan(activePlan.id) ? "mia" : "settings"}
+                        onEditPlan={() =>
+                          isMiaEditPlan(activePlan.id) ? openMiaEditPlan(activePlan.id) : openPlanForEdit(activePlan.id)
+                        }
                       />
                       <PlanOverviewCard
                         planStart={activePlan.planStart}
@@ -469,9 +525,11 @@ export function MpoPage() {
           onClose={() => setMiaOpen(false)}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
           onCreatePlan={(seed) => handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create")}
+          onUpdatePlan={handleUpdatePlan}
           startSignal={miaStart}
           optimizeSignal={optimizeSignal}
           editBudgetSignal={editBudgetSignal}
+          editPlanSignal={editPlanSignal}
           onEditConstraints={() => {
             const planId = state.newPlanSummary?.planId ?? activePlan?.id;
             if (planId) openPlanForEdit(planId);

@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState } from "react";
 import { EditIcon } from "./icons/BuildPlanIcons";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./PlanInfoBar.module.css";
 
 type Props = {
@@ -9,6 +10,10 @@ type Props = {
   budgetSourceLabel: string;
   tacticsIncluded: number;
   onEditPlan?: () => void;
+  /** "settings" (default): the plain "Plan settings" link, opening the full-page edit modal.
+   * "mia": an "Edit" link with the Mia sparkle icon, opening the Mia panel's edit-plan flow
+   * instead -- used for plans that support editing conversationally. */
+  editVariant?: "settings" | "mia";
 };
 
 export function PlanInfoBar({
@@ -18,7 +23,11 @@ export function PlanInfoBar({
   budgetSourceLabel,
   tacticsIncluded,
   onEditPlan,
+  editVariant = "settings",
 }: Props) {
+  const isMiaEdit = editVariant === "mia";
+  const editLabel = isMiaEdit ? "Edit" : "Plan settings";
+  const EditGlyph = isMiaEdit ? SparkleIcon : EditIcon;
   const containerRef = useRef<HTMLDivElement>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   // Collapses the "Plan settings" label to icon-only once the items no longer fit at full
@@ -74,8 +83,8 @@ export function PlanInfoBar({
         </div>
         <div className={styles.actions}>
           <span className={styles.editLink}>
-            <EditIcon size={18} />
-            <span>Plan settings</span>
+            <EditGlyph size={18} />
+            <span>{editLabel}</span>
           </span>
         </div>
       </div>
@@ -91,8 +100,8 @@ export function PlanInfoBar({
       <div className={styles.actions}>
         {onEditPlan && (
           <button type="button" className={styles.editLink} onClick={onEditPlan}>
-            <EditIcon size={18} />
-            {!compact && "Plan settings"}
+            <EditGlyph size={18} />
+            {!compact && editLabel}
           </button>
         )}
       </div>

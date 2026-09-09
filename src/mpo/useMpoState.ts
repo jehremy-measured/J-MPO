@@ -252,6 +252,40 @@ export function useMpoState() {
     [activePlanId, applySnapshot, currentSnapshot, notify, plans]
   );
 
+  /** Applies a re-run of the guided flow back onto an EXISTING plan (rather than creating a
+   * new one) -- used by Mia's "Update plan" action when a plan's period, conversion type, or
+   * budget is edited after the fact. */
+  const updatePlan = useCallback(
+    (id: string, input: CreatePlanInput) => {
+      if (id === activePlanId) {
+        setPlanData((prev) => ({ ...prev, [activePlanId]: currentSnapshot() }));
+      }
+
+      const snapshot = snapshotFromInput(input);
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                target: input.target,
+                targetValue: input.targetValue ?? undefined,
+                planStart: input.planStart,
+                planEnd: input.planEnd,
+                lastEdited: new Date(),
+              }
+            : p
+        )
+      );
+      setPlanData((prev) => ({ ...prev, [id]: snapshot }));
+      if (id === activePlanId) {
+        applySnapshot(snapshot);
+      }
+      const label = plans.find((p) => p.id === id)?.label ?? "plan";
+      notify(`Updated "${label}"`);
+    },
+    [activePlanId, applySnapshot, currentSnapshot, notify, plans]
+  );
+
   const duplicatePlan = useCallback(
     (id: string, label?: string, modelDate?: string) => {
       const source = plans.find((p) => p.id === id);
@@ -395,6 +429,7 @@ export function useMpoState() {
     activePlanLabel,
     selectPlan,
     createPlan,
+    updatePlan,
     duplicatePlan,
     deletePlan,
     renamePlan,

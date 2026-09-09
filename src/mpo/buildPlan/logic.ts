@@ -24,6 +24,7 @@ import {
 } from "./data";
 import { addDays, daysBetweenInclusive, formatRangeLabel, isSameDay, subtractYears } from "./dateUtils";
 import type { BuildPlanState, BuildTactic, SourceWindow } from "./types";
+import { downloadXlsx } from "./xlsxWriter";
 
 export function planDaysFor(state: BuildPlanState): number {
   return daysBetweenInclusive(state.planStart, state.planEnd);
@@ -68,6 +69,22 @@ export function budgetFromWindow(
     budget[t.id] = t.dormant ? 0 : Math.round(DAILY_RATE[t.id] * n);
   });
   return { budget, window };
+}
+
+/** Proportionally rescales every tactic's budget so the plan's total spend matches a new
+ * planning period's length in days (doubling the date range doubles every tactic's budget),
+ * preserving each tactic's relative share -- used when an existing plan's period is edited
+ * after the fact, rather than re-deriving totals from the generic reference-period daily rate
+ * (which reflects the wizard's own reference data, not this plan's actual chosen budgets). */
+export function rescaleBudgetToNewPeriod(prevState: BuildPlanState, nextState: BuildPlanState): BuildPlanState {
+  const prevDays = planDaysFor(prevState);
+  const nextDays = planDaysFor(nextState);
+  const scale = prevDays > 0 ? nextDays / prevDays : 1;
+  const budget: Record<string, number | null> = {};
+  Object.entries(prevState.budget).forEach(([id, v]) => {
+    budget[id] = v == null ? v : Math.round(v * scale);
+  });
+  return { ...nextState, budget, overridden: {} };
 }
 
 export function budgetFromUpload(): Record<string, number | null> {
@@ -469,4 +486,15 @@ export async function downloadBudgetTemplate(): Promise<void> {
   a.download = BUDGET_TEMPLATE_FILENAME;
   a.click();
   URL.revokeObjectURL(a.href);
+}
+
+/** Builds and downloads a real .xlsx populated with this plan's current tactic/channel budgets
+ * (unlike downloadBudgetTemplate, which always hands out the same static reference file) --
+ * used when a user asks to change an existing plan's budget, so what they get to edit already
+ * reflects the plan as it stands. */
+export async function downloadPlanBudgetFile(state: BuildPlanState, fileName: string): Promise<void> {
+  const rows = channelBudgetRows(state).flatMap((row) =>
+    row.tactics.map((t): (string | number)[] => [row.channel, t.name, t.value])
+  );
+  await downloadXlsx(fileName, "Budget", ["Channel", "Tactic", "Budget"], rows);
 }

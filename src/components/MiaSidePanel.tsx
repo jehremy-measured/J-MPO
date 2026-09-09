@@ -1,19 +1,28 @@
 import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState, type DragEvent } from "react";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
+import { CT_GROUPS } from "../mpo/buildPlan/data";
 import { currencyFormatter } from "../mpo/buildPlan/data";
 import {
   applyMethodChoice,
   applyUploadedBudget,
   channelBudgetRows,
+  ctSummary,
   downloadBudgetTemplate,
+  downloadPlanBudgetFile,
+  formatAttrLabels,
   includedCount,
   includedTotal,
   parsePlanRevision,
   periodLabel,
+  planDaysFor,
   planSummaryRows,
+  rescaleBudgetToNewPeriod,
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
+import { CalendarRangePicker } from "./CalendarRangePicker";
+import { Checkbox } from "./Checkbox";
+import { RollupHint } from "./RollupHint";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
 import {
@@ -23,10 +32,12 @@ import {
   ExpandIcon,
   FileIcon,
 } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./MiaSidePanel.module.css";
+import flowStyles from "./mia-build-flow/MiaBuildPlanFlow.module.css";
 
 const SETUP_DELAY_MS = 1600;
 const CONSTRAINTS_DELAY_MS = 2000;
@@ -41,6 +52,12 @@ type Message = {
   subtext?: string;
   planState?: BuildPlanState;
   rows?: SummaryRow[];
+  /** download-card only: overrides the shown/downloaded filename (defaults to the generic
+   * template's name) -- used when the file is populated with a specific plan's own budget. */
+  downloadFileName?: string;
+  /** plan-ready-card only: when set, this card is finishing an edit to an EXISTING plan (id),
+   * so its action reads "Update plan" and calls onUpdatePlan instead of "Create plan"/onCreatePlan. */
+  updateTargetPlanId?: string;
 };
 
 type Prompt =
@@ -135,12 +152,17 @@ function BudgetSourceSubtext({ text }: { text: string }) {
 type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
 type EditBudgetSignal = { token: number; state: BuildPlanState };
+type EditPlanSignal = { token: number; planId: string; planLabel: string; state: BuildPlanState };
+type EditChoiceId = "period" | "ct" | "budget";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onEditInMainFlow: (state: BuildPlanState) => void;
   onCreatePlan: (state: BuildPlanState) => void;
+  /** Applies a finished edit back onto an existing plan (by id) instead of creating a new one —
+   * used by the edit-plan flow's "Update plan" action. */
+  onUpdatePlan?: (state: BuildPlanState, planId: string) => void;
   startSignal?: StartSignal | null;
   /** Triggers the lighter "optimize an existing plan" flow — skips the guided create-plan
    * wizard entirely and goes straight to a constraints-setting loading state, then a review
@@ -149,9 +171,20 @@ type Props = {
   /** Jumps the guided flow straight to its "how do you want to set your budget" step, seeded
    * from an existing plan — used by Plan settings' "Edit" link next to Budget from. */
   editBudgetSignal?: EditBudgetSignal | null;
+  /** Opens the "What would you like to change?" edit-plan chooser (planning period / conversion
+   * type / budgets), seeded from an existing plan — used by the plan detail page's "Edit" link
+   * for plans that support conversational editing (newly Mia-created plans, and a couple of the
+   * preset demo plans). */
+  editPlanSignal?: EditPlanSignal | null;
   onEditConstraints?: () => void;
   onOptimizePlan?: () => void;
 };
+
+const EDIT_CHOICES: { id: EditChoiceId; iconName: string; label: string; desc: string }[] = [
+  { id: "period", iconName: "calendar_month", label: "Planning period", desc: "Change the date range for this plan" },
+  { id: "ct", iconName: "target", label: "Conversion type", desc: "Change what counts as a conversion" },
+  { id: "budget", iconName: "upload", label: "Budgets", desc: "Upload a new tactic/channel budget file" },
+];
 
 const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
   outcomes: "Simulate a plan",
@@ -163,9 +196,11 @@ export function MiaSidePanel({
   onClose,
   onEditInMainFlow,
   onCreatePlan,
+  onUpdatePlan,
   startSignal,
   optimizeSignal,
   editBudgetSignal,
+  editPlanSignal,
   onEditConstraints,
   onOptimizePlan,
 }: Props) {
@@ -218,7 +253,12 @@ export function MiaSidePanel({
   const lastOptimizeTokenRef = useRef<number | null>(null);
   const lastEditBudgetTokenRef = useRef<number | null>(null);
   const [uploadState, setUploadState] = useState<BuildPlanState | null>(null);
-  const [loadingReviewState, setLoadingReviewState] = useState<BuildPlanState | null>(null);
+  const [pendingReview, setPendingReview] = useState<{
+    state: BuildPlanState;
+    intro: string;
+    updateTargetPlanId?: string;
+    delayMs?: number;
+  } | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [settingUp, setSettingUp] = useState(false);
@@ -226,6 +266,21 @@ export function MiaSidePanel({
   const [pendingOptimizeRows, setPendingOptimizeRows] = useState<SummaryRow[] | null>(null);
   const [pendingOptimizePeriod, setPendingOptimizePeriod] = useState<string | null>(null);
   const [chatsMenuOpen, setChatsMenuOpen] = useState(false);
+  const lastEditPlanTokenRef = useRef<number | null>(null);
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [editingPlanLabel, setEditingPlanLabel] = useState<string | null>(null);
+  const [editFlowScreen, setEditFlowScreen] = useState<"choice" | "period" | "ct" | null>(null);
+  const [editChoice, setEditChoice] = useState<EditChoiceId | null>(null);
+  const [editFlowState, setEditFlowState] = useState<BuildPlanState | null>(null);
+  const [editOriginalState, setEditOriginalState] = useState<BuildPlanState | null>(null);
+  const resetEditPlanFlow = useCallback(() => {
+    setEditingPlanId(null);
+    setEditingPlanLabel(null);
+    setEditFlowScreen(null);
+    setEditChoice(null);
+    setEditFlowState(null);
+    setEditOriginalState(null);
+  }, []);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -240,6 +295,8 @@ export function MiaSidePanel({
         subtext?: string;
         planState?: BuildPlanState;
         rows?: SummaryRow[];
+        downloadFileName?: string;
+        updateTargetPlanId?: string;
       }[]
     ) => {
       setMessages((prev) => [
@@ -252,6 +309,8 @@ export function MiaSidePanel({
           subtext: item.subtext,
           planState: item.planState,
           rows: item.rows,
+          downloadFileName: item.downloadFileName,
+          updateTargetPlanId: item.updateTargetPlanId,
         })),
       ]);
     },
@@ -273,7 +332,7 @@ export function MiaSidePanel({
   const resetToHome = useCallback(() => {
     setFlowActive(false);
     setUploadState(null);
-    setLoadingReviewState(null);
+    setPendingReview(null);
     setLastPlanState(null);
     setMessages([]);
     setDraft("");
@@ -285,20 +344,22 @@ export function MiaSidePanel({
     setChatsMenuOpen(false);
     setPresetPlanType(null);
     setCustomFlowSeed(null);
-  }, []);
+    resetEditPlanFlow();
+  }, [resetEditPlanFlow]);
 
   const startCreateFlow = useCallback(
     (userText?: string, planType?: StartSignal["planType"]) => {
       if (userText) appendMessages([{ role: "user", text: userText }]);
       setUploadState(null);
-      setLoadingReviewState(null);
+      setPendingReview(null);
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(planType ?? null);
       setCustomFlowSeed(null);
+      resetEditPlanFlow();
       setSettingUp(true);
     },
-    [appendMessages]
+    [appendMessages, resetEditPlanFlow]
   );
 
   useEffect(() => {
@@ -314,19 +375,20 @@ export function MiaSidePanel({
       // re-uploading a budget always means uploading a file, so go straight to a drop-file
       // prompt (no template-download card, since the user already has a file to re-upload).
       setMessages([]);
-      setLoadingReviewState(null);
+      setPendingReview(null);
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(null);
       setCustomFlowSeed(null);
       setFlowActive(false);
+      resetEditPlanFlow();
       setUploadState(applyMethodChoice(seed, "upload"));
       appendMessages([
         { role: "mia", text: "Let's update this plan's budget." },
         { role: "mia", text: "Re-upload your budget file here." },
       ]);
     },
-    [appendMessages]
+    [appendMessages, resetEditPlanFlow]
   );
 
   useEffect(() => {
@@ -335,20 +397,110 @@ export function MiaSidePanel({
     startEditBudgetFlow(editBudgetSignal.state);
   }, [open, editBudgetSignal, startEditBudgetFlow]);
 
+  const startEditPlanFlow = useCallback(
+    (planId: string, planLabel: string, seed: BuildPlanState) => {
+      setMessages([]);
+      setUploadState(null);
+      setPendingReview(null);
+      setLastPlanState(null);
+      setDraft("");
+      setPresetPlanType(null);
+      setCustomFlowSeed(null);
+      setFlowActive(false);
+      setEditingPlanId(planId);
+      setEditingPlanLabel(planLabel);
+      setEditFlowState(seed);
+      setEditOriginalState(seed);
+      setEditChoice(null);
+      setEditFlowScreen("choice");
+      appendMessages([{ role: "mia", text: "What would you like to change?" }]);
+    },
+    [appendMessages]
+  );
+
+  useEffect(() => {
+    if (!open || !editPlanSignal || editPlanSignal.token === lastEditPlanTokenRef.current) return;
+    lastEditPlanTokenRef.current = editPlanSignal.token;
+    startEditPlanFlow(editPlanSignal.planId, editPlanSignal.planLabel, editPlanSignal.state);
+  }, [open, editPlanSignal, startEditPlanFlow]);
+
+  const handleEditChoiceNext = () => {
+    if (!editChoice || !editFlowState) return;
+    const opt = EDIT_CHOICES.find((o) => o.id === editChoice)!;
+    appendMessages([{ role: "user", text: opt.label }]);
+    if (editChoice === "period") {
+      setEditFlowScreen("period");
+      appendMessages([{ role: "mia", text: "What period would you like to plan for?" }]);
+      return;
+    }
+    if (editChoice === "ct") {
+      setEditFlowScreen("ct");
+      appendMessages([{ role: "mia", text: "Select a new conversion type." }]);
+      return;
+    }
+    setEditFlowScreen(null);
+    const fileName = `${(editingPlanLabel ?? "Plan").replace(/[^\w.-]+/g, "_")}_budget.xlsx`;
+    setUploadState(applyMethodChoice(editFlowState, "upload"));
+    appendMessages([
+      {
+        role: "mia",
+        kind: "download-card",
+        planState: editFlowState,
+        downloadFileName: fileName,
+        text: "Download your plan's current budget, make your changes, and drop the updated file here.",
+      },
+    ]);
+  };
+
+  const handlePeriodNext = () => {
+    if (!editFlowState || !editOriginalState) return;
+    const answer = `${periodLabel(editFlowState)} · ${planDaysFor(editFlowState)} days`;
+    appendMessages([{ role: "user", text: answer }]);
+    const rescaled = rescaleBudgetToNewPeriod(editOriginalState, editFlowState);
+    const targetPlanId = editingPlanId ?? undefined;
+    setEditFlowScreen(null);
+    setEditFlowState(null);
+    setEditOriginalState(null);
+    setPendingReview({
+      state: rescaled,
+      intro: "The period has been updated and budgets have been redistributed to match the new period.",
+      updateTargetPlanId: targetPlanId,
+      delayMs: 1200,
+    });
+  };
+
+  const handleCtNext = () => {
+    if (!editFlowState) return;
+    const { label: ctLabel, attrLabels } = ctSummary(editFlowState);
+    const answer = attrLabels.length ? formatAttrLabels(attrLabels) : ctLabel;
+    appendMessages([{ role: "user", text: answer }]);
+    const nextState = editFlowState;
+    const targetPlanId = editingPlanId ?? undefined;
+    setEditFlowScreen(null);
+    setEditFlowState(null);
+    setPendingReview({
+      state: nextState,
+      intro: `Conversion type has been updated to ${answer}.`,
+      updateTargetPlanId: targetPlanId,
+      delayMs: 1200,
+    });
+  };
+
   const startOptimizeFlow = useCallback(
     (periodLabel: string, rows: SummaryRow[]) => {
       appendMessages([{ role: "user", text: "Optimize this plan" }]);
       setFlowActive(false);
       setUploadState(null);
-      setLoadingReviewState(null);
+      setPendingReview(null);
       setLastPlanState(null);
       setDraft("");
       setPresetPlanType(null);
+      resetEditPlanFlow();
       setPendingOptimizePeriod(periodLabel);
       setPendingOptimizeRows(rows);
       setSettingConstraints(true);
     },
-    [appendMessages]
+    [appendMessages, resetEditPlanFlow]
   );
 
   useEffect(() => {
@@ -401,33 +553,31 @@ export function MiaSidePanel({
   }, [settingConstraints, pendingOptimizeRows, pendingOptimizePeriod, appendMessages]);
 
   useEffect(() => {
-    if (!loadingReviewState) return;
-    const reviewState = loadingReviewState;
+    if (!pendingReview) return;
+    const { state: reviewState, intro, updateTargetPlanId, delayMs } = pendingReview;
     const timer = window.setTimeout(() => {
-      setLoadingReviewState(null);
+      setPendingReview(null);
       setLastPlanState(reviewState);
       appendMessages([
-        {
-          role: "mia",
-          text: "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan.",
-        },
+        { role: "mia", text: intro },
         {
           role: "mia",
           kind: "plan-ready-card",
           text: `${periodLabel(reviewState)} plan`,
           planState: reviewState,
           rows: planSummaryRows(reviewState),
+          updateTargetPlanId,
         },
       ]);
-    }, 5000);
+    }, delayMs ?? 5000);
     return () => window.clearTimeout(timer);
-  }, [loadingReviewState, appendMessages]);
+  }, [pendingReview, appendMessages]);
 
   useEffect(() => {
     if (!open) {
       setFlowActive(false);
       setUploadState(null);
-      setLoadingReviewState(null);
+      setPendingReview(null);
       setLastPlanState(null);
       setDraft("");
       setIsTyping(false);
@@ -437,6 +587,7 @@ export function MiaSidePanel({
       setPendingOptimizePeriod(null);
       setChatsMenuOpen(false);
       setPresetPlanType(null);
+      resetEditPlanFlow();
       return;
     }
 
@@ -451,7 +602,7 @@ export function MiaSidePanel({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, flowActive, cancelCreateFlow]);
+  }, [open, flowActive, cancelCreateFlow, resetEditPlanFlow]);
 
   useEffect(() => {
     if (!chatsMenuOpen) return;
@@ -531,7 +682,14 @@ export function MiaSidePanel({
     setUploadState(null);
     setIsDragOver(false);
     appendMessages([{ role: "user", text: file.name || BUDGET_TEMPLATE_FILENAME }]);
-    setLoadingReviewState(reviewState);
+    const targetPlanId = editingPlanId ?? undefined;
+    setPendingReview({
+      state: reviewState,
+      intro: targetPlanId
+        ? "The plan's budget has been updated. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'update plan' to confirm, or you can tell me if you want to make changes to the plan."
+        : "Your plan is ready. Few things to note:\n\n* The uploaded budget will be split equally week over week\n* Budgets for tactics under each channel have been distributed based on past spend data\n\nClick on 'create plan' to confirm, or you can tell me if you want to make changes to the plan.",
+      updateTargetPlanId: targetPlanId,
+    });
   };
 
   const sendUserText = (text: string) => {
@@ -699,12 +857,16 @@ export function MiaSidePanel({
                 <span className={styles.downloadCardIcon} aria-hidden>
                   <FileIcon size={16} />
                 </span>
-                <span className={styles.downloadCardLabel}>{BUDGET_TEMPLATE_FILENAME}</span>
+                <span className={styles.downloadCardLabel}>{msg.downloadFileName ?? BUDGET_TEMPLATE_FILENAME}</span>
                 <button
                   type="button"
                   className={styles.downloadCardBtn}
-                  aria-label="Download template"
-                  onClick={downloadBudgetTemplate}
+                  aria-label="Download budget file"
+                  onClick={() =>
+                    msg.planState
+                      ? downloadPlanBudgetFile(msg.planState, msg.downloadFileName ?? BUDGET_TEMPLATE_FILENAME)
+                      : downloadBudgetTemplate()
+                  }
                 >
                   <DownloadIcon size={20} />
                 </button>
@@ -807,9 +969,13 @@ export function MiaSidePanel({
                 <button
                   type="button"
                   className={`${styles.rcBtn} ${styles.rcBtnPrimary}`}
-                  onClick={() => msg.planState && onCreatePlan(msg.planState)}
+                  onClick={() => {
+                    if (!msg.planState) return;
+                    if (msg.updateTargetPlanId) onUpdatePlan?.(msg.planState, msg.updateTargetPlanId);
+                    else onCreatePlan(msg.planState);
+                  }}
                 >
-                  Create plan
+                  {msg.updateTargetPlanId ? "Update plan" : "Create plan"}
                 </button>
               </div>
             </div>
@@ -908,7 +1074,118 @@ export function MiaSidePanel({
           />
         )}
 
-        {loadingReviewState && (
+        {editFlowScreen === "choice" && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <div className={flowStyles.methods}>
+                {EDIT_CHOICES.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`${flowStyles.methodCard} ${editChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
+                    onClick={() => setEditChoice(opt.id)}
+                  >
+                    <div className={flowStyles.methodIcon}>
+                      <MaterialIcon name={opt.iconName} size={20} />
+                    </div>
+                    <div>
+                      <h4>{opt.label}</h4>
+                      <p>{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!editChoice}
+                onClick={handleEditChoiceNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {editFlowScreen === "period" && editFlowState && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <CalendarRangePicker
+                start={editFlowState.planStart}
+                end={editFlowState.planEnd}
+                onChange={(s, e) => setEditFlowState({ ...editFlowState, planStart: s, planEnd: e })}
+                panels={1}
+              />
+            </div>
+            <div className={flowStyles.turnActions}>
+              <span className={flowStyles.dayCount}>
+                {periodLabel(editFlowState)} · {planDaysFor(editFlowState)} days
+              </span>
+              <button type="button" className={`${flowStyles.btn} ${flowStyles.btnPrimary}`} onClick={handlePeriodNext}>
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {editFlowScreen === "ct" && editFlowState && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              {CT_GROUPS.map((group) => (
+                <div className={flowStyles.group} key={group.group}>
+                  <p className={flowStyles.groupLabel}>{group.label}</p>
+                  {group.items.map((item) => {
+                    const selected =
+                      group.selectionType === "single"
+                        ? editFlowState.singleCT === item.id
+                        : editFlowState.attrs.includes(item.id);
+                    const onSelect = () => {
+                      if (group.selectionType === "single") {
+                        setEditFlowState({ ...editFlowState, singleCT: item.id, attrs: [] });
+                      } else {
+                        const attrs = editFlowState.attrs.includes(item.id)
+                          ? editFlowState.attrs.filter((a) => a !== item.id)
+                          : [...editFlowState.attrs, item.id];
+                        setEditFlowState({ ...editFlowState, attrs, singleCT: null });
+                      }
+                    };
+                    return (
+                      <label key={item.id} className={flowStyles.optRow}>
+                        {group.selectionType === "single" ? (
+                          <input
+                            type="radio"
+                            name="mia-edit-ct-group"
+                            className={flowStyles.optInput}
+                            checked={selected}
+                            onChange={onSelect}
+                          />
+                        ) : (
+                          <Checkbox checked={selected} onChange={onSelect} />
+                        )}
+                        <span className={flowStyles.optTitle}>{item.name}</span>
+                        <RollupHint item={item} />
+                      </label>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!editFlowState.singleCT && editFlowState.attrs.length === 0}
+                onClick={handleCtNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {pendingReview && (
           <div className={styles.thinkingRow}>
             <span className={styles.thinkingChevron} aria-hidden>
               <ChevronDownIcon size={14} />
