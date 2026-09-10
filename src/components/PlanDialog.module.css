@@ -270,8 +270,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 2px;
+  padding: 6px 0;
   cursor: pointer;
+}
+
+.budgetOptionRow .radioInput {
+  margin: 0;
 }
 
 .budgetOptionLabel {
