@@ -306,7 +306,7 @@
 
 .budgetDivider {
   height: 1px;
-  margin: 4px 2px 16px;
+  margin: 10px 2px 16px;
   background: var(--gray-300-stroke);
 }
 
@@ -337,7 +337,9 @@
   border: 1px solid var(--gray-300);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  margin: 4px 0 16px;
+  /* .sectionLabel's own 8px margin-bottom collapses with this margin-top (adjoining sibling
+   * margins take the larger, not the sum) -- 16px here is what actually yields a 16px gap. */
+  margin: 16px 0 16px;
 }
 
 .budgetTableHead {
