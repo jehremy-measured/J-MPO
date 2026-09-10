@@ -1157,6 +1157,12 @@
   background: transparent;
 }
 
+/* Plan settings' tactics table opens a dialog on click instead of editing inline, so it skips
+ * the hover highlight and edit-pencil affordance that cue the shared BudgetInput's inline edit. */
+.bvaluePlain:hover {
+  background: transparent;
+}
+
 .binputWrap {
   position: relative;
   display: flex;

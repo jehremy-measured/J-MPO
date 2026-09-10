@@ -30,14 +30,18 @@ function WeekValueCell({
   }, [value, isEditing]);
 
   if (!editable) {
-    return <span className={styles.budgetWeekValue}>{currencyFormatter.format(value)}</span>;
+    return (
+      <span className={`${styles.budgetWeekCellBox} ${styles.budgetWeekValue}`}>
+        {currencyFormatter.format(value)}
+      </span>
+    );
   }
 
   if (!isEditing) {
     return (
       <button
         type="button"
-        className={styles.budgetWeekValueLink}
+        className={`${styles.budgetWeekCellBox} ${styles.budgetWeekValueLink}`}
         onClick={() => {
           setIsEditing(true);
           requestAnimationFrame(() => inputRef.current?.focus());
@@ -49,7 +53,7 @@ function WeekValueCell({
   }
 
   return (
-    <span className={styles.budgetWeekInputWrap}>
+    <span className={`${styles.budgetWeekCellBox} ${styles.budgetWeekInputWrap}`}>
       <span className={styles.budgetDol}>$</span>
       <input
         ref={inputRef}
@@ -159,6 +163,8 @@ export function TacticBudgetDialog({
             />
             <span className={styles.budgetOptionLabel}>Manually enter weekly budgets</span>
           </label>
+
+          <div className={styles.budgetDivider} />
 
           <p className={styles.sectionLabel}>
             Weekly budget breakdown{mode === "total" ? " (split equally)" : ""}

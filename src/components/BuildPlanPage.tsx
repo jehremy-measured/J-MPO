@@ -922,13 +922,10 @@ function ReviewScreen({
                 <div className={styles.tblCellBudget}>
                   <button
                     type="button"
-                    className={styles.bvalue}
+                    className={`${styles.bvalue} ${styles.bvaluePlain}`}
                     disabled={!included}
                     onClick={() => setBudgetDialogTacticId(t.id)}
                   >
-                    <span className={styles.bvalueEditIcon}>
-                      <EditIcon size={20} />
-                    </span>
                     <span className={styles.bvalueText}>
                       {budgetValue != null ? currencyFormatter.format(budgetValue) : "Add budget"}
                     </span>
