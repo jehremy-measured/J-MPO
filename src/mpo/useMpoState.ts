@@ -1,14 +1,17 @@
 import { useCallback, useMemo, useState } from "react";
 import {
   applyTargetBudget,
+  blendedCpo,
   blendedRoas,
   clampTargetBudget,
   setTacticAdjustment,
   tacticAdjustment,
   totalBudget,
+  totalOrders,
   totalSales,
 } from "./calc";
-import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLANS } from "./data";
+import { DEFAULT_TARGET_BUDGET, INITIAL_TACTICS, PLAN_TACTICS, PLANS } from "./data";
+import { formatRangeLabel, subtractYears } from "./buildPlan/dateUtils";
 import type {
   BudgetView,
   CreatePlanInput,
@@ -16,6 +19,7 @@ import type {
   OptimizationMode,
   Plan,
   PlanSnapshot,
+  PlanTarget,
   Tactic,
 } from "./types";
 
@@ -23,8 +27,14 @@ function cloneTactics(tactics: Tactic[]): Tactic[] {
   return tactics.map((t) => ({ ...t }));
 }
 
-function freshSnapshot(): PlanSnapshot {
-  const tactics = cloneTactics(INITIAL_TACTICS);
+/** A plan's tactic roster, keyed off the real Lulus baseline (falling back to the generic
+ * starter set for plans without a curated roster of their own, e.g. new Mia-created plans). */
+function tacticsForPlan(planId: string): Tactic[] {
+  return PLAN_TACTICS[planId] ?? INITIAL_TACTICS;
+}
+
+function snapshotForTactics(planTactics: Tactic[]): PlanSnapshot {
+  const tactics = cloneTactics(planTactics);
   return {
     tactics,
     baseline: cloneTactics(tactics),
@@ -38,9 +48,13 @@ function freshSnapshot(): PlanSnapshot {
     totalSalesGoal: 0,
     baselineSalesForecast: totalBudget(tactics) * 16,
     pacingEnabled: false,
-    conversionType: "All Orders",
-    channelCount: 3,
+    conversionType: "Online Orders",
+    channelCount: new Set(tactics.map((t) => t.channel)).size,
   };
+}
+
+function freshSnapshot(): PlanSnapshot {
+  return snapshotForTactics(INITIAL_TACTICS);
 }
 
 function snapshotFromInput(input: CreatePlanInput): PlanSnapshot {
@@ -64,7 +78,14 @@ function snapshotFromInput(input: CreatePlanInput): PlanSnapshot {
 }
 
 function initialPlanData(): Record<string, PlanSnapshot> {
-  return { default: freshSnapshot() };
+  const data: Record<string, PlanSnapshot> = {};
+  for (const plan of PLANS) {
+    data[plan.id] = {
+      ...snapshotForTactics(tacticsForPlan(plan.id)),
+      referencePeriod: formatRangeLabel(subtractYears(plan.planStart, 1), subtractYears(plan.planEnd, 1)),
+    };
+  }
+  return data;
 }
 
 export function useMpoState() {
@@ -72,10 +93,10 @@ export function useMpoState() {
   const [planData, setPlanData] = useState<Record<string, PlanSnapshot>>(initialPlanData);
   const [activePlanId, setActivePlanId] = useState("default");
   const [tactics, setTactics] = useState<Tactic[]>(() =>
-    cloneTactics(INITIAL_TACTICS)
+    cloneTactics(tacticsForPlan("default"))
   );
   const [baseline, setBaseline] = useState<Tactic[]>(() =>
-    cloneTactics(INITIAL_TACTICS)
+    cloneTactics(tacticsForPlan("default"))
   );
   const [targetBudget, setTargetBudget] = useState(DEFAULT_TARGET_BUDGET);
   const [optimizationMode, setOptimizationMode] =
@@ -87,17 +108,29 @@ export function useMpoState() {
   const [goalType, setGoalType] = useState<PlanSnapshot["goalType"]>("incremental-roas");
   const [totalSalesGoal, setTotalSalesGoal] = useState(0);
   const [baselineSalesForecast, setBaselineSalesForecast] = useState(
-    totalBudget(INITIAL_TACTICS) * 16
+    () => totalBudget(tacticsForPlan("default")) * 16
   );
   const [pacingEnabled, setPacingEnabled] = useState(false);
-  const [conversionType, setConversionType] = useState("All Orders");
-  const [channelCount, setChannelCount] = useState(3);
-  const [heroDismissed, setHeroDismissed] = useState(false);
+  const [conversionType, setConversionType] = useState("Online Orders");
+  const [channelCount, setChannelCount] = useState(
+    () => new Set(tacticsForPlan("default").map((t) => t.channel)).size
+  );
   const [csBannerDismissed, setCsBannerDismissed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [budgetView, setBudgetView] = useState<BudgetView>("tactics");
   const [selectedTacticId, setSelectedTacticId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const [newPlanSummary, setNewPlanSummary] = useState<{
+    planId: string;
+    planningWindow: string;
+    planStart: Date;
+    planEnd: Date;
+    conversionType: string;
+    tacticsCount: number;
+    totalBudget: number;
+    target: PlanTarget;
+    targetValue: number | null;
+  } | null>(null);
 
   const notify = useCallback((message: string) => {
     setStatusMessage(message);
@@ -183,24 +216,133 @@ export function useMpoState() {
       const label = input.name.trim() || `Mia Plan ${plans.length + 1}`;
       const snapshot = snapshotFromInput(input);
 
-      setPlans((prev) => [...prev, { id, label }]);
+      setPlans((prev) => [
+        ...prev,
+        {
+          id,
+          label,
+          kind: input.planKind,
+          createdBy: "JH",
+          lastEdited: new Date(),
+          target: input.target,
+          targetValue: input.targetValue ?? undefined,
+          planStart: input.planStart,
+          planEnd: input.planEnd,
+        },
+      ]);
       setPlanData((prev) => ({ ...prev, [id]: snapshot }));
       applySnapshot(snapshot);
       setActivePlanId(id);
       setSelectedTacticId(null);
-      setHeroDismissed(true);
-      notify(`Created "${label}" with Mia — review and save to finish`);
+      setNewPlanSummary({
+        planId: id,
+        planningWindow: input.planningWindow,
+        planStart: input.planStart,
+        planEnd: input.planEnd,
+        conversionType: input.conversionType,
+        tacticsCount: input.tactics.length,
+        totalBudget: input.targetBudget,
+        target: input.target,
+        targetValue: input.targetValue,
+      });
+      notify(`Created "${label}" with Mia`);
 
       return { id, label };
     },
     [activePlanId, applySnapshot, currentSnapshot, notify, plans]
   );
 
+  /** Applies a re-run of the guided flow back onto an EXISTING plan (rather than creating a
+   * new one) -- used by Mia's "Update plan" action when a plan's period, conversion type, or
+   * budget is edited after the fact. */
+  const updatePlan = useCallback(
+    (id: string, input: CreatePlanInput) => {
+      if (id === activePlanId) {
+        setPlanData((prev) => ({ ...prev, [activePlanId]: currentSnapshot() }));
+      }
+
+      const snapshot = snapshotFromInput(input);
+      setPlans((prev) =>
+        prev.map((p) =>
+          p.id === id
+            ? {
+                ...p,
+                target: input.target,
+                targetValue: input.targetValue ?? undefined,
+                planStart: input.planStart,
+                planEnd: input.planEnd,
+                lastEdited: new Date(),
+              }
+            : p
+        )
+      );
+      setPlanData((prev) => ({ ...prev, [id]: snapshot }));
+      if (id === activePlanId) {
+        applySnapshot(snapshot);
+      }
+      const label = plans.find((p) => p.id === id)?.label ?? "plan";
+      notify(`Updated "${label}"`);
+    },
+    [activePlanId, applySnapshot, currentSnapshot, notify, plans]
+  );
+
+  const duplicatePlan = useCallback(
+    (id: string, label?: string, modelDate?: string) => {
+      const source = plans.find((p) => p.id === id);
+      if (!source) return;
+
+      const sourceSnapshot = id === activePlanId ? currentSnapshot() : planData[id] ?? freshSnapshot();
+      const newId = `copy-${Date.now()}`;
+      const copy: Plan = {
+        ...source,
+        id: newId,
+        label: label ?? `${source.label} (copy)`,
+        createdBy: "JH",
+        lastEdited: new Date(),
+        modelDate: modelDate ?? source.modelDate,
+      };
+
+      setPlans((prev) => [...prev, copy]);
+      setPlanData((prev) => ({
+        ...prev,
+        [newId]: {
+          ...sourceSnapshot,
+          tactics: cloneTactics(sourceSnapshot.tactics),
+          baseline: cloneTactics(sourceSnapshot.baseline),
+        },
+      }));
+      notify(label ? `Duplicated "${source.label}" as "${label}"` : `Duplicated "${source.label}"`);
+      return newId;
+    },
+    [plans, planData, activePlanId, currentSnapshot, notify]
+  );
+
+  const deletePlan = useCallback((id: string) => {
+    setPlans((prev) => prev.filter((p) => p.id !== id));
+    setPlanData((prev) => {
+      const next = { ...prev };
+      delete next[id];
+      return next;
+    });
+  }, []);
+
+  const renamePlan = useCallback((id: string, label: string) => {
+    const trimmed = label.trim();
+    if (!trimmed) return;
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, label: trimmed } : p)));
+  }, []);
+
+  const toggleSharePlan = useCallback((id: string) => {
+    setPlans((prev) => prev.map((p) => (p.id === id ? { ...p, shared: !p.shared } : p)));
+  }, []);
+
   const totals = useMemo(
     () => ({
       budget: totalBudget(tactics),
       sales: totalSales(tactics, optimizationMode),
       roas: blendedRoas(tactics, optimizationMode),
+      orders: totalOrders(tactics, optimizationMode),
+      cpo: blendedCpo(tactics, optimizationMode),
     }),
     [tactics, optimizationMode]
   );
@@ -238,15 +380,11 @@ export function useMpoState() {
     return rows;
   }, [filteredTactics, budgetView]);
 
-  const handleTargetBudgetChange = useCallback(
-    (value: number) => {
-      const clamped = clampTargetBudget(value);
-      setTargetBudget(clamped);
-      setTactics((prev) => applyTargetBudget(prev, clamped));
-      notify(`Target budget set to $${clamped.toLocaleString()}`);
-    },
-    [notify]
-  );
+  const handleTargetBudgetChange = useCallback((value: number) => {
+    const clamped = clampTargetBudget(value);
+    setTargetBudget(clamped);
+    setTactics((prev) => applyTargetBudget(prev, clamped));
+  }, []);
 
   const handleTacticAdjustmentChange = useCallback(
     (id: string, adjustment: number) => {
@@ -271,21 +409,15 @@ export function useMpoState() {
     setTactics(cloneTactics(baseline));
     setTargetBudget(DEFAULT_TARGET_BUDGET);
     setOptimizationMode("balanced");
-    notify("Goals reset to saved baseline");
-  }, [baseline, notify]);
+  }, [baseline]);
 
   const handleSaveBaseline = useCallback(() => {
     setBaseline(cloneTactics(tactics));
-    notify("Current plan saved as baseline for Reset");
-  }, [tactics, notify]);
+  }, [tactics]);
 
-  const handleBaselineSalesForecastChange = useCallback(
-    (value: number) => {
-      setBaselineSalesForecast(value);
-      notify(`Baseline sales forecast set to $${value.toLocaleString()}`);
-    },
-    [notify]
-  );
+  const handleBaselineSalesForecastChange = useCallback((value: number) => {
+    setBaselineSalesForecast(value);
+  }, []);
 
   const activePlanLabel =
     plans.find((p) => p.id === activePlanId)?.label ?? "Untitled plan";
@@ -297,6 +429,11 @@ export function useMpoState() {
     activePlanLabel,
     selectPlan,
     createPlan,
+    updatePlan,
+    duplicatePlan,
+    deletePlan,
+    renamePlan,
+    toggleSharePlan,
     tactics,
     filteredTactics,
     groupedRows,
@@ -316,8 +453,6 @@ export function useMpoState() {
     conversionType,
     channelCount,
     referenceBudgetTotal,
-    heroDismissed,
-    setHeroDismissed,
     csBannerDismissed,
     setCsBannerDismissed,
     searchQuery,
@@ -328,6 +463,7 @@ export function useMpoState() {
     setSelectedTacticId,
     statusMessage,
     setStatusMessage,
+    newPlanSummary,
     totals,
     notify,
     handleTargetBudgetChange,

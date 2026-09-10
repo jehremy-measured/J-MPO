@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { addMonths, isSameDay, monthGrid, monthName } from "../mpo/buildPlan/dateUtils";
+import { addDays, addMonths, isSameDay, monthGrid, monthName } from "../mpo/buildPlan/dateUtils";
 import { ChevronLeftIcon, ChevronRightIcon } from "./icons/BuildPlanIcons";
 import styles from "./CalendarRangePicker.module.css";
 
@@ -8,11 +8,15 @@ type Props = {
   end: Date;
   onChange: (start: Date, end: Date) => void;
   panels?: 1 | 2;
+  /** "range" (default) lets the user click two dates. "fixed-length" locks the span to
+   * `fixedLengthDays` — every click just moves the start date and the end date follows. */
+  mode?: "range" | "fixed-length";
+  fixedLengthDays?: number;
 };
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props) {
+export function CalendarRangePicker({ start, end, onChange, panels = 2, mode = "range", fixedLengthDays }: Props) {
   const [cursors, setCursors] = useState<Date[]>(() => {
     const first = new Date(start.getFullYear(), start.getMonth(), 1);
     if (panels === 1) return [first];
@@ -23,6 +27,10 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props)
   const [phase, setPhase] = useState<"start" | "end">("end");
 
   const handleDayClick = (date: Date) => {
+    if (mode === "fixed-length") {
+      onChange(date, addDays(date, (fixedLengthDays ?? 1) - 1));
+      return;
+    }
     if (phase === "start" || date < start) {
       onChange(date, date);
       setPhase("end");
@@ -32,11 +40,17 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props)
     }
   };
 
+  // With a single panel each has its own independent month nav. With two panels they act as
+  // one calendar spanning two consecutive months, so both cursors always shift together and
+  // only the outer edges (before the first panel, after the last) carry a nav control.
   const navigate = (panelIndex: number, dir: -1 | 1) => {
     setCursors((prev) => {
-      const next = [...prev];
-      next[panelIndex] = addMonths(next[panelIndex], dir);
-      return next;
+      if (panels === 1) {
+        const next = [...prev];
+        next[panelIndex] = addMonths(next[panelIndex], dir);
+        return next;
+      }
+      return prev.map((c) => addMonths(c, dir));
     });
   };
 
@@ -45,25 +59,33 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props)
       {cursors.map((cursor, panelIndex) => (
         <div className={styles.panel} key={panelIndex}>
           <div className={styles.panelHead}>
-            <button
-              type="button"
-              className={styles.navBtn}
-              aria-label="Previous month"
-              onClick={() => navigate(panelIndex, -1)}
-            >
-              <ChevronLeftIcon size={16} />
-            </button>
+            {(panels === 1 || panelIndex === 0) ? (
+              <button
+                type="button"
+                className={styles.navBtn}
+                aria-label="Previous month"
+                onClick={() => navigate(panelIndex, -1)}
+              >
+                <ChevronLeftIcon size={20} />
+              </button>
+            ) : (
+              <span className={styles.navSpacer} aria-hidden />
+            )}
             <span className={styles.monthLabel}>
               {monthName(cursor)} {cursor.getFullYear()}
             </span>
-            <button
-              type="button"
-              className={styles.navBtn}
-              aria-label="Next month"
-              onClick={() => navigate(panelIndex, 1)}
-            >
-              <ChevronRightIcon size={16} />
-            </button>
+            {(panels === 1 || panelIndex === cursors.length - 1) ? (
+              <button
+                type="button"
+                className={styles.navBtn}
+                aria-label="Next month"
+                onClick={() => navigate(panelIndex, 1)}
+              >
+                <ChevronRightIcon size={20} />
+              </button>
+            ) : (
+              <span className={styles.navSpacer} aria-hidden />
+            )}
           </div>
           <div className={styles.weekRow}>
             {WEEKDAYS.map((d) => (
@@ -79,9 +101,11 @@ export function CalendarRangePicker({ start, end, onChange, panels = 2 }: Props)
               const inBand = date >= start && date <= end;
               const colIndex = i % 7;
               const cellClasses = [styles.cell];
-              if (inBand && inMonth) cellClasses.push(styles.cellInBand);
-              if (inBand && inMonth && (isStart || colIndex === 0)) cellClasses.push(styles.cellRoundLeft);
-              if (inBand && inMonth && (isEnd || colIndex === 6)) cellClasses.push(styles.cellRoundRight);
+              if (inBand && inMonth) {
+                cellClasses.push(styles.cellInBand);
+                if (isStart || colIndex === 0) cellClasses.push(styles.cellRoundLeft);
+                if (isEnd || colIndex === 6) cellClasses.push(styles.cellRoundRight);
+              }
               return (
                 <button
                   type="button"

@@ -35,6 +35,12 @@ export function addMonths(d: Date, n: number): Date {
   return x;
 }
 
+export function subtractYears(d: Date, n: number): Date {
+  const x = new Date(d);
+  x.setFullYear(x.getFullYear() - n);
+  return x;
+}
+
 export function startOfMonth(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), 1);
 }

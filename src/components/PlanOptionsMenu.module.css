@@ -1,0 +1,173 @@
+.moreWrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.moreBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  background: var(--blue-100);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+.moreBtn:hover {
+  background: var(--blue-200);
+}
+
+.chevronBtn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.chevronBtn:hover {
+  background: var(--gray-200);
+  color: var(--gray-1000);
+}
+
+.chevronBtnWithTitle {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  /* Cancels the padding above so the hover/click target is larger than the title text without
+   * shifting that text out of alignment with the content below it. */
+  margin: -4px -8px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.chevronBtnWithTitle:hover {
+  background: var(--gray-200);
+}
+
+.chevronBtnTitleText {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  white-space: nowrap;
+}
+
+.moreMenu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  padding: 6px;
+  min-width: 160px;
+  z-index: 20;
+}
+
+.moreMenu button {
+  width: 100%;
+  height: 32px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  padding: 0 12px 0 8px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.moreMenu button:hover {
+  background: var(--gray-100);
+}
+
+.moreMenu button.dangerItem {
+  color: #c22a4d;
+}
+
+.menuDivider {
+  height: 1px;
+  margin: 6px 4px;
+  background: var(--gray-300-stroke);
+}
+
+.moreMenu button.stackedItem {
+  position: relative;
+  height: auto;
+  min-height: 32px;
+  padding: 6px 12px 6px 8px;
+  align-items: flex-start;
+}
+
+.moreMenu button.stackedItemDisabled {
+  cursor: not-allowed;
+  color: var(--gray-500);
+}
+
+.moreMenu button.stackedItemDisabled:hover {
+  background: transparent;
+}
+
+.stackedItemDisabled .stackedItemLabel {
+  color: var(--gray-500);
+}
+
+.stackedItemTooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 8px;
+  z-index: 40;
+  width: 220px;
+  padding: 8px 10px;
+  background: var(--gray-1000);
+  border-radius: var(--radius-sm);
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.24);
+  color: var(--gray-000);
+  font-size: 12.5px;
+  font-weight: 400;
+  line-height: 1.4;
+  white-space: normal;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.12s ease;
+  pointer-events: none;
+}
+
+.stackedItemDisabled:hover .stackedItemTooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+.stackedItemText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.stackedItemLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+}
+
+.stackedItemSub {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--gray-800);
+  white-space: nowrap;
+}
