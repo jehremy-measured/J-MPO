@@ -991,20 +991,6 @@
   align-items: center;
 }
 
-/* In weekly view the header and each row become their own horizontal scroller (kept in sync
- * via JS) so .tbl can stay overflow:visible for page-relative sticky positioning. Only the
- * footer's native scrollbar stays visible, as the one interactive drag handle; the rest scroll
- * in step with it (and still respond to trackpad/wheel scrolling directly over them). */
-.tblHead::-webkit-scrollbar,
-.trow::-webkit-scrollbar {
-  display: none;
-}
-
-.tblHead,
-.trow {
-  scrollbar-width: none;
-}
-
 .tblHead {
   position: sticky;
   top: 0;
@@ -1039,73 +1025,6 @@
   justify-content: flex-end;
   gap: 4px;
   padding-right: 20px;
-}
-
-.tblHeadWeek {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 2px;
-  padding: 0 8px;
-}
-
-.tblHeadWeekDate {
-  font-size: 11px;
-  font-weight: 400;
-  line-height: normal;
-  color: var(--gray-800);
-  white-space: nowrap;
-}
-
-.tblWeekCell {
-  text-align: right;
-  padding: 0 8px;
-  font-size: 13px;
-  color: var(--gray-800);
-}
-
-.weeklyToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: var(--gray-1000);
-  cursor: pointer;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-
-.toolbarDivider {
-  width: 1px;
-  height: 20px;
-  flex-shrink: 0;
-  background: var(--gray-300);
-}
-
-.tblStickyLeft,
-.tblStickyRight {
-  position: sticky;
-  z-index: 1;
-  align-self: stretch;
-  background: var(--gray-000);
-}
-
-.tblStickyLeft {
-  left: 0;
-}
-
-.tblStickyRight {
-  right: 0;
-  box-shadow: -1px 0 0 var(--gray-300);
-}
-
-.tblHead .tblStickyLeft,
-.tblHead .tblStickyRight,
-.tblFoot .tblStickyLeft,
-.tblFoot .tblStickyRight,
-.trowExcluded .tblStickyLeft,
-.trowExcluded .tblStickyRight {
-  background: var(--gray-100);
 }
 
 .tblHeadMenuBtn {
@@ -1211,10 +1130,6 @@
   font-size: 14px;
   font-weight: 500;
   color: var(--blue-700);
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-decoration-color: var(--blue-700);
-  text-underline-offset: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1236,7 +1151,6 @@
 
 .bvalue:disabled .bvalueText {
   color: var(--gray-500);
-  text-decoration: none;
 }
 
 .bvalue:disabled:hover {

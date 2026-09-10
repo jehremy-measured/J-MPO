@@ -8,7 +8,6 @@ import {
   channelFilterLabel,
   channelsPresent,
   ctSummary,
-  defaultBudgetFor,
   downloadBudgetTemplate,
   excludeReason,
   formatAttrLabels,
@@ -20,15 +19,14 @@ import {
   targetNeedsValue,
   visibleTactics,
   weekColumnsFor,
-  weeklyBudgetSplit,
 } from "../mpo/buildPlan/logic";
 import { currencyFormatter, formatShortDate } from "../mpo/buildPlan/data";
 import { useBuildPlanFlow } from "../mpo/buildPlan/useBuildPlanFlow";
 import type { BuildPlanState, BuildScreen } from "../mpo/buildPlan/types";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import { Checkbox } from "./Checkbox";
-import { Switch } from "./Switch";
 import { RollupHint } from "./RollupHint";
+import { TacticBudgetDialog } from "./TacticBudgetDialog";
 import {
   BackArrowIcon,
   CheckIcon,
@@ -560,39 +558,9 @@ function ReviewScreen({
     null
   );
   const [budgetMenuOpen, setBudgetMenuOpen] = useState(false);
-  const [showWeekly, setShowWeekly] = useState(false);
-  const weekColumns = showWeekly ? weekColumnsFor(state) : [];
-  const tblGridColumns = showWeekly
-    ? `260px repeat(${weekColumns.length}, 120px) 188px`
-    : "1fr 188px";
-  const [scrolledX, setScrolledX] = useState(false);
-  useEffect(() => {
-    if (!showWeekly) setScrolledX(false);
-  }, [showWeekly]);
-  // The left frozen-column divider (Tactic | first week column) only appears once something
-  // is actually scrolled underneath it -- at scrollLeft 0 there's nothing hidden there yet.
-  // Applied per sticky cell (header/rows/footer) via box-shadow, same as the always-on right
-  // divider, so it lines up seamlessly row to row into what reads as a single line.
-  const leftSepStyle = scrolledX ? { boxShadow: "1px 0 0 var(--gray-300)" } : undefined;
-  // Weekly mode's wide columns need horizontal scrolling, but the outer .tbl must stay
-  // overflow:visible so its sticky header/footer keep referencing the PAGE's scroll (matching
-  // non-weekly behavior) rather than becoming their own vertical scroll container -- setting
-  // overflow-x:auto on .tbl itself would force overflow-y to auto too (a CSS rule: an element
-  // can't mix a 'visible' axis with a non-visible one), turning .tbl into an internal scrollbox.
-  // Instead, the header, each row, and the footer are each their own independent
-  // overflow-x:auto element, and their scroll positions are kept in sync here so they still
-  // read as one unified horizontally-scrolling table.
-  const tblHeadRef = useRef<HTMLDivElement | null>(null);
-  const tblFootRef = useRef<HTMLDivElement | null>(null);
-  const rowScrollRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-  const syncRowScroll = (scrollLeft: number, source: HTMLDivElement) => {
-    setScrolledX(scrollLeft > 0);
-    if (tblHeadRef.current && tblHeadRef.current !== source) tblHeadRef.current.scrollLeft = scrollLeft;
-    if (tblFootRef.current && tblFootRef.current !== source) tblFootRef.current.scrollLeft = scrollLeft;
-    rowScrollRefs.current.forEach((el) => {
-      if (el !== source) el.scrollLeft = scrollLeft;
-    });
-  };
+  const weekColumns = weekColumnsFor(state);
+  const [budgetDialogTacticId, setBudgetDialogTacticId] = useState<string | null>(null);
+  const budgetDialogTactic = BUILD_TACTICS.find((t) => t.id === budgetDialogTacticId) ?? null;
   const dateOpen = openDropdown === "date";
   const channelOpen = openDropdown === "channel";
   const periodOpen = openDropdown === "period";
@@ -876,11 +844,6 @@ function ReviewScreen({
           </span>
         </h2>
         <div className={styles.reviewToolbarControls}>
-        <label className={styles.weeklyToggle}>
-          <Switch checked={showWeekly} onChange={() => setShowWeekly((v) => !v)} ariaLabel="View weekly budget" />
-          <span>View weekly budget</span>
-        </label>
-        <div className={styles.toolbarDivider} />
         <div className={styles.search}>
           <SearchIcon size={17} />
           <input
@@ -893,16 +856,8 @@ function ReviewScreen({
       </div>
 
       <div className={styles.tbl}>
-        <div
-          className={styles.tblHead}
-          ref={tblHeadRef}
-          onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
-          style={{
-            gridTemplateColumns: tblGridColumns,
-            ...(showWeekly ? { overflowX: "auto" as const } : null),
-          }}
-        >
-          <div className={`${styles.tblHeadTactic} ${showWeekly ? styles.tblStickyLeft : ""}`} style={leftSepStyle}>
+        <div className={styles.tblHead}>
+          <div className={styles.tblHeadTactic}>
             <Checkbox
               checked={allVisibleIncluded}
               indeterminate={someVisibleIncluded}
@@ -911,14 +866,8 @@ function ReviewScreen({
             />
             <span>Tactic</span>
           </div>
-          {weekColumns.map((w) => (
-            <div key={w.label} className={styles.tblHeadWeek}>
-              <span>{w.label}</span>
-              <span className={styles.tblHeadWeekDate}>{w.dateLabel}</span>
-            </div>
-          ))}
-          <div className={`${styles.tblHeadBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
-            <span>{showWeekly ? "Total Budget" : "Budget"}</span>
+          <div className={styles.tblHeadBudget}>
+            <span>Budget</span>
             <div className={styles.moreWrap}>
               <button
                 type="button"
@@ -951,25 +900,10 @@ function ReviewScreen({
             const included = state.included[t.id];
             const edited = state.overridden[t.id];
             const reason = excludeReason(state, t.id);
-            const weeklyAmounts = weekColumns.length
-              ? weeklyBudgetSplit(state.budget[t.id] ?? 0, weekColumns.length)
-              : [];
+            const budgetValue = state.budget[t.id] ?? null;
             return (
-              <div
-                key={t.id}
-                className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}
-                ref={(el) => {
-                  if (!showWeekly) return;
-                  if (el) rowScrollRefs.current.set(t.id, el);
-                  else rowScrollRefs.current.delete(t.id);
-                }}
-                onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
-                style={{
-                  gridTemplateColumns: tblGridColumns,
-                  ...(showWeekly ? { overflowX: "auto" as const } : null),
-                }}
-              >
-                <div className={`${styles.tcell} ${showWeekly ? styles.tblStickyLeft : ""}`} style={leftSepStyle}>
+              <div key={t.id} className={`${styles.trow} ${included ? "" : styles.trowExcluded}`}>
+                <div className={styles.tcell}>
                   <Checkbox
                     checked={Boolean(included)}
                     onChange={() => flow.toggleInclude(t.id)}
@@ -985,52 +919,47 @@ function ReviewScreen({
                     <div className={styles.tch}>{t.channel}</div>
                   </div>
                 </div>
-                {weeklyAmounts.map((amount, i) => (
-                  <div key={i} className={styles.tblWeekCell}>
-                    {currencyFormatter.format(amount)}
-                  </div>
-                ))}
-                <div className={`${styles.tblCellBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
-                  <BudgetInput
-                    value={state.budget[t.id] ?? null}
-                    defaultValue={defaultBudgetFor(state, t.id)}
+                <div className={styles.tblCellBudget}>
+                  <button
+                    type="button"
+                    className={styles.bvalue}
                     disabled={!included}
-                    edited={Boolean(edited)}
-                    onChange={(v) => flow.setBudget(t.id, v)}
-                    onReset={() => flow.resetBudget(t.id)}
-                  />
+                    onClick={() => setBudgetDialogTacticId(t.id)}
+                  >
+                    <span className={styles.bvalueEditIcon}>
+                      <EditIcon size={20} />
+                    </span>
+                    <span className={styles.bvalueText}>
+                      {budgetValue != null ? currencyFormatter.format(budgetValue) : "Add budget"}
+                    </span>
+                  </button>
                 </div>
               </div>
             );
           })
         )}
-        <div
-          className={styles.tblFoot}
-          ref={tblFootRef}
-          onScroll={showWeekly ? (e) => syncRowScroll(e.currentTarget.scrollLeft, e.currentTarget) : undefined}
-          style={{
-            gridTemplateColumns: tblGridColumns,
-            ...(showWeekly ? { overflowX: "auto" as const } : null),
-          }}
-        >
-          <span className={showWeekly ? styles.tblStickyLeft : ""} style={leftSepStyle} />
-          {weekColumns.map((_, i) => {
-            const weekTotal = rows.reduce((sum, t) => {
-              if (!state.included[t.id]) return sum;
-              return sum + weeklyBudgetSplit(state.budget[t.id] ?? 0, weekColumns.length)[i];
-            }, 0);
-            return (
-              <div key={i} className={styles.tblWeekCell}>
-                {currencyFormatter.format(weekTotal)}
-              </div>
-            );
-          })}
-          <div className={`${styles.tblCellBudget} ${showWeekly ? styles.tblStickyRight : ""}`}>
+        <div className={styles.tblFoot}>
+          <span />
+          <div className={styles.tblCellBudget}>
             <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
           </div>
         </div>
       </div>
       </Card>
+      {budgetDialogTactic && (
+        <TacticBudgetDialog
+          tacticName={budgetDialogTactic.name}
+          planStart={state.planStart}
+          planEnd={state.planEnd}
+          weekColumns={weekColumns}
+          initialTotal={state.budget[budgetDialogTactic.id] ?? null}
+          onCancel={() => setBudgetDialogTacticId(null)}
+          onSave={(total) => {
+            flow.setBudget(budgetDialogTactic.id, total);
+            setBudgetDialogTacticId(null);
+          }}
+        />
+      )}
     </>
   );
 }
