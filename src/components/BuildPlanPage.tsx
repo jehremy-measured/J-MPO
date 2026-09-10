@@ -772,7 +772,7 @@ function ReviewScreen({
         <div className={styles.settingsField}>
           <span className={styles.settingsLabel}>Budget from</span>
           {mode === "edit" ? (
-            <div className={styles.settingsFieldRow}>
+            <div className={`${styles.settingsFieldRow} ${styles.budgetEditRow}`}>
               <div className={styles.settingsBoxStatic}>
                 {state.method === "fetch" ? (
                   <>
@@ -788,8 +788,9 @@ function ReviewScreen({
                   </>
                 )}
               </div>
+              <span className={styles.budgetEditSeparator} aria-hidden />
               <button type="button" className={styles.linkBtn} onClick={onEditBudgetViaMia}>
-                Re-upload
+                Edit with Mia
               </button>
             </div>
           ) : (

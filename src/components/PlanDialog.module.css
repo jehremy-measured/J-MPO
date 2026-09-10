@@ -306,7 +306,10 @@
 
 .budgetDivider {
   height: 1px;
-  margin: 10px 2px 16px;
+  /* .budgetOptionRow's own 6px bottom padding adds to this top margin, so 18px here yields a
+   * true 24px gap below the radio option; the bottom margin has no collapsing partner (the
+   * section label below has no top margin of its own) so it lands on 24px directly. */
+  margin: 18px 2px 24px;
   background: var(--gray-300-stroke);
 }
 
