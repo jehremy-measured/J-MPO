@@ -4,17 +4,6 @@ import type { Plan, Tactic } from "./types";
 
 export const PLANS: Plan[] = [
   {
-    id: "default",
-    label: "Default Plan",
-    kind: "optimization",
-    createdBy: "AS",
-    lastEdited: new Date(2026, 7, 1),
-    target: "incremental-roas",
-    planStart: new Date(2026, 6, 2),
-    planEnd: new Date(2026, 7, 1),
-    shared: true,
-  },
-  {
     id: "sim-default",
     label: "Q3 2026 media simulation",
     kind: "simulation",
@@ -25,7 +14,6 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
     shared: true,
-    modelDate: LATEST_MODEL_DATE,
   },
   {
     id: "sim-q3-inflight",
@@ -50,6 +38,7 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
     editVariant: "sidebar",
+    modelDate: LATEST_MODEL_DATE,
   },
 ];
 
