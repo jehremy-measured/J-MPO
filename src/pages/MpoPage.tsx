@@ -95,7 +95,7 @@ export function MpoPage() {
     planLabel: string;
     state: BuildPlanState;
   } | null>(null);
-  const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
+  const [duplicatingPlanId, setDuplicatingPlanId] = useState<string | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
@@ -265,6 +265,7 @@ export function MpoPage() {
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
+  const duplicatingPlan = state.plans.find((p) => p.id === duplicatingPlanId) ?? null;
   const activeModelDate = activePlan?.modelDate ?? CURRENT_MODEL_DATE;
 
   // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
@@ -337,7 +338,7 @@ export function MpoPage() {
                 <PlansTable
                   plans={visiblePlans}
                   onOpenPlan={openPlan}
-                  onDuplicatePlan={state.duplicatePlan}
+                  onDuplicatePlan={setDuplicatingPlanId}
                   onDeletePlan={state.deletePlan}
                   onRenamePlan={state.renamePlan}
                   onToggleSharePlan={state.toggleSharePlan}
@@ -370,7 +371,7 @@ export function MpoPage() {
                           shared={activePlan?.shared}
                           onRenameRequest={startRenameTitle}
                           onToggleSharePlan={state.toggleSharePlan}
-                          onDuplicatePlan={() => setDuplicateDialogOpen(true)}
+                          onDuplicatePlan={() => setDuplicatingPlanId(state.activePlanId)}
                           onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                           onDeletePlan={handleDeleteActivePlan}
                           onUpdateModel={() => setUpdateModelDialogOpen(true)}
@@ -395,7 +396,7 @@ export function MpoPage() {
                         <DuplicatePlanPopover
                           onDuplicate={() => {
                             setShowDuplicatePopover(false);
-                            setDuplicateDialogOpen(true);
+                            setDuplicatingPlanId(activePlan.id);
                           }}
                           onDismiss={() => setShowDuplicatePopover(false)}
                         />
@@ -545,14 +546,14 @@ export function MpoPage() {
         blendedRoas={state.totals.roas}
       />
       {creatingPlan && <CreatingPlanOverlay />}
-      {duplicateDialogOpen && activePlan && (
+      {duplicatingPlan && (
         <DuplicatePlanDialog
-          planLabel={activePlan.label}
-          currentModelDate={activeModelDate}
-          onClose={() => setDuplicateDialogOpen(false)}
+          planLabel={duplicatingPlan.label}
+          currentModelDate={duplicatingPlan.modelDate ?? CURRENT_MODEL_DATE}
+          onClose={() => setDuplicatingPlanId(null)}
           onConfirm={(name, model) => {
-            const newId = state.duplicatePlan(activePlan.id, name, model.date);
-            setDuplicateDialogOpen(false);
+            const newId = state.duplicatePlan(duplicatingPlan.id, name, model.date);
+            setDuplicatingPlanId(null);
             if (newId) openPlan(newId);
           }}
         />
