@@ -280,27 +280,35 @@
 .methods {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--gray-000);
 }
 
 .methodCard {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   text-align: left;
-  padding: 12px;
-  border: 1px solid var(--gray-300);
-  border-radius: var(--radius-lg);
+  padding: 16px;
+  border-bottom: 1px solid var(--gray-300-stroke);
   background: var(--gray-000);
 }
 
+.methodCard:last-child {
+  border-bottom: none;
+}
+
 .methodCard:hover {
-  border-color: var(--blue-700);
-  background: var(--blue-100);
+  background: var(--gray-100);
 }
 
 .methodCardSelected {
-  border-color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.methodCardSelected:hover {
   background: var(--blue-100);
 }
 
