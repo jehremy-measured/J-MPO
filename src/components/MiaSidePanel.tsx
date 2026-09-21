@@ -33,7 +33,6 @@ import {
   ExpandIcon,
   FileIcon,
 } from "./icons/BuildPlanIcons";
-import { MaterialIcon } from "./icons/MaterialIcon";
 import { PlusIcon } from "./icons/PlusIcon";
 import { SendIcon } from "./icons/SendIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
@@ -207,16 +206,16 @@ type Props = {
   onOptimizePlan?: () => void;
 };
 
-const EDIT_CHOICES: { id: EditChoiceId; iconName: string; label: string; desc: string }[] = [
-  { id: "period", iconName: "calendar_month", label: "Planning period", desc: "Change the date range for this plan" },
-  { id: "ct", iconName: "target", label: "Conversion type", desc: "Change what counts as a conversion" },
-  { id: "budget", iconName: "upload", label: "Budgets", desc: "Upload a new tactic/channel budget file" },
+const EDIT_CHOICES: { id: EditChoiceId; label: string; desc: string }[] = [
+  { id: "period", label: "Planning period", desc: "Change the date range for this plan" },
+  { id: "ct", label: "Conversion type", desc: "Change what counts as a conversion" },
+  { id: "budget", label: "Budgets", desc: "Upload a new tactic/channel budget file" },
 ];
 
-const DUPLICATE_CHOICES: { id: DuplicateChoiceId; iconName: string; label: string; desc: string }[] = [
-  { id: "total-budget", iconName: "payments", label: "Modify total budget", desc: "Set a new overall budget for the duplicate" },
-  { id: "channel-budget", iconName: "upload", label: "Modify channel / tactic budgets", desc: "Upload a new tactic/channel budget file" },
-  { id: "keep", iconName: "content_copy", label: "Don't make any changes", desc: "Keep plan as is" },
+const DUPLICATE_CHOICES: { id: DuplicateChoiceId; label: string; desc: string }[] = [
+  { id: "total-budget", label: "Modify total budget", desc: "Set a new overall budget for the duplicate" },
+  { id: "channel-budget", label: "Modify channel / tactic budgets", desc: "Upload a new tactic/channel budget file" },
+  { id: "keep", label: "Don't make any changes", desc: "Keep plan as is" },
 ];
 
 const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
@@ -243,6 +242,8 @@ export function MiaSidePanel({
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const fileAttachRef = useRef<HTMLInputElement>(null);
   const chatsMenuRef = useRef<HTMLDivElement>(null);
+  const otherChoiceInputRef = useRef<HTMLInputElement>(null);
+  const duplicateOtherInputRef = useRef<HTMLInputElement>(null);
   const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
   const [expandedSummaryCards, setExpandedSummaryCards] = useState<Set<string>>(new Set());
@@ -806,17 +807,51 @@ export function MiaSidePanel({
     }
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key !== "Escape") return;
-      if (flowActive) cancelCreateFlow();
-      else onCloseRef.current();
+      if (e.key === "Escape") {
+        if (flowActive) cancelCreateFlow();
+        else onCloseRef.current();
+        return;
+      }
+
+      // Numbered options in the edit-plan / duplicate-plan choosers can be picked by typing
+      // their number instead of clicking -- skipped while the user is actively typing elsewhere
+      // (composer, "Something else" field) so digits still type normally there.
+      const target = e.target as HTMLElement | null;
+      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
+      const digit = Number(e.key);
+      if (!Number.isInteger(digit) || digit < 1 || digit > 9) return;
+      if (editFlowScreen === "choice" && digit <= EDIT_CHOICES.length + 1) {
+        e.preventDefault();
+        if (digit <= EDIT_CHOICES.length) setEditChoice(EDIT_CHOICES[digit - 1].id);
+        else otherChoiceInputRef.current?.focus();
+      } else if (duplicateFlowScreen === "choice" && digit <= DUPLICATE_CHOICES.length + 1) {
+        e.preventDefault();
+        if (digit <= DUPLICATE_CHOICES.length) setDuplicateChoice(DUPLICATE_CHOICES[digit - 1].id);
+        else duplicateOtherInputRef.current?.focus();
+      }
     };
     document.addEventListener("keydown", onKeyDown);
-    inputRef.current?.focus();
+    // A numbered choice screen shouldn't leave the composer holding keyboard focus -- typed
+    // digits need to reach the document-level handler above, not get typed as chat text.
+    if (editFlowScreen === "choice" || duplicateFlowScreen === "choice") {
+      const active = document.activeElement;
+      if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) active.blur();
+    } else {
+      inputRef.current?.focus();
+    }
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, flowActive, cancelCreateFlow, resetEditPlanFlow, resetDuplicateFlow]);
+  }, [
+    open,
+    flowActive,
+    cancelCreateFlow,
+    resetEditPlanFlow,
+    resetDuplicateFlow,
+    editFlowScreen,
+    duplicateFlowScreen,
+  ]);
 
   useEffect(() => {
     if (!chatsMenuOpen) return;
@@ -1338,16 +1373,14 @@ export function MiaSidePanel({
           <div className={flowStyles.turn}>
             <div className={flowStyles.turnContent}>
               <div className={flowStyles.methods}>
-                {EDIT_CHOICES.map((opt) => (
+                {EDIT_CHOICES.map((opt, index) => (
                   <button
                     key={opt.id}
                     type="button"
                     className={`${flowStyles.methodCard} ${editChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
                     onClick={() => setEditChoice(opt.id)}
                   >
-                    <div className={flowStyles.methodIcon}>
-                      <MaterialIcon name={opt.iconName} size={20} />
-                    </div>
+                    <div className={flowStyles.methodIcon}>{index + 1}</div>
                     <div>
                       <h4>{opt.label}</h4>
                       <p>{opt.desc}</p>
@@ -1359,7 +1392,9 @@ export function MiaSidePanel({
                     editChoice === "other" ? flowStyles.methodCardSelected : ""
                   }`}
                 >
+                  <div className={flowStyles.methodIcon}>{EDIT_CHOICES.length + 1}</div>
                   <input
+                    ref={otherChoiceInputRef}
                     type="text"
                     className={styles.otherOptionInput}
                     placeholder="Something else…"
@@ -1465,16 +1500,14 @@ export function MiaSidePanel({
           <div className={flowStyles.turn}>
             <div className={flowStyles.turnContent}>
               <div className={flowStyles.methods}>
-                {DUPLICATE_CHOICES.map((opt) => (
+                {DUPLICATE_CHOICES.map((opt, index) => (
                   <button
                     key={opt.id}
                     type="button"
                     className={`${flowStyles.methodCard} ${duplicateChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
                     onClick={() => setDuplicateChoice(opt.id)}
                   >
-                    <div className={flowStyles.methodIcon}>
-                      <MaterialIcon name={opt.iconName} size={20} />
-                    </div>
+                    <div className={flowStyles.methodIcon}>{index + 1}</div>
                     <div>
                       <h4>{opt.label}</h4>
                       <p>{opt.desc}</p>
@@ -1486,7 +1519,9 @@ export function MiaSidePanel({
                     duplicateChoice === "other" ? flowStyles.methodCardSelected : ""
                   }`}
                 >
+                  <div className={flowStyles.methodIcon}>{DUPLICATE_CHOICES.length + 1}</div>
                   <input
+                    ref={duplicateOtherInputRef}
                     type="text"
                     className={styles.otherOptionInput}
                     placeholder="Something else…"
