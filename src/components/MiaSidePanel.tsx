@@ -1505,6 +1505,7 @@ export function MiaSidePanel({
           <div className={flowStyles.turn}>
             <div className={flowStyles.turnContent}>
               <div className={flowStyles.methods}>
+                <div className={flowStyles.methodsTitle}>Modify duplicated plan</div>
                 {DUPLICATE_CHOICES.map((opt, index) => (
                   <button
                     key={opt.id}
