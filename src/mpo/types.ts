@@ -87,6 +87,9 @@ export type CreatePlanInput = {
   tactics: Tactic[];
   target: PlanTarget;
   targetValue: number | null;
+  /** MIM model date the created plan should carry — used by the Mia duplicate-plan flow's
+   * model-choice step; omitted plans fall back to `CURRENT_MODEL_DATE`. */
+  modelDate?: string;
 };
 
 export function goalTypeLabel(type: PlanGoalType): string {

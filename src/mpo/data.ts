@@ -1,5 +1,4 @@
 import { assets } from "../assets/figma";
-import { LATEST_MODEL_DATE } from "./modelOptions";
 import type { Plan, Tactic } from "./types";
 
 export const PLANS: Plan[] = [
@@ -38,7 +37,6 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 12),
     planEnd: new Date(2026, 7, 10),
     editVariant: "sidebar",
-    modelDate: LATEST_MODEL_DATE,
   },
 ];
 

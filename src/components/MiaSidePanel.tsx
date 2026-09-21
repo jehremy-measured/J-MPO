@@ -20,6 +20,7 @@ import {
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
+import { isModelUpToDate, LATEST_MODEL_DATE } from "../mpo/modelOptions";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import { Checkbox } from "./Checkbox";
 import { RollupHint } from "./RollupHint";
@@ -62,6 +63,9 @@ type Message = {
    * table; "tactic" shows a flat, ungrouped tactic budget table instead -- used when the
    * uploaded budget file was a per-tactic file rather than a per-channel one. */
   summaryMode?: "channel" | "tactic";
+  /** plan-ready-card only: when set (by the duplicate-plan flow), the new plan is created with
+   * this MIM model date instead of the default. */
+  resultModelDate?: string;
 };
 
 type Prompt =
@@ -164,13 +168,21 @@ type StartSignal = { token: number; planType: "outcomes" | "spend" };
 type OptimizeSignal = { token: number; periodLabel: string; rows: SummaryRow[] };
 type EditBudgetSignal = { token: number; state: BuildPlanState };
 type EditPlanSignal = { token: number; planId: string; planLabel: string; state: BuildPlanState };
+type DuplicatePlanSignal = {
+  token: number;
+  planId: string;
+  planLabel: string;
+  state: BuildPlanState;
+  modelDate: string;
+};
 type EditChoiceId = "period" | "ct" | "budget" | "other";
+type DuplicateChoiceId = "total-budget" | "channel-budget" | "keep" | "other";
 
 type Props = {
   open: boolean;
   onClose: () => void;
   onEditInMainFlow: (state: BuildPlanState) => void;
-  onCreatePlan: (state: BuildPlanState) => void;
+  onCreatePlan: (state: BuildPlanState, modelDate?: string) => void;
   /** Applies a finished edit back onto an existing plan (by id) instead of creating a new one —
    * used by the edit-plan flow's "Update plan" action. */
   onUpdatePlan?: (state: BuildPlanState, planId: string) => void;
@@ -187,6 +199,10 @@ type Props = {
    * for plans that support conversational editing (newly Mia-created plans, and a couple of the
    * preset demo plans). */
   editPlanSignal?: EditPlanSignal | null;
+  /** Opens the "What would you like to change in the duplicated plan?" chooser, seeded from an
+   * existing plan -- used by the "Duplicate" action for plans in MIA_DUPLICATE_PLAN_IDS instead
+   * of the standard DuplicatePlanDialog modal. */
+  duplicatePlanSignal?: DuplicatePlanSignal | null;
   onEditConstraints?: () => void;
   onOptimizePlan?: () => void;
 };
@@ -195,6 +211,12 @@ const EDIT_CHOICES: { id: EditChoiceId; iconName: string; label: string; desc: s
   { id: "period", iconName: "calendar_month", label: "Planning period", desc: "Change the date range for this plan" },
   { id: "ct", iconName: "target", label: "Conversion type", desc: "Change what counts as a conversion" },
   { id: "budget", iconName: "upload", label: "Budgets", desc: "Upload a new tactic/channel budget file" },
+];
+
+const DUPLICATE_CHOICES: { id: DuplicateChoiceId; iconName: string; label: string; desc: string }[] = [
+  { id: "total-budget", iconName: "payments", label: "Modify total budget", desc: "Set a new overall budget for the duplicate" },
+  { id: "channel-budget", iconName: "upload", label: "Modify channel / tactic budgets", desc: "Upload a new tactic/channel budget file" },
+  { id: "keep", iconName: "content_copy", label: "Don't make any changes", desc: "Keep plan as is" },
 ];
 
 const PLAN_TYPE_START_LABEL: Record<StartSignal["planType"], string> = {
@@ -212,6 +234,7 @@ export function MiaSidePanel({
   optimizeSignal,
   editBudgetSignal,
   editPlanSignal,
+  duplicatePlanSignal,
   onEditConstraints,
   onOptimizePlan,
 }: Props) {
@@ -270,6 +293,7 @@ export function MiaSidePanel({
     updateTargetPlanId?: string;
     delayMs?: number;
     summaryMode?: "channel" | "tactic";
+    resultModelDate?: string;
   } | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -296,6 +320,30 @@ export function MiaSidePanel({
     setEditOriginalState(null);
   }, []);
 
+  const lastDuplicateTokenRef = useRef<number | null>(null);
+  const [duplicatePlanId, setDuplicatePlanId] = useState<string | null>(null);
+  const [duplicatePlanLabel, setDuplicatePlanLabel] = useState<string | null>(null);
+  const [duplicateFlowScreen, setDuplicateFlowScreen] = useState<"choice" | "budget" | "model" | null>(null);
+  const [duplicateChoice, setDuplicateChoice] = useState<DuplicateChoiceId | null>(null);
+  const [duplicateOtherText, setDuplicateOtherText] = useState("");
+  const [duplicateFlowState, setDuplicateFlowState] = useState<BuildPlanState | null>(null);
+  const [duplicateSourceModelDate, setDuplicateSourceModelDate] = useState<string | null>(null);
+  const [duplicateBudgetInput, setDuplicateBudgetInput] = useState("");
+  const [duplicatePendingState, setDuplicatePendingState] = useState<BuildPlanState | null>(null);
+  const [duplicateModelChoice, setDuplicateModelChoice] = useState<"existing" | "latest" | null>(null);
+  const resetDuplicateFlow = useCallback(() => {
+    setDuplicatePlanId(null);
+    setDuplicatePlanLabel(null);
+    setDuplicateFlowScreen(null);
+    setDuplicateChoice(null);
+    setDuplicateOtherText("");
+    setDuplicateFlowState(null);
+    setDuplicateSourceModelDate(null);
+    setDuplicateBudgetInput("");
+    setDuplicatePendingState(null);
+    setDuplicateModelChoice(null);
+  }, []);
+
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
@@ -312,6 +360,7 @@ export function MiaSidePanel({
         downloadFileName?: string;
         updateTargetPlanId?: string;
         summaryMode?: "channel" | "tactic";
+        resultModelDate?: string;
       }[]
     ) => {
       setMessages((prev) => [
@@ -327,6 +376,7 @@ export function MiaSidePanel({
           downloadFileName: item.downloadFileName,
           updateTargetPlanId: item.updateTargetPlanId,
           summaryMode: item.summaryMode,
+          resultModelDate: item.resultModelDate,
         })),
       ]);
     },
@@ -361,7 +411,8 @@ export function MiaSidePanel({
     setPresetPlanType(null);
     setCustomFlowSeed(null);
     resetEditPlanFlow();
-  }, [resetEditPlanFlow]);
+    resetDuplicateFlow();
+  }, [resetEditPlanFlow, resetDuplicateFlow]);
 
   const startCreateFlow = useCallback(
     (userText?: string, planType?: StartSignal["planType"]) => {
@@ -373,9 +424,10 @@ export function MiaSidePanel({
       setPresetPlanType(planType ?? null);
       setCustomFlowSeed(null);
       resetEditPlanFlow();
+      resetDuplicateFlow();
       setSettingUp(true);
     },
-    [appendMessages, resetEditPlanFlow]
+    [appendMessages, resetEditPlanFlow, resetDuplicateFlow]
   );
 
   useEffect(() => {
@@ -398,13 +450,14 @@ export function MiaSidePanel({
       setCustomFlowSeed(null);
       setFlowActive(false);
       resetEditPlanFlow();
+      resetDuplicateFlow();
       setUploadState(applyMethodChoice(seed, "upload"));
       appendMessages([
         { role: "mia", text: "Let's update this plan's budget." },
         { role: "mia", text: "Re-upload your budget file here." },
       ]);
     },
-    [appendMessages, resetEditPlanFlow]
+    [appendMessages, resetEditPlanFlow, resetDuplicateFlow]
   );
 
   useEffect(() => {
@@ -423,6 +476,7 @@ export function MiaSidePanel({
       setPresetPlanType(null);
       setCustomFlowSeed(null);
       setFlowActive(false);
+      resetDuplicateFlow();
       setEditingPlanId(planId);
       setEditingPlanLabel(planLabel);
       setEditFlowState(seed);
@@ -431,7 +485,7 @@ export function MiaSidePanel({
       setEditFlowScreen("choice");
       appendMessages([{ role: "mia", text: "What would you like to change?" }]);
     },
-    [appendMessages]
+    [appendMessages, resetDuplicateFlow]
   );
 
   useEffect(() => {
@@ -439,6 +493,135 @@ export function MiaSidePanel({
     lastEditPlanTokenRef.current = editPlanSignal.token;
     startEditPlanFlow(editPlanSignal.planId, editPlanSignal.planLabel, editPlanSignal.state);
   }, [open, editPlanSignal, startEditPlanFlow]);
+
+  const startDuplicatePlanFlow = useCallback(
+    (planId: string, planLabel: string, seed: BuildPlanState, modelDate: string) => {
+      setMessages([]);
+      setUploadState(null);
+      setPendingReview(null);
+      setLastPlanState(null);
+      setDraft("");
+      setPresetPlanType(null);
+      setCustomFlowSeed(null);
+      setFlowActive(false);
+      resetEditPlanFlow();
+      setDuplicatePlanId(planId);
+      setDuplicatePlanLabel(planLabel);
+      setDuplicateFlowState(seed);
+      setDuplicateSourceModelDate(modelDate);
+      setDuplicateChoice(null);
+      setDuplicateFlowScreen("choice");
+      appendMessages([{ role: "mia", text: "What would you like to change in the duplicated plan?" }]);
+    },
+    [appendMessages, resetEditPlanFlow]
+  );
+
+  useEffect(() => {
+    if (!open || !duplicatePlanSignal || duplicatePlanSignal.token === lastDuplicateTokenRef.current) return;
+    lastDuplicateTokenRef.current = duplicatePlanSignal.token;
+    startDuplicatePlanFlow(
+      duplicatePlanSignal.planId,
+      duplicatePlanSignal.planLabel,
+      duplicatePlanSignal.state,
+      duplicatePlanSignal.modelDate
+    );
+  }, [open, duplicatePlanSignal, startDuplicatePlanFlow]);
+
+  /** Finishes any duplicate-flow branch (keep as-is / total budget / channel upload / free
+   * text) with the resulting state -- inserts the "new model data is available" choice screen
+   * when the source plan's model is stale, otherwise goes straight to the plan-ready review
+   * card, same as the normal create-plan flow's ending. */
+  const finishDuplicateSelection = (nextState: BuildPlanState) => {
+    const modelDate = duplicateSourceModelDate;
+    if (modelDate && !isModelUpToDate(modelDate)) {
+      setDuplicateFlowScreen("model");
+      setDuplicateFlowState(null);
+      setDuplicatePendingState(nextState);
+      setDuplicateModelChoice("existing");
+      return;
+    }
+    setDuplicateFlowScreen(null);
+    setPendingReview({
+      state: nextState,
+      intro: "Your duplicated plan is ready for review.",
+      delayMs: 1200,
+      resultModelDate: modelDate ?? LATEST_MODEL_DATE,
+    });
+    resetDuplicateFlow();
+  };
+
+  const handleDuplicateChoiceNext = () => {
+    if (!duplicateChoice || !duplicateFlowState) return;
+    if (duplicateChoice === "other") {
+      const text = duplicateOtherText.trim();
+      if (!text) return;
+      appendMessages([{ role: "user", text }]);
+      setDuplicateOtherText("");
+      appendMessages([{ role: "mia", text: "Got it — I'll keep the rest of the plan as is." }]);
+      finishDuplicateSelection(duplicateFlowState);
+      return;
+    }
+    const opt = DUPLICATE_CHOICES.find((o) => o.id === duplicateChoice)!;
+    appendMessages([{ role: "user", text: opt.label }]);
+    if (duplicateChoice === "keep") {
+      finishDuplicateSelection(duplicateFlowState);
+      return;
+    }
+    if (duplicateChoice === "total-budget") {
+      setDuplicateBudgetInput(String(includedTotal(duplicateFlowState)));
+      setDuplicateFlowScreen("budget");
+      appendMessages([{ role: "mia", text: "What would you like the new total budget to be?" }]);
+      return;
+    }
+    // channel-budget
+    setDuplicateFlowScreen(null);
+    const fileName = `${(duplicatePlanLabel ?? "Plan").replace(/[^\w.-]+/g, "_")}_budget.xlsx`;
+    setUploadState(applyMethodChoice(duplicateFlowState, "upload"));
+    appendMessages([
+      {
+        role: "mia",
+        kind: "download-card",
+        planState: duplicateFlowState,
+        downloadFileName: fileName,
+        text: "Download and adjust channel/tactic budgets in this template, then drop the completed file here.",
+      },
+    ]);
+  };
+
+  const handleDuplicateBudgetNext = () => {
+    if (!duplicateFlowState) return;
+    const amount = Number(duplicateBudgetInput.replace(/[^0-9.]/g, ""));
+    if (!amount || amount <= 0) return;
+    appendMessages([{ role: "user", text: currencyFormatter.format(amount) }]);
+    const currentTotal = includedTotal(duplicateFlowState);
+    const scale = currentTotal > 0 ? amount / currentTotal : 0;
+    const budget = { ...duplicateFlowState.budget };
+    const overridden = { ...duplicateFlowState.overridden };
+    Object.keys(budget).forEach((id) => {
+      if (duplicateFlowState.included[id] && budget[id] != null) {
+        budget[id] = Math.round(budget[id]! * scale);
+        overridden[id] = true;
+      }
+    });
+    finishDuplicateSelection({ ...duplicateFlowState, budget, overridden });
+  };
+
+  const handleDuplicateModelNext = () => {
+    if (!duplicatePendingState || !duplicateModelChoice) return;
+    const chosenDate = duplicateModelChoice === "latest" ? LATEST_MODEL_DATE : duplicateSourceModelDate ?? LATEST_MODEL_DATE;
+    appendMessages([
+      { role: "user", text: duplicateModelChoice === "latest" ? "Use latest model data" : "Use existing model data" },
+    ]);
+    const finalState = duplicatePendingState;
+    setDuplicateFlowScreen(null);
+    setPendingReview({
+      state: finalState,
+      intro: "Your duplicated plan is ready for review.",
+      delayMs: 1200,
+      resultModelDate: chosenDate,
+    });
+    resetDuplicateFlow();
+  };
 
   const handleEditChoiceNext = () => {
     if (!editChoice || !editFlowState) return;
@@ -523,11 +706,12 @@ export function MiaSidePanel({
       setDraft("");
       setPresetPlanType(null);
       resetEditPlanFlow();
+      resetDuplicateFlow();
       setPendingOptimizePeriod(periodLabel);
       setPendingOptimizeRows(rows);
       setSettingConstraints(true);
     },
-    [appendMessages, resetEditPlanFlow]
+    [appendMessages, resetEditPlanFlow, resetDuplicateFlow]
   );
 
   useEffect(() => {
@@ -581,7 +765,7 @@ export function MiaSidePanel({
 
   useEffect(() => {
     if (!pendingReview) return;
-    const { state: reviewState, intro, updateTargetPlanId, delayMs, summaryMode } = pendingReview;
+    const { state: reviewState, intro, updateTargetPlanId, delayMs, summaryMode, resultModelDate } = pendingReview;
     const timer = window.setTimeout(() => {
       setPendingReview(null);
       setLastPlanState(reviewState);
@@ -595,6 +779,7 @@ export function MiaSidePanel({
           rows: planSummaryRows(reviewState),
           updateTargetPlanId,
           summaryMode,
+          resultModelDate,
         },
       ]);
     }, delayMs ?? 5000);
@@ -616,6 +801,7 @@ export function MiaSidePanel({
       setChatsMenuOpen(false);
       setPresetPlanType(null);
       resetEditPlanFlow();
+      resetDuplicateFlow();
       return;
     }
 
@@ -630,7 +816,7 @@ export function MiaSidePanel({
     return () => {
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, flowActive, cancelCreateFlow, resetEditPlanFlow]);
+  }, [open, flowActive, cancelCreateFlow, resetEditPlanFlow, resetDuplicateFlow]);
 
   useEffect(() => {
     if (!chatsMenuOpen) return;
@@ -710,6 +896,12 @@ export function MiaSidePanel({
     setUploadState(null);
     setIsDragOver(false);
     appendMessages([{ role: "user", text: file.name || BUDGET_TEMPLATE_FILENAME }]);
+
+    if (duplicatePlanId) {
+      finishDuplicateSelection(reviewState);
+      return;
+    }
+
     const targetPlanId = editingPlanId ?? undefined;
     // Channel-level budget files (name contains "channel") keep the full channel-wise
     // breakdown and the redistribution caveats; anything else is treated as a per-tactic
@@ -1040,7 +1232,7 @@ export function MiaSidePanel({
                   onClick={() => {
                     if (!msg.planState) return;
                     if (msg.updateTargetPlanId) onUpdatePlan?.(msg.planState, msg.updateTargetPlanId);
-                    else onCreatePlan(msg.planState);
+                    else onCreatePlan(msg.planState, msg.resultModelDate);
                   }}
                 >
                   {msg.updateTargetPlanId ? "Update plan" : "Create plan"}
@@ -1262,6 +1454,127 @@ export function MiaSidePanel({
                 className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
                 disabled={!editFlowState.singleCT && editFlowState.attrs.length === 0}
                 onClick={handleCtNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {duplicateFlowScreen === "choice" && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <div className={flowStyles.methods}>
+                {DUPLICATE_CHOICES.map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`${flowStyles.methodCard} ${duplicateChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
+                    onClick={() => setDuplicateChoice(opt.id)}
+                  >
+                    <div className={flowStyles.methodIcon}>
+                      <MaterialIcon name={opt.iconName} size={20} />
+                    </div>
+                    <div>
+                      <h4>{opt.label}</h4>
+                      <p>{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+                <label
+                  className={`${flowStyles.methodCard} ${styles.otherOptionCard} ${
+                    duplicateChoice === "other" ? flowStyles.methodCardSelected : ""
+                  }`}
+                >
+                  <input
+                    type="text"
+                    className={styles.otherOptionInput}
+                    placeholder="Something else…"
+                    value={duplicateOtherText}
+                    onChange={(e) => {
+                      setDuplicateOtherText(e.target.value);
+                      setDuplicateChoice(e.target.value.trim() ? "other" : null);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!duplicateChoice || (duplicateChoice === "other" && !duplicateOtherText.trim())}
+                onClick={handleDuplicateChoiceNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {duplicateFlowScreen === "budget" && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <div className={flowStyles.targetInputWrap}>
+                <span className={flowStyles.dol}>$</span>
+                <input
+                  className={`${flowStyles.targetInput} ${flowStyles.targetInputPrefixed}`}
+                  inputMode="numeric"
+                  placeholder="e.g. 250,000"
+                  value={duplicateBudgetInput}
+                  onChange={(e) => setDuplicateBudgetInput(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!Number(duplicateBudgetInput.replace(/[^0-9.]/g, ""))}
+                onClick={handleDuplicateBudgetNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {duplicateFlowScreen === "model" && duplicatePendingState && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <p className={styles.miaText}>
+                The plan this was based on was using model date from {duplicateSourceModelDate}. A new model update
+                is available.
+              </p>
+              <div className={flowStyles.methods}>
+                <button
+                  type="button"
+                  className={`${flowStyles.methodCard} ${duplicateModelChoice === "existing" ? flowStyles.methodCardSelected : ""}`}
+                  onClick={() => setDuplicateModelChoice("existing")}
+                >
+                  <div>
+                    <h4>Use existing model data</h4>
+                    <p>{duplicateSourceModelDate}</p>
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  className={`${flowStyles.methodCard} ${duplicateModelChoice === "latest" ? flowStyles.methodCardSelected : ""}`}
+                  onClick={() => setDuplicateModelChoice("latest")}
+                >
+                  <div>
+                    <h4>Use latest model data</h4>
+                    <p>{LATEST_MODEL_DATE}</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!duplicateModelChoice}
+                onClick={handleDuplicateModelNext}
               >
                 Next
               </button>
