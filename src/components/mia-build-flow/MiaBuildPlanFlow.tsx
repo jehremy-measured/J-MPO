@@ -16,7 +16,7 @@ import type { PlanTarget } from "../../mpo/types";
 import { CalendarRangePicker } from "../CalendarRangePicker";
 import { Checkbox } from "../Checkbox";
 import { RollupHint } from "../RollupHint";
-import { ResetIcon, TargetIcon, UploadIcon } from "../icons/BuildPlanIcons";
+import { CheckIcon, ResetIcon } from "../icons/BuildPlanIcons";
 import styles from "./MiaBuildPlanFlow.module.css";
 
 type Props = {
@@ -35,19 +35,16 @@ type BudgetInputChoice = "upload" | "total" | null;
  * "Fetch from past period" used to — see BUDGET_INPUT_METHOD below. */
 const BUDGET_INPUT_OPTIONS: {
   id: Exclude<BudgetInputChoice, null>;
-  icon: typeof UploadIcon;
   label: string;
   desc: string;
 }[] = [
   {
     id: "upload",
-    icon: UploadIcon,
     label: "Upload tactic/channel budgets",
     desc: "Use our template or upload your own budget file",
   },
   {
     id: "total",
-    icon: TargetIcon,
     label: "I only have a total budget",
     desc: "Tactic-wise budgets will be assigned based on past spend data",
   },
@@ -332,7 +329,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
           <p className={styles.q}>What is your budget for this period?</p>
           <div className={styles.turnContent}>
             <div className={styles.methods}>
-              {BUDGET_INPUT_OPTIONS.map((opt) => (
+              {BUDGET_INPUT_OPTIONS.map((opt, index) => (
                 <button
                   key={opt.id}
                   type="button"
@@ -340,7 +337,7 @@ export function MiaBuildPlanFlow({ initialState, onAwaitUpload, onFetchReady, on
                   onClick={() => setMethodChoice(opt.id)}
                 >
                   <div className={styles.methodIcon}>
-                    <opt.icon size={20} />
+                    {methodChoice === opt.id ? <CheckIcon size={14} /> : index + 1}
                   </div>
                   <div>
                     <h4>{opt.label}</h4>

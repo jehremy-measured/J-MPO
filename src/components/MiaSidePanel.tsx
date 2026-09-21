@@ -27,6 +27,7 @@ import { RollupHint } from "./RollupHint";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
 import { CloseIcon } from "./icons/CloseIcon";
 import {
+  CheckIcon,
   ChevronDownIcon,
   ChevronRightIcon,
   DownloadIcon,
@@ -1380,7 +1381,9 @@ export function MiaSidePanel({
                     className={`${flowStyles.methodCard} ${editChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
                     onClick={() => setEditChoice(opt.id)}
                   >
-                    <div className={flowStyles.methodIcon}>{index + 1}</div>
+                    <div className={flowStyles.methodIcon}>
+                      {editChoice === opt.id ? <CheckIcon size={14} /> : index + 1}
+                    </div>
                     <div>
                       <h4>{opt.label}</h4>
                       <p>{opt.desc}</p>
@@ -1392,7 +1395,9 @@ export function MiaSidePanel({
                     editChoice === "other" ? flowStyles.methodCardSelected : ""
                   }`}
                 >
-                  <div className={flowStyles.methodIcon}>{EDIT_CHOICES.length + 1}</div>
+                  <div className={flowStyles.methodIcon}>
+                    {editChoice === "other" ? <CheckIcon size={14} /> : EDIT_CHOICES.length + 1}
+                  </div>
                   <input
                     ref={otherChoiceInputRef}
                     type="text"
@@ -1507,7 +1512,9 @@ export function MiaSidePanel({
                     className={`${flowStyles.methodCard} ${duplicateChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
                     onClick={() => setDuplicateChoice(opt.id)}
                   >
-                    <div className={flowStyles.methodIcon}>{index + 1}</div>
+                    <div className={flowStyles.methodIcon}>
+                      {duplicateChoice === opt.id ? <CheckIcon size={14} /> : index + 1}
+                    </div>
                     <div>
                       <h4>{opt.label}</h4>
                       <p>{opt.desc}</p>
@@ -1519,7 +1526,9 @@ export function MiaSidePanel({
                     duplicateChoice === "other" ? flowStyles.methodCardSelected : ""
                   }`}
                 >
-                  <div className={flowStyles.methodIcon}>{DUPLICATE_CHOICES.length + 1}</div>
+                  <div className={flowStyles.methodIcon}>
+                    {duplicateChoice === "other" ? <CheckIcon size={14} /> : DUPLICATE_CHOICES.length + 1}
+                  </div>
                   <input
                     ref={duplicateOtherInputRef}
                     type="text"
