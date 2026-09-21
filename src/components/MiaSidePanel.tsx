@@ -1577,7 +1577,7 @@ export function MiaSidePanel({
         {duplicateFlowScreen === "model" && duplicatePendingState && (
           <div className={flowStyles.turn}>
             <div className={flowStyles.turnContent}>
-              <p className={styles.miaText}>
+              <p className={`${styles.miaText} ${styles.turnIntroText}`}>
                 The plan this was based on was using model date from {duplicateSourceModelDate}. A new model update
                 is available.
               </p>

@@ -273,6 +273,13 @@
   animation: bubbleIn 0.18s ease-out;
 }
 
+/* Modifier for a .miaText paragraph used as a turn's own intro copy (e.g. the duplicate flow's
+ * model-refresh explanation), rather than a standalone chat bubble -- .messages' own 12px gap
+ * doesn't apply inside a turn, so this adds the matching space below it directly. */
+.turnIntroText {
+  margin-bottom: 12px;
+}
+
 .thinkingRow {
   display: flex;
   align-items: center;
