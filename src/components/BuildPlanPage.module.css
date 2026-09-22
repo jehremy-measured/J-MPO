@@ -111,10 +111,6 @@
   top: 48px;
 }
 
-.pageReview .tblFoot {
-  bottom: 65px;
-}
-
 .summaryChip {
   display: inline-flex;
   align-items: center;
@@ -1023,6 +1019,15 @@
 
 .tblHead span:last-child {
   text-align: right;
+}
+
+.tblTotalRow {
+  display: grid;
+  grid-template-columns: 1fr 188px;
+  align-items: center;
+  padding: 12px 0;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--gray-300);
 }
 
 .tblHeadTactic {

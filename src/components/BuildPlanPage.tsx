@@ -894,6 +894,12 @@ function ReviewScreen({
             </div>
           </div>
         </div>
+        <div className={styles.tblTotalRow}>
+          <span className={styles.flabel}>Total</span>
+          <div className={styles.tblCellBudget}>
+            <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
+          </div>
+        </div>
         {rows.length === 0 ? (
           <div className={styles.emptyRow}>No tactics match your search or filter.</div>
         ) : (
@@ -936,12 +942,6 @@ function ReviewScreen({
             );
           })
         )}
-        <div className={styles.tblFoot}>
-          <span />
-          <div className={styles.tblCellBudget}>
-            <span className={styles.fval}>{currencyFormatter.format(includedTotal(state))}</span>
-          </div>
-        </div>
       </div>
       </Card>
       {budgetDialogTactic && (
