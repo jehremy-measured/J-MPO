@@ -96,7 +96,7 @@
 .detailHeaderMain {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   min-width: 0;
   flex: 1;
 }

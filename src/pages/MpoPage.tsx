@@ -4,7 +4,6 @@ import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { DuplicatePlanDialog } from "../components/DuplicatePlanDialog";
-import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { ChevronRightIcon } from "../components/icons/BuildPlanIcons";
@@ -305,16 +304,7 @@ export function MpoPage() {
   const duplicatingPlan = state.plans.find((p) => p.id === duplicatingPlanId) ?? null;
   const activeModelDate = activePlan?.modelDate ?? CURRENT_MODEL_DATE;
 
-  // Nudges toward duplicating a simulation plan to explore what-if variants, a few seconds
-  // after landing on it — resets whenever the viewed plan changes.
-  const [showDuplicatePopover, setShowDuplicatePopover] = useState(false);
   const [updateModelDialogOpen, setUpdateModelDialogOpen] = useState(false);
-  useEffect(() => {
-    setShowDuplicatePopover(false);
-    if (viewMode !== "detail" || activePlan?.kind !== "simulation") return;
-    const timer = window.setTimeout(() => setShowDuplicatePopover(true), 10000);
-    return () => window.clearTimeout(timer);
-  }, [viewMode, activePlan?.id, activePlan?.kind]);
 
   const currentTarget =
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
@@ -441,16 +431,6 @@ export function MpoPage() {
                             <span className={styles.kindBadge}>{KIND_LABEL[activePlan.kind]}</span>
                           )}
                           {activePlan?.shared && <SharedPlanIcon createdBy={activePlan.createdBy} />}
-                          {showDuplicatePopover && activePlan && (
-                            <DuplicatePlanPopover
-                              onDuplicate={() => {
-                                setShowDuplicatePopover(false);
-                                if (MIA_DUPLICATE_PLAN_IDS.has(activePlan.id)) openMiaDuplicatePlan(activePlan.id);
-                                else setDuplicatingPlanId(activePlan.id);
-                              }}
-                              onDismiss={() => setShowDuplicatePopover(false)}
-                            />
-                          )}
                         </div>
                       )}
                       {activePlan && (
