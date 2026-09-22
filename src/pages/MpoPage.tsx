@@ -8,6 +8,7 @@ import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { CloseIcon } from "../components/icons/CloseIcon";
+import { ChevronRightIcon } from "../components/icons/BuildPlanIcons";
 import { SparkleIcon } from "../components/icons/SparkleIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
 import { PlanOptionsMenu } from "../components/PlanOptionsMenu";
@@ -386,67 +387,78 @@ export function MpoPage() {
             ) : (
               <div className={styles.detailPopup}>
                 <div className={styles.detailHeader}>
-                  {renamingTitle ? (
-                    <input
-                      ref={titleInputRef}
-                      type="text"
-                      className={styles.detailPlanTitleInput}
-                      value={titleRenameValue}
-                      onChange={(e) => setTitleRenameValue(e.target.value)}
-                      onBlur={commitRenameTitle}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") commitRenameTitle();
-                        if (e.key === "Escape") setRenamingTitle(false);
-                      }}
-                      autoFocus
-                    />
-                  ) : (
-                    <div className={styles.detailTitleGroup}>
-                      {state.activePlanId ? (
-                        <PlanOptionsMenu
-                          planId={state.activePlanId}
-                          planLabel={state.activePlanLabel}
-                          title={state.activePlanLabel}
-                          shared={activePlan?.shared}
-                          onRenameRequest={startRenameTitle}
-                          onToggleSharePlan={state.toggleSharePlan}
-                          onDuplicatePlan={() =>
-                            MIA_DUPLICATE_PLAN_IDS.has(state.activePlanId)
-                              ? openMiaDuplicatePlan(state.activePlanId)
-                              : setDuplicatingPlanId(state.activePlanId)
-                          }
-                          onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
-                          onDeletePlan={handleDeleteActivePlan}
-                          onUpdateModel={() => setUpdateModelDialogOpen(true)}
-                          currentModelLabel={`Current model: ${activeModelDate}`}
-                          modelUpToDate={isModelUpToDate(activeModelDate)}
-                          variant="chevron"
+                  <div className={styles.detailHeaderMain}>
+                    <nav className={styles.breadcrumb} aria-label="Breadcrumb">
+                      <button type="button" className={styles.breadcrumbLink} onClick={() => setViewMode("list")}>
+                        MPO Plans
+                      </button>
+                      <span className={styles.breadcrumbChevron}>
+                        <ChevronRightIcon size={14} />
+                      </span>
+                      <span className={styles.breadcrumbCurrent}>{state.activePlanLabel}</span>
+                    </nav>
+                    <div className={styles.detailTitleRow}>
+                      {renamingTitle ? (
+                        <input
+                          ref={titleInputRef}
+                          type="text"
+                          className={styles.detailPlanTitleInput}
+                          value={titleRenameValue}
+                          onChange={(e) => setTitleRenameValue(e.target.value)}
+                          onBlur={commitRenameTitle}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") commitRenameTitle();
+                            if (e.key === "Escape") setRenamingTitle(false);
+                          }}
+                          autoFocus
                         />
                       ) : (
-                        <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
+                        <div className={styles.detailTitleGroup}>
+                          {state.activePlanId ? (
+                            <PlanOptionsMenu
+                              planId={state.activePlanId}
+                              planLabel={state.activePlanLabel}
+                              title={state.activePlanLabel}
+                              shared={activePlan?.shared}
+                              onRenameRequest={startRenameTitle}
+                              onToggleSharePlan={state.toggleSharePlan}
+                              onDuplicatePlan={() =>
+                                MIA_DUPLICATE_PLAN_IDS.has(state.activePlanId)
+                                  ? openMiaDuplicatePlan(state.activePlanId)
+                                  : setDuplicatingPlanId(state.activePlanId)
+                              }
+                              onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
+                              onDeletePlan={handleDeleteActivePlan}
+                              onUpdateModel={() => setUpdateModelDialogOpen(true)}
+                              currentModelLabel={`Current model: ${activeModelDate}`}
+                              modelUpToDate={isModelUpToDate(activeModelDate)}
+                              variant="chevron"
+                              trailingIcon="edit"
+                            />
+                          ) : (
+                            <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
+                          )}
+                          {activePlan && (
+                            <span className={styles.kindBadge}>{KIND_LABEL[activePlan.kind]}</span>
+                          )}
+                          {activePlan?.shared && <SharedPlanIcon createdBy={activePlan.createdBy} />}
+                          {showDuplicatePopover && activePlan && (
+                            <DuplicatePlanPopover
+                              onDuplicate={() => {
+                                setShowDuplicatePopover(false);
+                                if (MIA_DUPLICATE_PLAN_IDS.has(activePlan.id)) openMiaDuplicatePlan(activePlan.id);
+                                else setDuplicatingPlanId(activePlan.id);
+                              }}
+                              onDismiss={() => setShowDuplicatePopover(false)}
+                            />
+                          )}
+                        </div>
                       )}
                       {activePlan && (
-                        <span
-                          className={`${styles.kindBadge} ${
-                            activePlan.kind === "optimization" ? styles.kindBadgeOptimization : styles.kindBadgeSimulation
-                          }`}
-                        >
-                          {KIND_LABEL[activePlan.kind]}
-                        </span>
-                      )}
-                      {activePlan?.shared && <SharedPlanIcon createdBy={activePlan.createdBy} />}
-                      {showDuplicatePopover && activePlan && (
-                        <DuplicatePlanPopover
-                          onDuplicate={() => {
-                            setShowDuplicatePopover(false);
-                            if (MIA_DUPLICATE_PLAN_IDS.has(activePlan.id)) openMiaDuplicatePlan(activePlan.id);
-                            else setDuplicatingPlanId(activePlan.id);
-                          }}
-                          onDismiss={() => setShowDuplicatePopover(false)}
-                        />
+                        <span className={styles.detailModelDate}>MIM data from: {activeModelDate}</span>
                       )}
                     </div>
-                  )}
+                  </div>
                   <div className={styles.detailHeaderActions}>
                     <button
                       type="button"
@@ -499,6 +511,11 @@ export function MpoPage() {
                             )
                           )
                         }
+                        onDuplicate={() =>
+                          MIA_DUPLICATE_PLAN_IDS.has(state.newPlanSummary!.planId)
+                            ? openMiaDuplicatePlan(state.newPlanSummary!.planId)
+                            : setDuplicatingPlanId(state.newPlanSummary!.planId)
+                        }
                         allowActual={!isNewlyCreatedPlan}
                       />
                     </>
@@ -539,6 +556,11 @@ export function MpoPage() {
                               state.totals.budget
                             )
                           )
+                        }
+                        onDuplicate={() =>
+                          MIA_DUPLICATE_PLAN_IDS.has(activePlan.id)
+                            ? openMiaDuplicatePlan(activePlan.id)
+                            : setDuplicatingPlanId(activePlan.id)
                         }
                       />
                     </>

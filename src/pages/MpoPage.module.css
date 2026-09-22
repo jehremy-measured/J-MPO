@@ -85,10 +85,60 @@
   top: 0;
   z-index: 10;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 12px;
-  padding: 16px 24px 24px;
+  padding: 16px 24px;
   background: var(--gray-000);
+  border-bottom: 1px solid var(--gray-300-stroke);
+}
+
+.detailHeaderMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumbLink {
+  font-size: 12px;
+  color: var(--blue-700);
+  border-radius: var(--radius-sm);
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbChevron {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 2px;
+  color: var(--gray-500);
+}
+
+.breadcrumbCurrent {
+  font-size: 12px;
+  color: var(--gray-800);
+}
+
+.detailTitleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  min-width: 0;
+}
+
+.detailModelDate {
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--blue-700);
 }
 
 .detailTitleGroup {
@@ -104,7 +154,6 @@
   align-items: center;
   flex-shrink: 0;
   gap: 12px;
-  margin-left: auto;
 }
 
 .detailCloseBtn {
@@ -132,20 +181,12 @@
 .kindBadge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 6px 14px 6px 8px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
-}
-
-.kindBadgeOptimization {
-  background: var(--blue-100);
-  color: var(--blue-700);
-}
-
-.kindBadgeSimulation {
-  background: var(--green-100);
-  color: var(--green-800);
+  background: #f6eaf9;
+  color: #a82cc7;
 }
 
 .detailPlanTitleInput {

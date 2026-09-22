@@ -188,25 +188,105 @@
 .optimizeBanner {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: 8px;
   margin: auto -24px -20px;
-  padding: 16px 24px;
   border-top: 1px solid var(--gray-300-stroke);
-  background: var(--gray-100);
+  background:
+    radial-gradient(ellipse 74.37% 50% at 50% 100.16%, rgba(255, 194, 102, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%),
+    radial-gradient(ellipse 101.1% 147.44% at 0% 100.16%, rgba(255, 133, 133, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%),
+    radial-gradient(ellipse 78.19% 111.5% at 100% 100.16%, rgba(43, 180, 164, 0.15) 0%, rgba(255, 255, 255, 0.15) 100%),
+    var(--gray-000);
+}
+
+.bannerTrack {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+}
+
+.bannerTrack::-webkit-scrollbar {
+  display: none;
+}
+
+.bannerSlide {
+  flex: 0 0 100%;
+  scroll-snap-align: start;
+  padding: 16px 24px 0;
+}
+
+.bannerAmountLine {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.bannerAmountValue {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 24px;
+  color: var(--green-700);
+}
+
+.bannerAmountPct {
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: var(--green-700);
+}
+
+.bannerSlideTitle {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+  color: var(--gray-1000);
 }
 
 .optimizeBannerText {
-  margin: 0;
+  margin: 4px 0 0;
   font-size: 14px;
   font-weight: 400;
   line-height: 1.4;
   color: var(--gray-1000);
 }
 
-.optimizeBannerGain {
-  color: var(--green-800);
-  font-weight: 600;
+.bannerFooterRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 24px 16px;
+}
+
+.bannerDots {
+  display: flex;
+  align-items: center;
+}
+
+.bannerDotHit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: none;
+  flex-shrink: 0;
+}
+
+.bannerDot {
+  flex-shrink: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 1px solid var(--gray-400);
+  background: transparent;
+}
+
+.bannerDotActive {
+  border-color: var(--gray-800);
+  background: var(--gray-800);
 }
 
 .optimizeBannerBtn {
@@ -216,7 +296,6 @@
   flex-shrink: 0;
   gap: 6px;
   height: 32px;
-  margin: 0 0 0 -8px;
   padding: 0 12px 0 8px;
   color: var(--blue-700);
   font-size: 14px;
@@ -225,8 +304,12 @@
   white-space: nowrap;
 }
 
+.optimizeBannerBtn svg {
+  color: var(--purple-600);
+}
+
 .optimizeBannerBtn:hover {
-  background: var(--gray-200);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .stat {

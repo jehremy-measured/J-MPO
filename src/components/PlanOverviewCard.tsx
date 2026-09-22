@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { SparkleIcon } from "./icons/SparkleIcon";
@@ -17,6 +18,7 @@ type Props = {
   incrementalOrders?: number;
   cpo?: number;
   onOptimize?: () => void;
+  onDuplicate?: () => void;
   /** Forces the chart's Actual overlay off, even for an in-flight plan — e.g. right after
    * creating a plan, before it's had any real time to accrue actuals against. */
   allowActual?: boolean;
@@ -63,8 +65,23 @@ export function PlanOverviewCard({
   incrementalOrders = 0,
   cpo = 0,
   onOptimize,
+  onDuplicate,
   allowActual = true,
 }: Props) {
+  const [activeBannerSlide, setActiveBannerSlide] = useState(0);
+  const bannerTrackRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBannerSlide = (index: number) => {
+    const el = bannerTrackRef.current;
+    if (!el) return;
+    el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
+  };
+
+  const handleBannerScroll = () => {
+    const el = bannerTrackRef.current;
+    if (!el || el.clientWidth === 0) return;
+    setActiveBannerSlide(Math.round(el.scrollLeft / el.clientWidth));
+  };
   // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
   // Forecast column's secondary metric row) follows whichever pair the target belongs to.
   const isOrdersFamily = target === "incremental-orders" || target === "incremental-cpo";
@@ -83,9 +100,7 @@ export function PlanOverviewCard({
   const primaryKind = hasTarget ? primaryKindFor(target as PlanTarget) : null;
 
   const optimizeGainAmount = volumeMetric * OPTIMIZATION_UPLIFT_PCT;
-  const optimizeGainLabel = `${formatVolumeFull(optimizeGainAmount, isOrdersFamily)} (${Math.round(
-    OPTIMIZATION_UPLIFT_PCT * 100
-  )}%)`;
+  const optimizeGainPct = Math.round(OPTIMIZATION_UPLIFT_PCT * 100);
 
   // Sales and ROAS are shown together; orders and CPO are shown together — whichever pair
   // the selected target belongs to. The target itself becomes the primary (highlighted) row
@@ -157,14 +172,52 @@ export function PlanOverviewCard({
             )}
 
             <div className={styles.optimizeBanner}>
-              <p className={styles.optimizeBannerText}>
-                You could potentially <strong className={styles.optimizeBannerGain}>gain {optimizeGainLabel}</strong>{" "}
-                in incremental {volumeNoun.toLowerCase()} by optimizing this plan.
-              </p>
-              <button type="button" className={styles.optimizeBannerBtn} onClick={onOptimize}>
-                <SparkleIcon size={18} variant="fill" />
-                Optimize
-              </button>
+              <div className={styles.bannerTrack} ref={bannerTrackRef} onScroll={handleBannerScroll}>
+                <div className={styles.bannerSlide}>
+                  <div className={styles.bannerAmountLine}>
+                    <span className={styles.bannerAmountValue}>
+                      {formatVolumeFull(optimizeGainAmount, isOrdersFamily)}
+                    </span>
+                    <span className={styles.bannerAmountPct}>({optimizeGainPct}%)</span>
+                  </div>
+                  <p className={styles.optimizeBannerText}>
+                    potential gain in incremental {volumeNoun.toLowerCase()} by optimizing this plan.
+                  </p>
+                </div>
+                <div className={styles.bannerSlide}>
+                  <p className={styles.bannerSlideTitle}>Create what-if scenarios</p>
+                  <p className={styles.optimizeBannerText}>
+                    Duplicate this plan to simulate what-if scenarios with different budgets.
+                  </p>
+                </div>
+              </div>
+              <div className={styles.bannerFooterRow}>
+                <div className={styles.bannerDots} role="tablist" aria-label="Banner slides">
+                  {[0, 1].map((i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      role="tab"
+                      aria-selected={activeBannerSlide === i}
+                      aria-label={`Show slide ${i + 1}`}
+                      className={styles.bannerDotHit}
+                      onClick={() => scrollToBannerSlide(i)}
+                    >
+                      <span
+                        className={`${styles.bannerDot} ${activeBannerSlide === i ? styles.bannerDotActive : ""}`}
+                      />
+                    </button>
+                  ))}
+                </div>
+                <button
+                  type="button"
+                  className={styles.optimizeBannerBtn}
+                  onClick={activeBannerSlide === 0 ? onOptimize : onDuplicate}
+                >
+                  <SparkleIcon size={18} variant="fill" />
+                  {activeBannerSlide === 0 ? "Optimize" : "Duplicate"}
+                </button>
+              </div>
             </div>
           </div>
 
