@@ -1102,7 +1102,7 @@
 }
 
 .tname {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--gray-1000);
   display: flex;
@@ -1273,7 +1273,7 @@
 
 .fval {
   text-align: right;
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--gray-1000);
 }
