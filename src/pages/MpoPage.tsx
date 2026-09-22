@@ -216,10 +216,8 @@ export function MpoPage() {
   };
 
   // Plans that support editing conversationally through Mia (the "Edit" link + sparkle icon)
-  // instead of the full-page "Plan settings" modal: any plan Mia herself just created, plus
-  // this one preset demo plan, for variety.
-  const MIA_EDIT_PLAN_IDS = new Set(["sim-q3-inflight"]);
-  const isMiaEditPlan = (planId: string) => planId.startsWith("mia-") || MIA_EDIT_PLAN_IDS.has(planId);
+  // instead of the full-page "Plan settings" modal: any plan Mia herself just created.
+  const isMiaEditPlan = (planId: string) => planId.startsWith("mia-");
 
   // Opens the Mia panel straight to "What would you like to change?" (planning period /
   // conversion type / budgets), seeded from the given plan -- the detail page's "Edit" link
