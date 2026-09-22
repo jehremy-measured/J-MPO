@@ -1535,6 +1535,7 @@ export function MiaSidePanel({
 
         {duplicateFlowScreen === "choice" && (
           <div className={flowStyles.turn}>
+            <p className={flowStyles.q}>Modify duplicated plan</p>
             <div className={flowStyles.turnContent}>
               <div className={flowStyles.methods}>
                 {DUPLICATE_CHOICES.map((opt, index) => (
