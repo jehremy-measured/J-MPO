@@ -24,9 +24,9 @@ type Props = {
   /** For the "chevron" variant: renders this text before the chevron inside the same trigger,
    * so the title itself (not just the chevron) is hoverable and opens the menu on click. */
   title?: string;
-  /** For the "chevron" variant: swaps the trailing chevron glyph for a pencil icon, same
-   * click-opens-the-menu behavior. */
-  trailingIcon?: "chevron" | "edit";
+  /** For the "chevron" variant: swaps the trailing chevron glyph for a pencil icon, or "none"
+   * to hide the trailing glyph entirely -- the title text itself still opens the menu. */
+  trailingIcon?: "chevron" | "edit" | "none";
 };
 
 export function PlanOptionsMenu({
@@ -107,7 +107,11 @@ export function PlanOptionsMenu({
           onClick={() => setMenuOpen((v) => !v)}
         >
           {title && <span className={styles.chevronBtnTitleText}>{title}</span>}
-          {trailingIcon === "edit" ? <EditIcon size={18} /> : <ChevronDownIcon size={18} />}
+          {trailingIcon === "edit" ? (
+            <EditIcon size={18} />
+          ) : trailingIcon === "none" ? null : (
+            <ChevronDownIcon size={18} />
+          )}
         </button>
       ) : (
         <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>

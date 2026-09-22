@@ -7,7 +7,6 @@ import { DuplicatePlanDialog } from "../components/DuplicatePlanDialog";
 import { DuplicatePlanPopover } from "../components/DuplicatePlanPopover";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
-import { CloseIcon } from "../components/icons/CloseIcon";
 import { ChevronRightIcon } from "../components/icons/BuildPlanIcons";
 import { SparkleIcon } from "../components/icons/SparkleIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
@@ -433,7 +432,7 @@ export function MpoPage() {
                               currentModelLabel={`Current model: ${activeModelDate}`}
                               modelUpToDate={isModelUpToDate(activeModelDate)}
                               variant="chevron"
-                              trailingIcon="edit"
+                              trailingIcon="none"
                             />
                           ) : (
                             <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
@@ -458,16 +457,6 @@ export function MpoPage() {
                         <span className={styles.detailModelDate}>MIM data from: {activeModelDate}</span>
                       )}
                     </div>
-                  </div>
-                  <div className={styles.detailHeaderActions}>
-                    <button
-                      type="button"
-                      className={styles.detailCloseBtn}
-                      aria-label="Close"
-                      onClick={() => setViewMode("list")}
-                    >
-                      <CloseIcon size={20} />
-                    </button>
                   </div>
                 </div>
                 <div className={styles.content}>

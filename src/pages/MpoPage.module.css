@@ -61,6 +61,7 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  padding-top: 24px;
 }
 
 .detailPopup {
@@ -106,6 +107,9 @@
 }
 
 .breadcrumbLink {
+  padding: 0;
+  border: none;
+  background: none;
   font-size: 12px;
   color: var(--blue-700);
   border-radius: var(--radius-sm);
@@ -145,31 +149,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 16px;
   min-width: 0;
-}
-
-.detailHeaderActions {
-  display: inline-flex;
-  align-items: center;
-  flex-shrink: 0;
-  gap: 12px;
-}
-
-.detailCloseBtn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  width: 32px;
-  height: 32px;
-  color: var(--gray-800);
-  border-radius: var(--radius-sm);
-}
-
-.detailCloseBtn:hover {
-  background: var(--gray-200);
-  color: var(--gray-1000);
 }
 
 .detailPlanTitle {
@@ -181,7 +162,7 @@
 .kindBadge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px 6px 8px;
+  padding: 6px 8px;
   border-radius: 999px;
   font-size: 12px;
   font-weight: 500;
