@@ -16,7 +16,6 @@ import { PrototypeBar } from "../components/PrototypeBar";
 import { SharedPlanIcon } from "../components/SharedPlanIcon";
 import { SidebarEditPlanPage } from "../components/SidebarEditPlanPage";
 import { TopNavigation } from "../components/TopNavigation";
-import { UpdateModelDialog } from "../components/UpdateModelDialog";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { BUDGET_TEMPLATE_FILENAME } from "../mpo/buildPlan/budgetTemplateData";
 import { formatRangeLabel, subtractYears } from "../mpo/buildPlan/dateUtils";
@@ -29,7 +28,7 @@ import {
   formatTargetLabel,
 } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import { CURRENT_MODEL_DATE, isModelUpToDate } from "../mpo/modelOptions";
+import { CURRENT_MODEL_DATE } from "../mpo/modelOptions";
 import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
@@ -304,8 +303,6 @@ export function MpoPage() {
   const duplicatingPlan = state.plans.find((p) => p.id === duplicatingPlanId) ?? null;
   const activeModelDate = activePlan?.modelDate ?? CURRENT_MODEL_DATE;
 
-  const [updateModelDialogOpen, setUpdateModelDialogOpen] = useState(false);
-
   const currentTarget =
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.target
@@ -418,9 +415,6 @@ export function MpoPage() {
                               }
                               onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                               onDeletePlan={handleDeleteActivePlan}
-                              onUpdateModel={() => setUpdateModelDialogOpen(true)}
-                              currentModelLabel={`Current model: ${activeModelDate}`}
-                              modelUpToDate={isModelUpToDate(activeModelDate)}
                               variant="chevron"
                               trailingIcon="none"
                             />
@@ -593,15 +587,6 @@ export function MpoPage() {
             const newId = state.duplicatePlan(duplicatingPlan.id, name, model.date);
             setDuplicatingPlanId(null);
             if (newId) openPlan(newId);
-          }}
-        />
-      )}
-      {updateModelDialogOpen && activePlan && (
-        <UpdateModelDialog
-          onClose={() => setUpdateModelDialogOpen(false)}
-          onConfirm={(model) => {
-            state.notify(`Updated "${activePlan.label}" to the ${model.date} model`);
-            setUpdateModelDialogOpen(false);
           }}
         />
       )}
