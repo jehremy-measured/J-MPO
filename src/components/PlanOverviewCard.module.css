@@ -146,7 +146,7 @@
 
 .body {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 3fr 7fr;
   min-height: var(--plan-goal-card-height);
 }
 
