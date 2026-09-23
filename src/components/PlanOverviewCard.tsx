@@ -187,7 +187,7 @@ export function PlanOverviewCard({
                 <div className={styles.bannerSlide}>
                   <p className={styles.bannerSlideTitle}>Create plan variants</p>
                   <p className={styles.optimizeBannerText}>
-                    Make a copy of this plan and Simulate how it performs under different budgets.
+                    Simulate different scenarios with another version of this plan.
                   </p>
                 </div>
               </div>
