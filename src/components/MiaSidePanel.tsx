@@ -176,6 +176,7 @@ type DuplicatePlanSignal = {
   modelDate: string;
 };
 type EditChoiceId = "period" | "ct" | "budget" | "other";
+type DuplicateChoiceId = "total-budget" | "channel-budget" | "keep" | "other";
 type DuplicateChannelMethodId = "upload" | "manual";
 
 type Props = {
@@ -212,6 +213,16 @@ const EDIT_CHOICES: { id: EditChoiceId; label: string; desc: string }[] = [
   { id: "budget", label: "Budgets", desc: "Upload a new tactic/channel budget file" },
 ];
 
+const DUPLICATE_CHOICES: { id: DuplicateChoiceId; label: string; desc: string }[] = [
+  { id: "total-budget", label: "Change total budget", desc: "Change the total budget by an amount or %" },
+  {
+    id: "channel-budget",
+    label: "Change channel or tactic budgets",
+    desc: "Change individual channel or tactic budgets",
+  },
+  { id: "keep", label: "Leave as is", desc: "You can always modify this variant later" },
+];
+
 const DUPLICATE_CHANNEL_METHOD_OPTIONS: { id: DuplicateChannelMethodId; label: string; desc: string }[] = [
   { id: "upload", label: "Upload budget", desc: "Use our template or upload your own budget file" },
   { id: "manual", label: "Manually edit budgets", desc: "Edit each tactic's budget directly in the plan" },
@@ -242,6 +253,7 @@ export function MiaSidePanel({
   const fileAttachRef = useRef<HTMLInputElement>(null);
   const chatsMenuRef = useRef<HTMLDivElement>(null);
   const otherChoiceInputRef = useRef<HTMLInputElement>(null);
+  const duplicateOtherInputRef = useRef<HTMLInputElement>(null);
   const onCloseRef = useRef(onClose);
   const [messages, setMessages] = useState<Message[]>([]);
   const [expandedSummaryCards, setExpandedSummaryCards] = useState<Set<string>>(new Set());
@@ -325,6 +337,8 @@ export function MiaSidePanel({
   const [duplicateFlowScreen, setDuplicateFlowScreen] = useState<
     "choice" | "budget" | "channel-method" | null
   >(null);
+  const [duplicateChoice, setDuplicateChoice] = useState<DuplicateChoiceId | null>(null);
+  const [duplicateOtherText, setDuplicateOtherText] = useState("");
   const [duplicateFlowState, setDuplicateFlowState] = useState<BuildPlanState | null>(null);
   const [duplicateSourceModelDate, setDuplicateSourceModelDate] = useState<string | null>(null);
   const [duplicateBudgetInput, setDuplicateBudgetInput] = useState("");
@@ -333,6 +347,8 @@ export function MiaSidePanel({
     setDuplicatePlanId(null);
     setDuplicatePlanLabel(null);
     setDuplicateFlowScreen(null);
+    setDuplicateChoice(null);
+    setDuplicateOtherText("");
     setDuplicateFlowState(null);
     setDuplicateSourceModelDate(null);
     setDuplicateBudgetInput("");
@@ -504,13 +520,9 @@ export function MiaSidePanel({
       setDuplicatePlanLabel(planLabel);
       setDuplicateFlowState(seed);
       setDuplicateSourceModelDate(modelDate);
+      setDuplicateChoice(null);
       setDuplicateFlowScreen("choice");
-      appendMessages([
-        {
-          role: "mia",
-          text: "Creating a variant of your plan — here are a few things you could change in the new plan:\n\n- Change the total budget by an amount or %\n- Change individual channel or tactic budgets\n- Leave the new plan as is — you can always modify it later\n\nLet me know how you'd like to proceed.",
-        },
-      ]);
+      appendMessages([{ role: "mia", text: "What would you like to change in this variant?" }]);
     },
     [appendMessages, resetEditPlanFlow]
   );
@@ -533,39 +545,40 @@ export function MiaSidePanel({
     setDuplicateFlowScreen(null);
     setPendingReview({
       state: nextState,
-      intro: "Your duplicated plan is ready for review.",
+      intro: "Your plan variant is ready for review.",
       delayMs: 1200,
       resultModelDate: duplicateSourceModelDate ?? LATEST_MODEL_DATE,
     });
     resetDuplicateFlow();
   };
 
-  /** Classifies a free-text reply to "what would you like to change in the duplicated plan?"
-   * into one of the three paths the flow supports, from simple keyword matches -- anything
-   * that doesn't clearly ask for a budget or channel/tactic change is treated as "leave it as
-   * is", the least destructive reading of an ambiguous reply. */
-  const handleDuplicateIntentReply = (text: string) => {
-    if (!duplicateFlowState) return;
-    appendMessages([{ role: "user", text }]);
-
-    const lower = text.toLowerCase();
-    const mentionsChannelTactic = /\b(channel|tactic)/.test(lower);
-    const mentionsBudget = /\b(budget|amount|%|percent)/.test(lower);
-
-    if (mentionsChannelTactic) {
-      setDuplicateChannelMethod(null);
-      setDuplicateFlowScreen("channel-method");
-      appendMessages([{ role: "mia", text: "How would you like to adjust the channel/tactic budgets?" }]);
+  const handleDuplicateChoiceNext = () => {
+    if (!duplicateChoice || !duplicateFlowState) return;
+    if (duplicateChoice === "other") {
+      const text = duplicateOtherText.trim();
+      if (!text) return;
+      appendMessages([{ role: "user", text }]);
+      setDuplicateOtherText("");
+      appendMessages([{ role: "mia", text: "Got it — I'll keep the rest of the plan as is." }]);
+      finishDuplicateSelection(duplicateFlowState);
       return;
     }
-    if (mentionsBudget) {
+    const opt = DUPLICATE_CHOICES.find((o) => o.id === duplicateChoice)!;
+    appendMessages([{ role: "user", text: opt.label }]);
+    if (duplicateChoice === "keep") {
+      finishDuplicateSelection(duplicateFlowState);
+      return;
+    }
+    if (duplicateChoice === "total-budget") {
       setDuplicateBudgetInput(String(includedTotal(duplicateFlowState)));
       setDuplicateFlowScreen("budget");
       appendMessages([{ role: "mia", text: "What would you like the new total budget to be?" }]);
       return;
     }
-    appendMessages([{ role: "mia", text: "Got it — I'll keep the rest of the plan as is." }]);
-    finishDuplicateSelection(duplicateFlowState);
+    // channel-budget
+    setDuplicateChannelMethod(null);
+    setDuplicateFlowScreen("channel-method");
+    appendMessages([{ role: "mia", text: "How would you like to adjust the channel/tactic budgets?" }]);
   };
 
   const handleDuplicateChannelMethodNext = () => {
@@ -814,6 +827,10 @@ export function MiaSidePanel({
         e.preventDefault();
         if (digit <= EDIT_CHOICES.length) setEditChoice(EDIT_CHOICES[digit - 1].id);
         else otherChoiceInputRef.current?.focus();
+      } else if (duplicateFlowScreen === "choice" && digit <= DUPLICATE_CHOICES.length + 1) {
+        e.preventDefault();
+        if (digit <= DUPLICATE_CHOICES.length) setDuplicateChoice(DUPLICATE_CHOICES[digit - 1].id);
+        else duplicateOtherInputRef.current?.focus();
       } else if (duplicateFlowScreen === "channel-method" && digit <= DUPLICATE_CHANNEL_METHOD_OPTIONS.length) {
         e.preventDefault();
         setDuplicateChannelMethod(DUPLICATE_CHANNEL_METHOD_OPTIONS[digit - 1].id);
@@ -822,7 +839,7 @@ export function MiaSidePanel({
     document.addEventListener("keydown", onKeyDown);
     // A numbered choice screen shouldn't leave the composer holding keyboard focus -- typed
     // digits need to reach the document-level handler above, not get typed as chat text.
-    if (editFlowScreen === "choice" || duplicateFlowScreen === "channel-method") {
+    if (editFlowScreen === "choice" || duplicateFlowScreen === "choice" || duplicateFlowScreen === "channel-method") {
       const active = document.activeElement;
       if (active instanceof HTMLInputElement || active instanceof HTMLTextAreaElement) active.blur();
     } else {
@@ -950,11 +967,6 @@ export function MiaSidePanel({
 
     if (shouldStartCreatePlanFlow(trimmed)) {
       startCreateFlow(trimmed);
-      return;
-    }
-
-    if (duplicateFlowScreen === "choice" && duplicateFlowState) {
-      handleDuplicateIntentReply(trimmed);
       return;
     }
 
@@ -1487,6 +1499,61 @@ export function MiaSidePanel({
                 className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
                 disabled={!editFlowState.singleCT && editFlowState.attrs.length === 0}
                 onClick={handleCtNext}
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
+
+        {duplicateFlowScreen === "choice" && (
+          <div className={flowStyles.turn}>
+            <div className={flowStyles.turnContent}>
+              <div className={flowStyles.methods}>
+                {DUPLICATE_CHOICES.map((opt, index) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    className={`${flowStyles.methodCard} ${duplicateChoice === opt.id ? flowStyles.methodCardSelected : ""}`}
+                    onClick={() => setDuplicateChoice(opt.id)}
+                  >
+                    <div className={flowStyles.methodIcon}>
+                      {duplicateChoice === opt.id ? <CheckIcon size={14} /> : index + 1}
+                    </div>
+                    <div>
+                      <h4>{opt.label}</h4>
+                      <p>{opt.desc}</p>
+                    </div>
+                  </button>
+                ))}
+                <label
+                  className={`${flowStyles.methodCard} ${styles.otherOptionCard} ${
+                    duplicateChoice === "other" ? flowStyles.methodCardSelected : ""
+                  }`}
+                >
+                  <div className={flowStyles.methodIcon}>
+                    {duplicateChoice === "other" ? <CheckIcon size={14} /> : DUPLICATE_CHOICES.length + 1}
+                  </div>
+                  <input
+                    ref={duplicateOtherInputRef}
+                    type="text"
+                    className={styles.otherOptionInput}
+                    placeholder="Something else…"
+                    value={duplicateOtherText}
+                    onChange={(e) => {
+                      setDuplicateOtherText(e.target.value);
+                      setDuplicateChoice(e.target.value.trim() ? "other" : null);
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+            <div className={flowStyles.turnActions}>
+              <button
+                type="button"
+                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
+                disabled={!duplicateChoice || (duplicateChoice === "other" && !duplicateOtherText.trim())}
+                onClick={handleDuplicateChoiceNext}
               >
                 Next
               </button>
