@@ -98,6 +98,14 @@
   color: #c22a4d;
 }
 
+.moreMenu button.aiItem {
+  justify-content: space-between;
+}
+
+.moreMenu button.aiItem svg {
+  color: var(--purple-600);
+}
+
 .menuDivider {
   height: 1px;
   margin: 6px 4px;

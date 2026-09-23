@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ConfirmDialog } from "./ConfirmDialog";
-import { ChevronDownIcon, DownloadIcon, DuplicateIcon, EditIcon, TrashIcon } from "./icons/BuildPlanIcons";
+import { ChevronDownIcon, EditIcon } from "./icons/BuildPlanIcons";
 import { MaterialIcon } from "./icons/MaterialIcon";
+import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./PlanOptionsMenu.module.css";
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
   onRenameRequest?: () => void;
   onToggleSharePlan?: (id: string) => void;
   onDuplicatePlan?: (id: string) => void;
+  onOptimizePlan?: () => void;
   onExportPlan?: () => void;
   onDeletePlan?: (id: string) => void;
   onUpdateModel?: () => void;
@@ -36,6 +38,7 @@ export function PlanOptionsMenu({
   onRenameRequest,
   onToggleSharePlan,
   onDuplicatePlan,
+  onOptimizePlan,
   onExportPlan,
   onDeletePlan,
   onUpdateModel,
@@ -58,7 +61,15 @@ export function PlanOptionsMenu({
     return () => document.removeEventListener("mousedown", onPointerDown);
   }, [menuOpen]);
 
-  if (!onRenameRequest && !onToggleSharePlan && !onDuplicatePlan && !onExportPlan && !onDeletePlan && !onUpdateModel)
+  if (
+    !onRenameRequest &&
+    !onToggleSharePlan &&
+    !onDuplicatePlan &&
+    !onOptimizePlan &&
+    !onExportPlan &&
+    !onDeletePlan &&
+    !onUpdateModel
+  )
     return null;
 
   const handleRename = () => {
@@ -74,6 +85,11 @@ export function PlanOptionsMenu({
   const handleDuplicate = () => {
     setMenuOpen(false);
     onDuplicatePlan?.(planId);
+  };
+
+  const handleOptimize = () => {
+    setMenuOpen(false);
+    onOptimizePlan?.();
   };
 
   const handleExport = () => {
@@ -123,27 +139,34 @@ export function PlanOptionsMenu({
         <div className={styles.moreMenu}>
           {onRenameRequest && (
             <button type="button" onClick={handleRename}>
-              <EditIcon size={20} /> Rename
+              Rename
             </button>
           )}
           {onToggleSharePlan && (
             <button type="button" onClick={handleToggleShare}>
-              <MaterialIcon name={shared ? "group_off" : "group"} size={20} /> {shared ? "Unshare" : "Share"}
+              {shared ? "Unshare" : "Share"}
             </button>
           )}
           {onDuplicatePlan && (
-            <button type="button" onClick={handleDuplicate}>
-              <DuplicateIcon size={20} /> Create variant
+            <button type="button" className={styles.aiItem} onClick={handleDuplicate}>
+              Create variant
+              <SparkleIcon size={16} variant="fill" />
+            </button>
+          )}
+          {onOptimizePlan && (
+            <button type="button" className={styles.aiItem} onClick={handleOptimize}>
+              Optimize
+              <SparkleIcon size={16} variant="fill" />
             </button>
           )}
           {onExportPlan && (
             <button type="button" onClick={handleExport}>
-              <DownloadIcon size={20} /> Export
+              Export
             </button>
           )}
           {onDeletePlan && (
             <button type="button" className={styles.dangerItem} onClick={handleDelete}>
-              <TrashIcon size={20} /> Delete
+              Delete
             </button>
           )}
           {onUpdateModel && (

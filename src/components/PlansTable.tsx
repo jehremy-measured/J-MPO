@@ -5,23 +5,18 @@ import { Checkbox } from "./Checkbox";
 import { ConfirmDialog } from "./ConfirmDialog";
 import {
   ChevronDownIcon,
-  DownloadIcon,
-  DuplicateIcon,
-  EditIcon,
   MoreIcon,
   ReturnCurveIcon,
   SearchIcon,
   TrashIcon,
   WrenchIcon,
 } from "./icons/BuildPlanIcons";
-import { MaterialIcon } from "./icons/MaterialIcon";
 import { SharedPlanIcon } from "./SharedPlanIcon";
 import styles from "./PlansTable.module.css";
 
 type Props = {
   plans: Plan[];
   onOpenPlan: (id: string) => void;
-  onDuplicatePlan: (id: string) => void;
   onDeletePlan: (id: string) => void;
   onRenamePlan: (id: string, label: string) => void;
   onToggleSharePlan: (id: string) => void;
@@ -79,7 +74,6 @@ function KindIcon({ kind }: { kind: Plan["kind"] }) {
 export function PlansTable({
   plans,
   onOpenPlan,
-  onDuplicatePlan,
   onDeletePlan,
   onRenamePlan,
   onToggleSharePlan,
@@ -338,7 +332,7 @@ export function PlansTable({
                     {openMenuId === plan.id && (
                       <div className={styles.moreMenu}>
                         <button type="button" onClick={() => startRename(plan)}>
-                          <EditIcon size={20} /> Rename
+                          Rename
                         </button>
                         <button
                           type="button"
@@ -347,16 +341,7 @@ export function PlansTable({
                             onToggleSharePlan(plan.id);
                           }}
                         >
-                          <MaterialIcon name={plan.shared ? "group_off" : "group"} size={20} /> {plan.shared ? "Unshare" : "Share"}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setOpenMenuId(null);
-                            onDuplicatePlan(plan.id);
-                          }}
-                        >
-                          <DuplicateIcon size={20} /> Duplicate
+                          {plan.shared ? "Unshare" : "Share"}
                         </button>
                         <button
                           type="button"
@@ -365,10 +350,10 @@ export function PlansTable({
                             downloadPlansCsv([plan]);
                           }}
                         >
-                          <DownloadIcon size={20} /> Export
+                          Export
                         </button>
                         <button type="button" className={styles.dangerItem} onClick={() => handleDelete(plan)}>
-                          <TrashIcon size={20} /> Delete
+                          Delete
                         </button>
                       </div>
                     )}

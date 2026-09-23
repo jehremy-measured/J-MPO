@@ -313,6 +313,28 @@ export function MpoPage() {
     state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
       ? state.newPlanSummary.planEnd
       : activePlan?.planEnd ?? new Date();
+  const currentConversionType =
+    state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
+      ? state.newPlanSummary.conversionType
+      : "Total Orders";
+  const currentTargetValue =
+    state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId
+      ? state.newPlanSummary.targetValue
+      : activePlan?.targetValue ?? null;
+  const handleOptimizeActivePlan = () =>
+    startOptimizeFlow(
+      formatRangeLabel(currentPlanStart, currentPlanEnd),
+      buildOptimizeRows(
+        currentPlanStart,
+        currentPlanEnd,
+        currentConversionType,
+        channelsLabelFor(state.channelCount),
+        state.tactics.length,
+        currentTarget,
+        currentTargetValue,
+        state.totals.budget
+      )
+    );
   // The plan-ready summary shown right after creation hasn't had any real time to accrue
   // actuals against, even if its dates happen to already be in-flight.
   const isNewlyCreatedPlan = !!(state.newPlanSummary && state.newPlanSummary.planId === state.activePlanId);
@@ -360,9 +382,6 @@ export function MpoPage() {
                 <PlansTable
                   plans={visiblePlans}
                   onOpenPlan={openPlan}
-                  onDuplicatePlan={(id) =>
-                    MIA_DUPLICATE_PLAN_IDS.has(id) ? openMiaDuplicatePlan(id) : setDuplicatingPlanId(id)
-                  }
                   onDeletePlan={state.deletePlan}
                   onRenamePlan={state.renamePlan}
                   onToggleSharePlan={state.toggleSharePlan}
@@ -411,6 +430,7 @@ export function MpoPage() {
                                   ? openMiaDuplicatePlan(state.activePlanId)
                                   : setDuplicatingPlanId(state.activePlanId)
                               }
+                              onOptimizePlan={handleOptimizeActivePlan}
                               onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                               onDeletePlan={handleDeleteActivePlan}
                               variant="chevron"
