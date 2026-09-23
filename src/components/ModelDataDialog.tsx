@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { LATEST_MODEL_DATE } from "../mpo/modelOptions";
-import { MaterialIcon } from "./icons/MaterialIcon";
+import { CloseIcon } from "./icons/CloseIcon";
 import styles from "./ModelDataDialog.module.css";
 
 type Props = {
@@ -28,9 +28,9 @@ export function ModelDataDialog({ modelDate, onClose }: Props) {
           <h3 id="model-data-title" className={styles.title}>
             Model data
           </h3>
-          <span className={styles.iconBadge}>
-            <MaterialIcon name="layers" size={14} />
-          </span>
+          <button type="button" className={styles.closeBtn} aria-label="Close" onClick={onClose}>
+            <CloseIcon size={20} />
+          </button>
         </div>
 
         <div
