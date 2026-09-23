@@ -3,7 +3,6 @@ import { BudgetTable } from "../components/BudgetTable";
 import { BuildPlanPage } from "../components/BuildPlanPage";
 import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
-import { DuplicatePlanDialog } from "../components/DuplicatePlanDialog";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
 import { ChevronRightIcon } from "../components/icons/BuildPlanIcons";
@@ -100,7 +99,6 @@ export function MpoPage() {
     state: BuildPlanState;
     modelDate: string;
   } | null>(null);
-  const [duplicatingPlanId, setDuplicatingPlanId] = useState<string | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
@@ -248,11 +246,8 @@ export function MpoPage() {
     setEditPlanSignal({ token: Date.now(), planId, planLabel: plan.label, state: seed });
   };
 
-  // This one preset demo plan routes "Duplicate" through a conversational Mia flow (what to
-  // change, then a model-refresh choice when the source plan's model data is stale) instead of
-  // the standard DuplicatePlanDialog, for demo variety.
-  const MIA_DUPLICATE_PLAN_IDS = new Set(["sim-default-copy"]);
-
+  // Every "Create variant" / "Duplicate" action routes through a conversational Mia flow: what
+  // to change, then a model-refresh choice when the source plan's model data is stale.
   const openMiaDuplicatePlan = (planId: string) => {
     const plan = state.plans.find((p) => p.id === planId);
     if (!plan) return;
@@ -298,7 +293,6 @@ export function MpoPage() {
   };
 
   const activePlan = state.plans.find((p) => p.id === state.activePlanId);
-  const duplicatingPlan = state.plans.find((p) => p.id === duplicatingPlanId) ?? null;
   const activeModelDate = activePlan?.modelDate ?? CURRENT_MODEL_DATE;
 
   const currentTarget =
@@ -425,11 +419,7 @@ export function MpoPage() {
                               shared={activePlan?.shared}
                               onRenameRequest={startRenameTitle}
                               onToggleSharePlan={state.toggleSharePlan}
-                              onDuplicatePlan={() =>
-                                MIA_DUPLICATE_PLAN_IDS.has(state.activePlanId)
-                                  ? openMiaDuplicatePlan(state.activePlanId)
-                                  : setDuplicatingPlanId(state.activePlanId)
-                              }
+                              onDuplicatePlan={() => openMiaDuplicatePlan(state.activePlanId)}
                               onOptimizePlan={handleOptimizeActivePlan}
                               onExportPlan={() => activePlan && downloadPlansCsv([activePlan])}
                               onDeletePlan={handleDeleteActivePlan}
@@ -492,11 +482,7 @@ export function MpoPage() {
                             )
                           )
                         }
-                        onDuplicate={() =>
-                          MIA_DUPLICATE_PLAN_IDS.has(state.newPlanSummary!.planId)
-                            ? openMiaDuplicatePlan(state.newPlanSummary!.planId)
-                            : setDuplicatingPlanId(state.newPlanSummary!.planId)
-                        }
+                        onDuplicate={() => openMiaDuplicatePlan(state.newPlanSummary!.planId)}
                         allowActual={!isNewlyCreatedPlan}
                       />
                     </>
@@ -538,11 +524,7 @@ export function MpoPage() {
                             )
                           )
                         }
-                        onDuplicate={() =>
-                          MIA_DUPLICATE_PLAN_IDS.has(activePlan.id)
-                            ? openMiaDuplicatePlan(activePlan.id)
-                            : setDuplicatingPlanId(activePlan.id)
-                        }
+                        onDuplicate={() => openMiaDuplicatePlan(activePlan.id)}
                       />
                     </>
                   ) : (
@@ -596,18 +578,6 @@ export function MpoPage() {
         blendedRoas={state.totals.roas}
       />
       {creatingPlan && <CreatingPlanOverlay />}
-      {duplicatingPlan && (
-        <DuplicatePlanDialog
-          planLabel={duplicatingPlan.label}
-          currentModelDate={duplicatingPlan.modelDate ?? CURRENT_MODEL_DATE}
-          onClose={() => setDuplicatingPlanId(null)}
-          onConfirm={(name, model) => {
-            const newId = state.duplicatePlan(duplicatingPlan.id, name, model.date);
-            setDuplicatingPlanId(null);
-            if (newId) openPlan(newId);
-          }}
-        />
-      )}
     </div>
   );
 }

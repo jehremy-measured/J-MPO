@@ -200,8 +200,7 @@ type Props = {
    * preset demo plans). */
   editPlanSignal?: EditPlanSignal | null;
   /** Opens the "What would you like to change in the duplicated plan?" chooser, seeded from an
-   * existing plan -- used by the "Duplicate" action for plans in MIA_DUPLICATE_PLAN_IDS instead
-   * of the standard DuplicatePlanDialog modal. */
+   * existing plan -- used by every "Create variant" / "Duplicate" action. */
   duplicatePlanSignal?: DuplicatePlanSignal | null;
   onEditConstraints?: () => void;
   onOptimizePlan?: () => void;
