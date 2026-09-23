@@ -99,7 +99,7 @@
 }
 
 .moreMenu button.aiItem {
-  justify-content: space-between;
+  gap: 8px;
 }
 
 .moreMenu button.aiItem svg {
