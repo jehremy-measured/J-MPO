@@ -133,7 +133,7 @@ export function PlanOptionsMenu({
           )}
           {onDuplicatePlan && (
             <button type="button" onClick={handleDuplicate}>
-              <DuplicateIcon size={20} /> Duplicate
+              <DuplicateIcon size={20} /> Create variant
             </button>
           )}
           {onExportPlan && (

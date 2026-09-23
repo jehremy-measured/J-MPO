@@ -185,9 +185,9 @@ export function PlanOverviewCard({
                   </p>
                 </div>
                 <div className={styles.bannerSlide}>
-                  <p className={styles.bannerSlideTitle}>Create what-if scenarios</p>
+                  <p className={styles.bannerSlideTitle}>Create plan variants</p>
                   <p className={styles.optimizeBannerText}>
-                    Duplicate this plan to simulate what-if scenarios with different budgets.
+                    Create a variant of this plan to simulate scenarios with different budgets.
                   </p>
                 </div>
               </div>
@@ -215,7 +215,7 @@ export function PlanOverviewCard({
                   onClick={activeBannerSlide === 0 ? onOptimize : onDuplicate}
                 >
                   <SparkleIcon size={18} variant="fill" />
-                  {activeBannerSlide === 0 ? "Optimize" : "Duplicate"}
+                  {activeBannerSlide === 0 ? "Optimize" : "Create variant"}
                 </button>
               </div>
             </div>
