@@ -20,7 +20,7 @@ import {
 } from "../mpo/buildPlan/logic";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
-import { isModelUpToDate, LATEST_MODEL_DATE } from "../mpo/modelOptions";
+import { LATEST_MODEL_DATE } from "../mpo/modelOptions";
 import { CalendarRangePicker } from "./CalendarRangePicker";
 import { Checkbox } from "./Checkbox";
 import { RollupHint } from "./RollupHint";
@@ -324,14 +324,12 @@ export function MiaSidePanel({
   const [duplicatePlanId, setDuplicatePlanId] = useState<string | null>(null);
   const [duplicatePlanLabel, setDuplicatePlanLabel] = useState<string | null>(null);
   const [duplicateFlowScreen, setDuplicateFlowScreen] = useState<
-    "choice" | "budget" | "channel-method" | "model" | null
+    "choice" | "budget" | "channel-method" | null
   >(null);
   const [duplicateFlowState, setDuplicateFlowState] = useState<BuildPlanState | null>(null);
   const [duplicateSourceModelDate, setDuplicateSourceModelDate] = useState<string | null>(null);
   const [duplicateBudgetInput, setDuplicateBudgetInput] = useState("");
   const [duplicateChannelMethod, setDuplicateChannelMethod] = useState<DuplicateChannelMethodId | null>(null);
-  const [duplicatePendingState, setDuplicatePendingState] = useState<BuildPlanState | null>(null);
-  const [duplicateModelChoice, setDuplicateModelChoice] = useState<"existing" | "latest" | null>(null);
   const resetDuplicateFlow = useCallback(() => {
     setDuplicatePlanId(null);
     setDuplicatePlanLabel(null);
@@ -340,8 +338,6 @@ export function MiaSidePanel({
     setDuplicateSourceModelDate(null);
     setDuplicateBudgetInput("");
     setDuplicateChannelMethod(null);
-    setDuplicatePendingState(null);
-    setDuplicateModelChoice(null);
   }, []);
 
   useEffect(() => {
@@ -532,24 +528,15 @@ export function MiaSidePanel({
   }, [open, duplicatePlanSignal, startDuplicatePlanFlow]);
 
   /** Finishes any duplicate-flow branch (keep as-is / total budget / channel upload / free
-   * text) with the resulting state -- inserts the "new model data is available" choice screen
-   * when the source plan's model is stale, otherwise goes straight to the plan-ready review
-   * card, same as the normal create-plan flow's ending. */
+   * text) with the resulting state -- goes straight to the plan-ready review card, same as the
+   * normal create-plan flow's ending, keeping the source plan's model date as-is. */
   const finishDuplicateSelection = (nextState: BuildPlanState) => {
-    const modelDate = duplicateSourceModelDate;
-    if (modelDate && !isModelUpToDate(modelDate)) {
-      setDuplicateFlowScreen("model");
-      setDuplicateFlowState(null);
-      setDuplicatePendingState(nextState);
-      setDuplicateModelChoice("existing");
-      return;
-    }
     setDuplicateFlowScreen(null);
     setPendingReview({
       state: nextState,
       intro: "Your duplicated plan is ready for review.",
       delayMs: 1200,
-      resultModelDate: modelDate ?? LATEST_MODEL_DATE,
+      resultModelDate: duplicateSourceModelDate ?? LATEST_MODEL_DATE,
     });
     resetDuplicateFlow();
   };
@@ -626,23 +613,6 @@ export function MiaSidePanel({
       }
     });
     finishDuplicateSelection({ ...duplicateFlowState, budget, overridden });
-  };
-
-  const handleDuplicateModelNext = () => {
-    if (!duplicatePendingState || !duplicateModelChoice) return;
-    const chosenDate = duplicateModelChoice === "latest" ? LATEST_MODEL_DATE : duplicateSourceModelDate ?? LATEST_MODEL_DATE;
-    appendMessages([
-      { role: "user", text: duplicateModelChoice === "latest" ? "Use latest model data" : "Use existing model data" },
-    ]);
-    const finalState = duplicatePendingState;
-    setDuplicateFlowScreen(null);
-    setPendingReview({
-      state: finalState,
-      intro: "Your duplicated plan is ready for review.",
-      delayMs: 1200,
-      resultModelDate: chosenDate,
-    });
-    resetDuplicateFlow();
   };
 
   const handleEditChoiceNext = () => {
@@ -1582,49 +1552,6 @@ export function MiaSidePanel({
                 className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
                 disabled={!duplicateChannelMethod}
                 onClick={handleDuplicateChannelMethodNext}
-              >
-                Next
-              </button>
-            </div>
-          </div>
-        )}
-
-        {duplicateFlowScreen === "model" && duplicatePendingState && (
-          <div className={flowStyles.turn}>
-            <div className={flowStyles.turnContent}>
-              <p className={`${styles.miaText} ${styles.turnIntroText}`}>
-                The plan this was based on was using model date from {duplicateSourceModelDate}. A new model update
-                is available.
-              </p>
-              <div className={flowStyles.methods}>
-                <button
-                  type="button"
-                  className={`${flowStyles.methodCard} ${duplicateModelChoice === "existing" ? flowStyles.methodCardSelected : ""}`}
-                  onClick={() => setDuplicateModelChoice("existing")}
-                >
-                  <div>
-                    <h4>Use existing model data</h4>
-                    <p>{duplicateSourceModelDate}</p>
-                  </div>
-                </button>
-                <button
-                  type="button"
-                  className={`${flowStyles.methodCard} ${duplicateModelChoice === "latest" ? flowStyles.methodCardSelected : ""}`}
-                  onClick={() => setDuplicateModelChoice("latest")}
-                >
-                  <div>
-                    <h4>Use latest model data</h4>
-                    <p>{LATEST_MODEL_DATE}</p>
-                  </div>
-                </button>
-              </div>
-            </div>
-            <div className={flowStyles.turnActions}>
-              <button
-                type="button"
-                className={`${flowStyles.btn} ${flowStyles.btnPrimary}`}
-                disabled={!duplicateModelChoice}
-                onClick={handleDuplicateModelNext}
               >
                 Next
               </button>
