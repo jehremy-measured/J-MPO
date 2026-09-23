@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatBudget, type PlanTarget } from "../mpo/types";
 import { computeGoalProgress, GOAL_METRIC_LABEL } from "../mpo/goalProgress";
 import { SparkleIcon } from "./icons/SparkleIcon";
@@ -70,10 +70,15 @@ export function PlanOverviewCard({
 }: Props) {
   const [activeBannerSlide, setActiveBannerSlide] = useState(0);
   const bannerTrackRef = useRef<HTMLDivElement>(null);
+  const autoRotateTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const scrollToBannerSlide = (index: number) => {
     const el = bannerTrackRef.current;
     if (!el) return;
+    if (autoRotateTimerRef.current) {
+      clearInterval(autoRotateTimerRef.current);
+      autoRotateTimerRef.current = null;
+    }
     el.scrollTo({ left: index * el.clientWidth, behavior: "smooth" });
   };
 
@@ -82,6 +87,25 @@ export function PlanOverviewCard({
     if (!el || el.clientWidth === 0) return;
     setActiveBannerSlide(Math.round(el.scrollLeft / el.clientWidth));
   };
+
+  // Nudge attention to the second slide by auto-advancing between the two banners every 5s,
+  // twice, then settling -- a manual dot click (scrollToBannerSlide) cancels it early.
+  useEffect(() => {
+    let switches = 0;
+    const id = setInterval(() => {
+      const el = bannerTrackRef.current;
+      if (!el || el.clientWidth === 0) return;
+      const current = Math.round(el.scrollLeft / el.clientWidth);
+      el.scrollTo({ left: (current === 0 ? 1 : 0) * el.clientWidth, behavior: "smooth" });
+      switches += 1;
+      if (switches >= 2) {
+        clearInterval(id);
+        autoRotateTimerRef.current = null;
+      }
+    }, 5000);
+    autoRotateTimerRef.current = id;
+    return () => clearInterval(id);
+  }, []);
   // Sales pairs with ROAS, orders pairs with CPO — the chart's plotted volume metric (and the
   // Forecast column's secondary metric row) follows whichever pair the target belongs to.
   const isOrdersFamily = target === "incremental-orders" || target === "incremental-cpo";
