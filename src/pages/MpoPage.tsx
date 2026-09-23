@@ -5,6 +5,7 @@ import { CreatingPlanOverlay } from "../components/CreatingPlanOverlay";
 import { CurveAndGoal } from "../components/CurveAndGoal";
 import { HeroBanner } from "../components/HeroBanner";
 import { MiaSidePanel } from "../components/MiaSidePanel";
+import { ModelDataDialog } from "../components/ModelDataDialog";
 import { ChevronRightIcon } from "../components/icons/BuildPlanIcons";
 import { SparkleIcon } from "../components/icons/SparkleIcon";
 import { PlanInfoBar } from "../components/PlanInfoBar";
@@ -100,6 +101,7 @@ export function MpoPage() {
     modelDate: string;
   } | null>(null);
   const [sidebarEditPlanId, setSidebarEditPlanId] = useState<string | null>(null);
+  const [modelDataDialogOpen, setModelDataDialogOpen] = useState(false);
   const [renamingTitle, setRenamingTitle] = useState(false);
   const [titleRenameValue, setTitleRenameValue] = useState("");
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -436,7 +438,13 @@ export function MpoPage() {
                         </div>
                       )}
                       {activePlan && (
-                        <span className={styles.detailModelDate}>MIM data from: {activeModelDate}</span>
+                        <button
+                          type="button"
+                          className={styles.detailModelDate}
+                          onClick={() => setModelDataDialogOpen(true)}
+                        >
+                          MIM data from: {activeModelDate}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -578,6 +586,9 @@ export function MpoPage() {
         blendedRoas={state.totals.roas}
       />
       {creatingPlan && <CreatingPlanOverlay />}
+      {modelDataDialogOpen && (
+        <ModelDataDialog modelDate={activeModelDate} onClose={() => setModelDataDialogOpen(false)} />
+      )}
     </div>
   );
 }

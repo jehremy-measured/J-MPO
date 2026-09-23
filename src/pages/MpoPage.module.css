@@ -141,8 +141,16 @@
 
 .detailModelDate {
   flex-shrink: 0;
+  padding: 0;
+  border: none;
+  background: none;
   font-size: 12px;
   color: var(--blue-700);
+  cursor: pointer;
+}
+
+.detailModelDate:hover {
+  text-decoration: underline;
 }
 
 .detailTitleGroup {
