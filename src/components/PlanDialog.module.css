@@ -1,0 +1,422 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 45, 66, 0.45);
+}
+
+.dialog {
+  width: 440px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  background: var(--gray-000);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 48px rgba(13, 45, 66, 0.24);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.closeBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  color: var(--gray-800);
+  border-radius: var(--radius-sm);
+}
+
+.closeBtn:hover {
+  color: var(--gray-1000);
+  background: var(--gray-200);
+}
+
+.body {
+  padding: 16px 20px 4px;
+  overflow-y: auto;
+}
+
+.fieldLabel {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.textInput {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: var(--gray-1000);
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-sm);
+}
+
+.textInput:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px var(--blue-100);
+}
+
+.sectionLabel {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--gray-800);
+}
+
+.sectionLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+}
+
+.sectionLabelRow .sectionLabel {
+  margin: 0;
+}
+
+.infoBadge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  color: var(--gray-600, var(--gray-800));
+  outline: none;
+}
+
+.infoBadge:hover .infoTooltip,
+.infoBadge:focus-visible .infoTooltip {
+  visibility: visible;
+  opacity: 1;
+}
+
+.infoTooltip {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+  width: max-content;
+  max-width: 240px;
+  background: var(--gray-1000);
+  color: var(--gray-000);
+  font-size: 12px;
+  line-height: 1.4;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 8px 20px rgba(13, 45, 66, 0.25);
+  z-index: 40;
+  pointer-events: none;
+}
+
+.dialogIntro {
+  margin: 0 0 16px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--gray-800);
+}
+
+.warningText {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #8b5300;
+  background: #fff7ec;
+  border-radius: var(--radius-sm);
+}
+
+.modelList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modelRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.modelRow:hover {
+  background: var(--gray-100);
+}
+
+.modelRowSelected {
+  border-color: var(--blue-700);
+  background: var(--blue-100);
+}
+
+.modelRowSelected:hover {
+  background: var(--blue-100);
+}
+
+.radioInput {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--blue-700);
+}
+
+.modelBody {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.modelDate {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.modelSubtext {
+  font-size: 13px;
+  color: var(--gray-800);
+}
+
+.modelPlainText {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--gray-800);
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px 20px;
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-sm);
+}
+
+.cancelBtn:hover {
+  background: var(--gray-100);
+}
+
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-000);
+  background: var(--blue-700);
+  border-radius: var(--radius-sm);
+}
+
+.confirmBtn:hover {
+  background: var(--blue-800);
+}
+
+.dialogWide {
+  width: 640px;
+}
+
+.budgetSubtitle {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--gray-800);
+}
+
+.budgetOptionRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.budgetOptionRow .radioInput {
+  margin: 0;
+}
+
+.budgetOptionLabel {
+  font-size: 14.5px;
+  color: var(--gray-1000);
+}
+
+.budgetDol {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+.budgetTotalInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  /* .budgetOptionRow's own 10px flex gap already separates it from the label; this margin
+   * makes up the rest so the two together total exactly 16px. */
+  margin-left: 6px;
+  width: 200px;
+  height: 36px;
+}
+
+.budgetDivider {
+  height: 1px;
+  /* .budgetOptionRow's own 6px bottom padding adds to this top margin, so 18px here yields a
+   * true 24px gap below the radio option; the bottom margin has no collapsing partner (the
+   * section label below has no top margin of its own) so it lands on 24px directly. */
+  margin: 18px 2px 24px;
+  background: var(--gray-300-stroke);
+}
+
+.budgetTotalInput {
+  width: 100%;
+  height: 36px;
+  font-size: 14px;
+  padding: 0 12px 0 22px;
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-1000);
+}
+
+.budgetTotalInput:focus {
+  outline: none;
+  border-color: var(--blue-700);
+  box-shadow: 0 0 0 3px var(--blue-100);
+}
+
+.budgetTotalInput:disabled {
+  background: var(--gray-100);
+  color: var(--gray-500);
+  border-color: var(--gray-200);
+}
+
+.budgetTable {
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  /* .sectionLabel's own 8px margin-bottom collapses with this margin-top (adjoining sibling
+   * margins take the larger, not the sum) -- 16px here is what actually yields a 16px gap. */
+  margin: 16px 0 16px;
+}
+
+.budgetTableHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--green-500);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.budgetTableRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--gray-200);
+  font-size: 14px;
+  color: var(--gray-1000);
+}
+
+.budgetTableRow:last-child {
+  border-bottom: none;
+}
+
+.budgetTableTotal {
+  font-weight: 600;
+  background: var(--gray-100);
+}
+
+/* Shared box every week-cell state renders into (read-only text, editable link, or the input),
+ * so switching between them never changes the row's height or the value's horizontal position. */
+.budgetWeekCellBox {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 140px;
+  height: 32px;
+}
+
+.budgetWeekValue {
+  color: var(--gray-1000);
+}
+
+.budgetWeekValueLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--blue-700);
+  text-underline-offset: 3px;
+}
+
+.budgetWeekInputWrap {
+  position: relative;
+}
+
+.budgetWeekInput {
+  width: 100%;
+  height: 32px;
+  font-size: 14px;
+  text-align: right;
+  padding: 0 10px 0 20px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-1000);
+}
+
+.budgetWeekInput:focus {
+  outline: 2px solid var(--blue-200);
+  border-color: var(--blue-700);
+}

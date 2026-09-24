@@ -1,117 +1,103 @@
-type IconProps = { size?: number };
+import { MaterialIcon } from "./MaterialIcon";
 
-const base = {
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 1.8,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
-};
+type IconProps = { size?: number; variant?: "line" | "fill" };
 
-export function UploadIcon({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <path d="M17 8l-5-5-5 5" />
-      <path d="M12 3v12" />
-    </svg>
-  );
+export function UploadIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="upload" size={size} variant={variant} />;
 }
 
-export function HistoryIcon({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M3 3v5h5" />
-      <path d="M3.05 13A9 9 0 1 0 6 5.3L3 8" />
-      <path d="M12 7v5l4 2" />
-    </svg>
-  );
+export function HistoryIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="history" size={size} variant={variant} />;
 }
 
-export function FileIcon({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <path d="M14 2v6h6" />
-      <path d="M8 13h8M8 17h8M8 9h2" />
-    </svg>
-  );
+export function ExpandIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="open_in_full" size={size} variant={variant} />;
 }
 
-export function DownloadIcon({ size = 20 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <path d="M7 10l5 5 5-5" />
-      <path d="M12 15V3" />
-    </svg>
-  );
+export function MenuIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="menu" size={size} variant={variant} />;
 }
 
-export function InfoIcon({ size = 16 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <circle cx="12" cy="12" r="10" />
-      <path d="M12 16v-4M12 8h.01" />
-    </svg>
-  );
+export function UpDownChevronIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="unfold_more" size={size} variant={variant} />;
 }
 
-export function CheckIcon({ size = 13 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.6} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  );
+export function WrenchIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="build" size={size} variant={variant} />;
 }
 
-export function BackArrowIcon({ size = 14 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M19 12H5M12 19l-7-7 7-7" />
-    </svg>
-  );
+export function ReturnCurveIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="trending_up" size={size} variant={variant} />;
 }
 
-export function SearchIcon({ size = 17 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <circle cx="11" cy="11" r="8" />
-      <path d="M21 21l-4.3-4.3" />
-    </svg>
-  );
+export function FileIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="description" size={size} variant={variant} />;
 }
 
-export function MoreIcon({ size = 18 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <circle cx="12" cy="5" r="1.7" />
-      <circle cx="12" cy="12" r="1.7" />
-      <circle cx="12" cy="19" r="1.7" />
-    </svg>
-  );
+export function DownloadIcon({ size = 20, variant }: IconProps) {
+  return <MaterialIcon name="download" size={size} variant={variant} />;
 }
 
-export function ChevronLeftIcon({ size = 16 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M15 18l-6-6 6-6" />
-    </svg>
-  );
+export function PlayIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="play_arrow" size={size} variant={variant} />;
 }
 
-export function ChevronRightIcon({ size = 16 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" {...base} aria-hidden>
-      <path d="M9 18l6-6-6-6" />
-    </svg>
-  );
+export function ResetIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="restart_alt" size={size} variant={variant} />;
 }
 
-export function CheckRingIcon({ size = 32 }: IconProps) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-      <path d="M20 6L9 17l-5-5" />
-    </svg>
-  );
+export function EditIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="edit" size={size} variant={variant} />;
+}
+
+export function DuplicateIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="content_copy" size={size} variant={variant} />;
+}
+
+export function TrashIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="delete" size={size} variant={variant} />;
+}
+
+export function InfoIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="info" size={size} variant={variant} />;
+}
+
+export function LayersIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="layers" size={size} variant={variant} />;
+}
+
+export function TargetIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="target" size={size} variant={variant} />;
+}
+
+export function CheckIcon({ size = 13, variant }: IconProps) {
+  return <MaterialIcon name="check" size={size} variant={variant} />;
+}
+
+export function BackArrowIcon({ size = 14, variant }: IconProps) {
+  return <MaterialIcon name="arrow_back" size={size} variant={variant} />;
+}
+
+export function SearchIcon({ size = 17, variant }: IconProps) {
+  return <MaterialIcon name="search" size={size} variant={variant} />;
+}
+
+export function MoreIcon({ size = 18, variant }: IconProps) {
+  return <MaterialIcon name="more_vert" size={size} variant={variant} />;
+}
+
+export function ChevronLeftIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="chevron_left" size={size} variant={variant} />;
+}
+
+export function ChevronRightIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="chevron_right" size={size} variant={variant} />;
+}
+
+export function ChevronDownIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="expand_more" size={size} variant={variant} />;
+}
+
+export function ThinkingSpinnerIcon({ size = 16, variant }: IconProps) {
+  return <MaterialIcon name="autorenew" size={size} variant={variant} />;
 }

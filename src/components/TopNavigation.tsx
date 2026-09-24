@@ -1,13 +1,16 @@
-import type { ReactNode } from "react";
-import { assets } from "../assets/figma";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import logoMark from "../assets/brand/measured-logo-mark.svg";
+import { ChevronDownIcon, UpDownChevronIcon, WrenchIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./TopNavigation.module.css";
 
 const navItems = [
-  { label: "Home", active: false },
+  { label: "Analyze", active: false },
   { label: "Experiment", active: false },
-  { label: "Optimize", active: true, badge: true },
+  { label: "Optimize", active: true },
   { label: "Benchmarks", active: false },
+  { label: "MIM", active: false },
 ];
 
 type Props = {
@@ -16,33 +19,102 @@ type Props = {
 };
 
 export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
+  const [tabMenuOpen, setTabMenuOpen] = useState(false);
+  const tabMenuRef = useRef<HTMLDivElement>(null);
+  const activeItem = navItems.find((item) => item.active) ?? navItems[0];
+
+  useEffect(() => {
+    if (!tabMenuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (tabMenuRef.current && !tabMenuRef.current.contains(e.target as Node)) setTabMenuOpen(false);
+    };
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setTabMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [tabMenuOpen]);
+
   return (
     <header className={styles.bar} data-node-id="1:33652">
       <div className={styles.inner}>
         <div className={styles.brand}>
-          <img src={assets.logo} alt="Measured" className={styles.logo} />
-          <span className={styles.divider} aria-hidden />
+          <img src={logoMark} alt="Measured" className={styles.logo} />
           <button type="button" className={styles.workspace}>
-            Measured Demo
-            <ChevronDown />
+            <span className={styles.workspaceLabel}>Lulus</span>
+            <UpDownChevronIcon size={20} />
           </button>
         </div>
 
-        <nav className={styles.menu} aria-label="Primary">
-          {navItems.map((item) => (
-            <a
-              key={item.label}
-              href="#"
-              className={
-                item.active
-                  ? `${styles.menuItem} ${styles.menuItemActive}`
-                  : styles.menuItem
-              }
+        <div className={styles.navCenter}>
+          <nav className={styles.navFull} aria-label="Primary">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href="#"
+                className={
+                  item.active
+                    ? `${styles.menuItem} ${styles.menuItemActive}`
+                    : styles.menuItem
+                }
+              >
+                {item.label}
+              </a>
+            ))}
+            <span className={styles.menuMore}>
+              More
+              <ChevronDownIcon size={15} />
+            </span>
+          </nav>
+
+          <div className={styles.tabSwitcher} ref={tabMenuRef}>
+            <button
+              type="button"
+              className={styles.tabSwitcherBtn}
+              onClick={() => setTabMenuOpen((v) => !v)}
+              aria-expanded={tabMenuOpen}
+              aria-haspopup="menu"
             >
-              {item.label}
-              {item.badge && <span className={styles.newBadge}>NEW</span>}
-            </a>
-          ))}
+              <span className={styles.tabSwitcherLabel}>{activeItem.label}</span>
+              <ChevronDownIcon size={20} />
+            </button>
+            {tabMenuOpen && (
+              <div className={styles.tabMenu} role="menu">
+                {navItems.map((item) => (
+                  <a
+                    key={item.label}
+                    href="#"
+                    role="menuitem"
+                    className={item.active ? styles.tabMenuItemActive : undefined}
+                    onClick={() => setTabMenuOpen(false)}
+                  >
+                    {item.label}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className={styles.rightGroup}>
+          <IconButton label="Notifications" dot>
+            <MaterialIcon name="notifications" size={20} />
+          </IconButton>
+          <IconButton label="Tools">
+            <WrenchIcon size={20} />
+          </IconButton>
+          <IconButton label="Help">
+            <MaterialIcon name="help" size={20} />
+          </IconButton>
+
+          <div className={styles.avatar} aria-label="User JH">
+            JH
+          </div>
+
           <button
             type="button"
             className={miaOpen ? `${styles.miaBtn} ${styles.miaBtnActive}` : styles.miaBtn}
@@ -50,38 +122,12 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
             aria-expanded={miaOpen}
             aria-controls="mia-side-panel"
           >
-            <SparkleIcon size={14} />
-            Mia
+            <SparkleIcon size={20} variant="fill" />
+            Ask Mia
           </button>
-        </nav>
-
-        <div className={styles.utilities}>
-          <IconButton label="Help">?</IconButton>
-          <IconButton label="Notifications" dot>
-            🔔
-          </IconButton>
-          <IconButton label="Settings">⚙</IconButton>
-          <IconButton label="Theme">☀</IconButton>
-          <div className={styles.avatar} aria-label="User AR">
-            AR
-          </div>
         </div>
       </div>
     </header>
-  );
-}
-
-function ChevronDown() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden>
-      <path
-        d="M5 8l5 5 5-5"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }
 

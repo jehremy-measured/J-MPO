@@ -4,7 +4,7 @@
 
 .card {
   border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   overflow: hidden;
 }
 
@@ -12,80 +12,75 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 16px 24px;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  min-height: 56px;
+  padding: 12px 20px;
+  margin-bottom: 24px;
   background: var(--gray-100);
-  border-bottom: 1px solid var(--gray-300-stroke);
-  font-size: 16px;
-  line-height: 24px;
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-lg);
 }
 
 .toolbarLeft {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 16px;
+  gap: 10px 16px;
 }
 
 .highlight {
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: var(--blue-700);
 }
 
 .meta {
+  font-size: 13px;
   color: var(--gray-800);
 }
 
 .meta strong {
   color: var(--gray-1000);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .divider {
   width: 1px;
-  height: 24px;
+  height: 14px;
   background: var(--gray-300);
 }
 
 .settingsLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px 0 8px;
   font-size: 14px;
   font-weight: 500;
   color: var(--blue-700);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
 }
 
-.toggle {
-  display: inline-flex;
-  padding: 2px;
-  gap: 2px;
+.settingsLink:hover {
   background: var(--gray-200);
-  border-radius: var(--radius-sm);
-}
-
-.toggle button,
-.toggle span {
-  padding: 5px 12px;
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 22px;
-  border-radius: var(--radius-sm);
-  color: var(--gray-1000);
-}
-
-.toggleActive {
-  background: var(--gray-400);
 }
 
 .body {
   display: grid;
   grid-template-columns: minmax(320px, 422px) 1fr;
+  min-height: var(--plan-goal-card-height);
   background: var(--gray-000);
 }
 
 .goals {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 24px;
+  gap: 18px;
+  padding: 20px 24px;
   border-right: 1px solid var(--gray-300-stroke);
 }
 
@@ -108,82 +103,162 @@
   color: var(--blue-700);
 }
 
-.modeRow,
-.sliderRow {
+.goalRow {
   display: flex;
-  align-items: center;
-  gap: 24px;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.sliderBlock {
-  position: relative;
-  width: 220px;
-}
-
-.sliderTrack {
-  position: relative;
-  height: 4px;
-  background: var(--gray-300);
-  border-radius: 3px;
-}
-
-.sliderFill {
-  position: absolute;
-  left: 0;
-  top: -1px;
-  height: 6px;
-  border-radius: 3px;
-}
-
-.sliderKnob {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translate(50%, -50%);
-  width: 24px;
-  height: 24px;
-  border-radius: 12px;
-  background: var(--gray-000);
-  border: 1px solid var(--gray-400);
-  box-shadow: var(--shadow-base);
-}
-
-.sliderKnob::after {
-  content: "";
-  position: absolute;
-  inset: 7px;
-  border-radius: 50%;
-  background: var(--green-600);
-}
-
-.sliderValue {
-  display: block;
-  margin-top: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--blue-700);
-  text-align: center;
-}
-
-.sliderMarker {
-  position: absolute;
-  left: 68%;
-  top: 0;
-  font-size: 8px;
-  color: var(--gray-1000);
+.goalRowHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .rowLabel {
-  width: 130px;
   font-size: 14px;
-  color: var(--gray-800);
+  font-weight: 500;
+  color: var(--gray-1000);
+}
+
+.goalValue {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  height: 32px;
+  padding: 0 8px 0 12px;
+  border-radius: var(--radius-sm);
+}
+
+.goalValue:hover {
+  background: var(--gray-100);
+}
+
+.goalValueText {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: var(--blue-700);
+  text-underline-offset: 3px;
+  white-space: nowrap;
+}
+
+.goalValueEditIcon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--blue-700);
+  visibility: hidden;
+}
+
+.goalValue:hover .goalValueEditIcon {
+  visibility: visible;
+}
+
+.goalInputWrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 130px;
+  height: 32px;
+}
+
+.goalDol {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: var(--gray-500);
+  pointer-events: none;
+}
+
+.goalInput {
+  width: 100%;
+  height: 32px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: right;
+  padding: 0 8px 0 18px;
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-sm);
+  background: var(--gray-000);
+  color: var(--gray-1000);
+  box-sizing: border-box;
+}
+
+.goalInput:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--blue-200);
+  border-color: var(--blue-700);
+}
+
+.sliderWrap {
+  position: relative;
+}
+
+.sliderInput {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: 4px;
+  margin: 9px 0;
+  border-radius: 3px;
+  background: linear-gradient(
+    to right,
+    var(--fill-color) var(--fill-percent),
+    var(--gray-300) var(--fill-percent)
+  );
+  outline: none;
+  cursor: pointer;
+}
+
+.sliderInput::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  box-shadow: var(--shadow-base), inset 0 0 0 6px var(--fill-color);
+  cursor: pointer;
+}
+
+.sliderInput::-webkit-slider-thumb:hover {
+  border-color: var(--gray-500);
+}
+
+.sliderInput::-moz-range-track {
+  height: 4px;
+  border-radius: 3px;
+  background: var(--gray-300);
+}
+
+.sliderInput::-moz-range-progress {
+  height: 4px;
+  border-radius: 3px;
+  background: var(--fill-color);
+}
+
+.sliderInput::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  box-shadow: var(--shadow-base), inset 0 0 0 6px var(--fill-color);
+  cursor: pointer;
 }
 
 .chart {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  gap: 10px;
+  padding: 20px 24px;
   min-width: 0;
 }
 
@@ -208,119 +283,81 @@
   gap: 8px;
 }
 
-.legendLine {
-  width: 20px;
-  height: 2px;
+.legendDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
 
-.legendDash {
-  width: 20px;
-  height: 2px;
-}
-
-.chartArea {
-  position: relative;
+.chartSvgWrap {
+  flex: 1;
+  min-height: 0;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  min-height: 280px;
+  contain: size;
 }
 
-.plot {
-  display: grid;
-  grid-template-columns: 42px 1fr 42px;
-  gap: 0;
-  align-items: stretch;
-  min-height: 208px;
-}
-
-.yTicksLeft,
-.yTicksRight {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--gray-800);
-  padding-bottom: 8px;
-}
-
-.yTicksRight {
-  text-align: right;
-  border-left: 1px solid var(--gray-300);
-  padding-left: 4px;
-}
-
-.yTicksLeft {
-  border-right: 1px solid var(--gray-300);
-  padding-right: 4px;
-  text-align: right;
-}
-
-.graphWrap {
-  position: relative;
-  border-bottom: 1px solid var(--gray-300);
-  min-height: 208px;
-}
-
-.graphLine,
-.graphLineRoas {
-  position: absolute;
-  inset: 0;
+.svg {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  display: block;
+  overflow: visible;
 }
 
-.graphLineRoas {
-  z-index: 1;
+.gridline {
+  stroke: var(--gray-200);
+  stroke-width: 1;
 }
 
-.refLine,
-.targetLine {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: auto;
-  z-index: 2;
+.yTick,
+.xTick {
+  font-size: 11px;
+  fill: var(--gray-800);
+  font-family: var(--font-inter);
+}
+
+.axisTitle,
+.axisTitleX {
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--gray-800);
+  font-family: var(--font-inter);
+}
+
+.salesLine {
+  stroke: var(--blue-700);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.roasLine {
+  stroke: var(--green-700);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.salesDot {
+  fill: var(--gray-000);
+  stroke: var(--blue-700);
+  stroke-width: 2;
+}
+
+.roasDot {
+  fill: var(--gray-000);
+  stroke: var(--green-700);
+  stroke-width: 2;
 }
 
 .refLine {
-  left: 50%;
+  stroke: var(--gray-500);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
 }
 
 .targetLine {
-  left: 55%;
-}
-
-.xAxis {
-  display: flex;
-  justify-content: space-between;
-  padding: 0 40px 0 42px;
-  font-size: 12px;
-  color: var(--gray-800);
-}
-
-.yLabelLeft,
-.yLabelRight {
-  position: absolute;
-  font-size: 12px;
-  color: var(--gray-800);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-}
-
-.yLabelLeft {
-  left: 0;
-  top: 80px;
-}
-
-.yLabelRight {
-  right: 0;
-  top: 80px;
-}
-
-.xLabel {
-  align-self: center;
-  font-size: 12px;
-  color: var(--gray-800);
+  stroke: var(--green-600);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
 }
