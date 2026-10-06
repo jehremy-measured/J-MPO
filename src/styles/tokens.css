@@ -29,6 +29,14 @@
 
   --orange-600: #ff5420;
 
+  --red-700: #d13c3c;
+
+  --purple-600: #7c5cff;
+
+  --gold-600: #b8860b;
+
+  --pink-600: #d6336c;
+
   --gradient-hero: linear-gradient(
       90deg,
       rgba(29, 166, 150, 0.4) 0%,
@@ -43,11 +51,13 @@
     linear-gradient(90deg, #ffffff 0%, #ffffff 100%);
 
   --font-inter: "Inter", system-ui, sans-serif;
-  --font-plex: "IBM Plex Sans", system-ui, sans-serif;
 
   --radius-sm: 4px;
   --radius-md: 6px;
   --radius-lg: 8px;
+  --plan-goal-card-height: 340px;
   --shadow-base: 0 0 0 1px rgba(13, 45, 66, 0.05);
   --gradient-mia-avatar: linear-gradient(135deg, var(--green-700) 0%, var(--blue-800) 100%);
+  --gradient-mia-header: linear-gradient(120deg, #ece4fb 0%, #fbe6f2 100%);
+  --gradient-mia-hero: linear-gradient(135deg, #7c5cff 0%, #4b8ef0 100%);
 }

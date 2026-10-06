@@ -1,0 +1,206 @@
+import { useEffect, useRef, useState } from "react";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { ChevronDownIcon, EditIcon } from "./icons/BuildPlanIcons";
+import { MaterialIcon } from "./icons/MaterialIcon";
+import { SparkleIcon } from "./icons/SparkleIcon";
+import styles from "./PlanOptionsMenu.module.css";
+
+type Props = {
+  planId: string;
+  planLabel: string;
+  shared?: boolean;
+  onRenameRequest?: () => void;
+  onToggleSharePlan?: (id: string) => void;
+  onDuplicatePlan?: (id: string) => void;
+  onOptimizePlan?: () => void;
+  onExportPlan?: () => void;
+  onDeletePlan?: (id: string) => void;
+  onUpdateModel?: () => void;
+  currentModelLabel?: string;
+  /** Whether this plan's model is already the latest MIM refresh — disables the "Update model"
+   * item and shows an explanatory tooltip instead of opening the dialog. */
+  modelUpToDate?: boolean;
+  /** "button" is the labeled "More" pill; "chevron" is a bare chevron-only trigger meant to sit
+   * directly beside a title. */
+  variant?: "button" | "chevron";
+  /** For the "chevron" variant: renders this text before the chevron inside the same trigger,
+   * so the title itself (not just the chevron) is hoverable and opens the menu on click. */
+  title?: string;
+  /** For the "chevron" variant: swaps the trailing chevron glyph for a pencil icon, or "none"
+   * to hide the trailing glyph entirely -- the title text itself still opens the menu. */
+  trailingIcon?: "chevron" | "edit" | "none";
+};
+
+export function PlanOptionsMenu({
+  planId,
+  planLabel,
+  shared,
+  onRenameRequest,
+  onToggleSharePlan,
+  onDuplicatePlan,
+  onOptimizePlan,
+  onExportPlan,
+  onDeletePlan,
+  onUpdateModel,
+  currentModelLabel,
+  modelUpToDate = false,
+  variant = "button",
+  title,
+  trailingIcon = "chevron",
+}: Props) {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onPointerDown = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onPointerDown);
+    return () => document.removeEventListener("mousedown", onPointerDown);
+  }, [menuOpen]);
+
+  if (
+    !onRenameRequest &&
+    !onToggleSharePlan &&
+    !onDuplicatePlan &&
+    !onOptimizePlan &&
+    !onExportPlan &&
+    !onDeletePlan &&
+    !onUpdateModel
+  )
+    return null;
+
+  const handleRename = () => {
+    setMenuOpen(false);
+    onRenameRequest?.();
+  };
+
+  const handleToggleShare = () => {
+    setMenuOpen(false);
+    onToggleSharePlan?.(planId);
+  };
+
+  const handleDuplicate = () => {
+    setMenuOpen(false);
+    onDuplicatePlan?.(planId);
+  };
+
+  const handleOptimize = () => {
+    setMenuOpen(false);
+    onOptimizePlan?.();
+  };
+
+  const handleExport = () => {
+    setMenuOpen(false);
+    onExportPlan?.();
+  };
+
+  const handleDelete = () => {
+    setMenuOpen(false);
+    if (onDeletePlan) setConfirmingDelete(true);
+  };
+
+  const handleUpdateModel = () => {
+    if (modelUpToDate) return;
+    setMenuOpen(false);
+    onUpdateModel?.();
+  };
+
+  const confirmDelete = () => {
+    setConfirmingDelete(false);
+    onDeletePlan?.(planId);
+  };
+
+  return (
+    <div className={styles.moreWrap} ref={menuRef}>
+      {variant === "chevron" ? (
+        <button
+          type="button"
+          className={title ? styles.chevronBtnWithTitle : styles.chevronBtn}
+          aria-label={title ? undefined : "Plan options"}
+          onClick={() => setMenuOpen((v) => !v)}
+        >
+          {title && <span className={styles.chevronBtnTitleText}>{title}</span>}
+          {trailingIcon === "edit" ? (
+            <EditIcon size={18} />
+          ) : trailingIcon === "none" ? null : (
+            <ChevronDownIcon size={18} />
+          )}
+        </button>
+      ) : (
+        <button type="button" className={styles.moreBtn} onClick={() => setMenuOpen((v) => !v)}>
+          More
+          <ChevronDownIcon size={18} />
+        </button>
+      )}
+      {menuOpen && (
+        <div className={styles.moreMenu}>
+          {onRenameRequest && (
+            <button type="button" onClick={handleRename}>
+              Rename
+            </button>
+          )}
+          {onToggleSharePlan && (
+            <button type="button" onClick={handleToggleShare}>
+              {shared ? "Unshare" : "Share"}
+            </button>
+          )}
+          {onDuplicatePlan && (
+            <button type="button" className={styles.aiItem} onClick={handleDuplicate}>
+              Create variant
+              <SparkleIcon size={16} variant="fill" />
+            </button>
+          )}
+          {onOptimizePlan && (
+            <button type="button" className={styles.aiItem} onClick={handleOptimize}>
+              Optimize
+              <SparkleIcon size={16} variant="fill" />
+            </button>
+          )}
+          {onExportPlan && (
+            <button type="button" onClick={handleExport}>
+              Export
+            </button>
+          )}
+          {onDeletePlan && (
+            <button type="button" className={styles.dangerItem} onClick={handleDelete}>
+              Delete
+            </button>
+          )}
+          {onUpdateModel && (
+            <>
+              <div className={styles.menuDivider} />
+              <button
+                type="button"
+                className={`${styles.stackedItem} ${modelUpToDate ? styles.stackedItemDisabled : ""}`}
+                aria-disabled={modelUpToDate}
+                onClick={handleUpdateModel}
+              >
+                <MaterialIcon name="autorenew" size={20} />
+                <span className={styles.stackedItemText}>
+                  <span className={styles.stackedItemLabel}>Refresh plan data</span>
+                  {currentModelLabel && <span className={styles.stackedItemSub}>{currentModelLabel}</span>}
+                </span>
+                {modelUpToDate && (
+                  <span className={styles.stackedItemTooltip} role="tooltip">
+                    You're already using the latest model data for this plan.
+                  </span>
+                )}
+              </button>
+            </>
+          )}
+        </div>
+      )}
+      <ConfirmDialog
+        open={confirmingDelete}
+        title="Delete plan?"
+        message={`Delete "${planLabel}"? This can't be undone.`}
+        confirmLabel="Delete"
+        onConfirm={confirmDelete}
+        onCancel={() => setConfirmingDelete(false)}
+      />
+    </div>
+  );
+}

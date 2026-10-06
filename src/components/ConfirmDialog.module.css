@@ -1,0 +1,73 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 45, 66, 0.45);
+}
+
+.dialog {
+  width: 360px;
+  max-width: calc(100vw - 32px);
+  padding: 20px;
+  background: var(--gray-000);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 20px 48px rgba(13, 45, 66, 0.24);
+}
+
+.title {
+  margin: 0 0 8px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-1000);
+}
+
+.message {
+  margin: 0 0 20px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--gray-800);
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  background: var(--gray-000);
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-sm);
+}
+
+.cancelBtn:hover {
+  background: var(--gray-100);
+}
+
+.confirmBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-000);
+  background: #c22a4d;
+  border-radius: var(--radius-sm);
+}
+
+.confirmBtn:hover {
+  background: #a82040;
+}

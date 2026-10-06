@@ -1,4 +1,7 @@
 .bar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
   background: var(--gray-000);
   border-bottom: 1px solid var(--gray-300-stroke);
   height: 48px;
@@ -8,44 +11,60 @@
   display: flex;
   align-items: center;
   max-width: 1920px;
-  min-width: 880px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 0 12px;
   height: 100%;
-  gap: 16px;
+  gap: 8px;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 16px;
-  flex: 1;
-  min-width: 0;
+  gap: 12px;
+  flex: 1 1 0;
+  min-width: 40px;
+  overflow: hidden;
 }
 
 .logo {
   width: 24px;
   height: 24px;
-}
-
-.divider {
-  width: 1px;
-  height: 24px;
-  background: var(--gray-300);
+  flex-shrink: 0;
 }
 
 .workspace {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  padding: 0 8px;
   height: 48px;
+  min-width: 0;
   font-size: 16px;
   font-weight: 500;
   color: var(--gray-1000);
 }
 
-.menu {
+.workspace svg {
+  flex-shrink: 0;
+}
+
+.workspaceLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.navCenter {
+  position: relative;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+
+.navFull {
   display: flex;
   align-items: stretch;
   height: 100%;
@@ -56,12 +75,16 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 16px;
+  margin: 0 2px;
+  padding: 0 14px;
   font-size: 14px;
   font-weight: 500;
-  color: var(--gray-1000);
+  color: var(--gray-900);
   text-decoration: none;
-  height: 100%;
+  white-space: nowrap;
+  height: 32px;
+  align-self: center;
+  border-radius: var(--radius-sm);
   transition: background 0.15s ease;
 }
 
@@ -70,42 +93,136 @@
 }
 
 .menuItemActive {
-  color: var(--orange-600);
+  color: var(--gray-1000);
 }
 
 .menuItemActive::after {
   content: "";
   position: absolute;
-  bottom: 0;
-  left: 16px;
-  right: 16px;
+  bottom: -9px;
+  left: 8px;
+  right: 8px;
   height: 2px;
   border-radius: 999px;
-  background: var(--orange-600);
+  background: var(--gradient-tab);
 }
 
-.newBadge {
-  background: var(--orange-600);
-  color: var(--gray-000);
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 16px;
-  padding: 0 6px;
-  border-radius: 8px;
+.menuMore {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-900);
+  white-space: nowrap;
+}
+
+.tabSwitcher {
+  position: relative;
+  display: none;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 980px) {
+  .navFull {
+    display: none;
+  }
+
+  .tabSwitcher {
+    display: flex;
+  }
+}
+
+.tabSwitcherBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px 0 12px;
+  height: 32px;
+  align-self: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.tabSwitcherBtn:hover {
+  background: var(--gray-200);
+}
+
+.tabSwitcherLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabMenu {
+  position: absolute;
+  left: 0;
+  top: 44px;
+  background: var(--gray-000);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(13, 45, 66, 0.14);
+  padding: 6px;
+  min-width: 180px;
+  z-index: 30;
+}
+
+.tabMenu a {
+  width: 100%;
+  text-align: left;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  padding: 9px 12px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  text-decoration: none;
+}
+
+.tabMenu a:hover {
+  background: var(--gray-100);
+}
+
+.tabMenuItemActive {
+  color: var(--gray-1000);
+  background: var(--gray-100);
+}
+
+.rightGroup {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 2px;
+  flex: 1 1 0;
+  height: 100%;
+  min-width: 230px;
 }
 
 .miaBtn {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 0 16px;
-  height: 100%;
+  height: 32px;
+  margin-left: 6px;
+  padding: 0 10px 0 8px;
   font-size: 14px;
   font-weight: 600;
   color: #6a4fe0;
   background: transparent;
   border: none;
-  border-bottom: 4px solid transparent;
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
@@ -115,17 +232,8 @@
 }
 
 .miaBtnActive {
-  border-bottom-color: #7c5cff;
   color: #5a3fd0;
   background: #f5f2ff;
-}
-
-.utilities {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1;
-  gap: 0;
 }
 
 .iconBtn {
@@ -133,16 +241,22 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  font-size: 18px;
+  width: 40px;
+  height: 40px;
+  font-size: 17px;
   color: var(--gray-800);
+  flex-shrink: 0;
+}
+
+.iconBtn:hover {
+  background: var(--gray-100);
+  border-radius: var(--radius-sm);
 }
 
 .dot {
   position: absolute;
-  top: 9px;
-  right: 14px;
+  top: 8px;
+  right: 9px;
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -155,10 +269,40 @@
   justify-content: center;
   width: 32px;
   height: 32px;
-  margin: 0 16px;
+  margin: 0 2px 0 6px;
   border-radius: 16px;
-  background: var(--blue-200);
-  color: var(--blue-700);
-  font-size: 14px;
+  background: #f4cabe;
+  color: #a34a34;
+  font-size: 13px;
   font-weight: 600;
+  flex-shrink: 0;
+}
+
+@media (max-width: 420px) {
+  .inner {
+    gap: 4px;
+    padding: 0 8px;
+  }
+
+  .brand {
+    gap: 8px;
+  }
+
+  .rightGroup {
+    min-width: 175px;
+  }
+
+  .miaBtn {
+    padding: 0 6px;
+  }
+
+  .iconBtn {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+
+  .avatar {
+    margin: 0 2px;
+  }
 }

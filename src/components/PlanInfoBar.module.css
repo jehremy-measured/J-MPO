@@ -1,0 +1,104 @@
+.bar {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  gap: 16px;
+  min-height: 56px;
+  margin: 0 24px 24px;
+  padding: 12px 20px;
+  background: var(--gray-100);
+  border: 1px solid var(--gray-300-stroke);
+  border-radius: var(--radius-lg);
+}
+
+.items {
+  display: flex;
+  align-items: flex-start;
+  flex: 1 1 auto;
+  flex-wrap: nowrap;
+  min-width: 0;
+  gap: 10px 24px;
+  overflow: hidden;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px 16px;
+  flex-shrink: 0;
+}
+
+/* Hidden clone, laid out unconstrained (no wrap, no shrink, no clipping), used only to read
+ * the content's natural full-text width via scrollWidth. */
+.measurer {
+  position: absolute;
+  visibility: hidden;
+  top: 0;
+  left: 0;
+  height: 0;
+  overflow: hidden;
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 16px;
+  pointer-events: none;
+}
+
+.measurer .items {
+  flex: 0 0 auto;
+  overflow: visible;
+}
+
+.measurer .item {
+  flex-shrink: 0;
+}
+
+.measurer .itemValue {
+  overflow: visible;
+}
+
+.editLink {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 32px;
+  margin-right: -12px;
+  padding: 0 12px 0 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--blue-700);
+  border-radius: var(--radius-sm);
+  flex-shrink: 0;
+}
+
+.editLink:hover {
+  background: var(--gray-200);
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 1;
+  gap: 4px;
+  min-width: 0;
+}
+
+.itemLabel {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--gray-800);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemValue {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-1000);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
