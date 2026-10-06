@@ -116,27 +116,6 @@
   font-weight: 500;
 }
 
-.tableWrap {
-  border: 1px solid var(--gray-300-stroke);
-  border-radius: var(--radius-lg);
-}
-
-.table thead th:first-child {
-  border-top-left-radius: var(--radius-lg);
-}
-
-.table thead th:last-child {
-  border-top-right-radius: var(--radius-lg);
-}
-
-.table tbody tr:last-child td:first-child {
-  border-bottom-left-radius: var(--radius-lg);
-}
-
-.table tbody tr:last-child td:last-child {
-  border-bottom-right-radius: var(--radius-lg);
-}
-
 .table {
   width: 100%;
   border-collapse: separate;

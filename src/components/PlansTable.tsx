@@ -256,7 +256,7 @@ export function PlansTable({
           <p className={styles.emptyDesc}>Click Simulate or Optimize above to create your first plan.</p>
         </div>
       ) : (
-      <div className={styles.tableWrap}>
+      <div>
         <table className={styles.table}>
           <thead>
             <tr>
