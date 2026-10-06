@@ -124,11 +124,13 @@
 
 .table th {
   text-align: left;
-  padding: 12px 16px;
-  background: var(--gray-1000);
-  color: var(--gray-000);
-  font-size: 12px;
-  font-weight: 500;
+  padding: 16px;
+  background: var(--gray-100);
+  border-bottom: 1px solid var(--green-500);
+  color: var(--gray-1000);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 22px;
   white-space: nowrap;
 }
 
@@ -149,7 +151,7 @@
 
 .table th:first-child {
   z-index: 2;
-  background: var(--gray-1000);
+  background: var(--gray-100);
 }
 
 .table td:first-child {
