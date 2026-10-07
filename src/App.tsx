@@ -8,8 +8,12 @@ const ROUTE_HASHES: Record<AppRoute, string> = {
   geo: "#/experiment/geo",
 };
 
+const DEFAULT_ROUTE: AppRoute = import.meta.env.VITE_DEFAULT_ROUTE === "geo" ? "geo" : "optimize";
+
 function routeFromHash(hash: string): AppRoute {
-  return hash.startsWith("#/experiment") ? "geo" : "optimize";
+  if (hash.startsWith("#/experiment") || hash === "#geo") return "geo";
+  if (hash.startsWith("#/optimize") || hash === "#optimize") return "optimize";
+  return DEFAULT_ROUTE;
 }
 
 export default function App() {
@@ -22,7 +26,13 @@ export default function App() {
   }, []);
 
   const navigate = (next: AppRoute) => {
-    window.location.hash = ROUTE_HASHES[next];
+    // Route lives in state; the hash is a best-effort deep link (some hosts strip it)
+    setRoute(next);
+    try {
+      window.location.hash = ROUTE_HASHES[next];
+    } catch {
+      /* ignore */
+    }
     window.scrollTo(0, 0);
   };
 
