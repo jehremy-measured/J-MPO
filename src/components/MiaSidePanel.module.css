@@ -373,3 +373,8 @@
   opacity: 0.35;
   cursor: not-allowed;
 }
+
+/* Keeps a page's guided-flow turns as direct flex children of .messages */
+.flowSlot {
+  display: contents;
+}

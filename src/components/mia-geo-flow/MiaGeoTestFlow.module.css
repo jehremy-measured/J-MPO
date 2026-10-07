@@ -1,0 +1,118 @@
+.optRowSplit {
+  align-items: flex-start;
+}
+
+.optStack {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.optMeta {
+  font-size: 12px;
+  color: var(--gray-800);
+}
+
+.tag {
+  flex-shrink: 0;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--gray-200);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 18px;
+  color: var(--gray-800);
+}
+
+.tagHighlight {
+  background: var(--green-100);
+  color: var(--green-800);
+}
+
+.recBadge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--green-800);
+}
+
+.chipGroup {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 8px;
+}
+
+.choice,
+.cellCard {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border: 1px solid var(--gray-400);
+  border-radius: var(--radius-md);
+  background: var(--gray-000);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gray-1000);
+  text-align: left;
+}
+
+.choice:hover,
+.cellCard:hover {
+  border-color: var(--gray-500);
+  background: var(--gray-100);
+}
+
+.choiceActive,
+.cellCardActive,
+.choiceActive:hover,
+.cellCardActive:hover {
+  border-color: var(--blue-700);
+  background: var(--blue-100);
+  box-shadow: 0 0 0 1px var(--blue-700);
+}
+
+.choiceHint {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--green-800);
+}
+
+.choiceSub {
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--gray-800);
+}
+
+.fullSelect {
+  width: 100%;
+}
+
+.cellOptions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.cellSize {
+  font-family: var(--font-plex);
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.cellMeta {
+  font-size: 11.5px;
+  font-weight: 400;
+  color: var(--gray-800);
+}
+
+.reviewVal {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: right;
+}

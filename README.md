@@ -23,12 +23,20 @@ Open the URL Vite prints (typically `http://localhost:5173`).
 - Reference screenshot: `reference-screenshot.png`
 - Remote image assets in `src/assets/figma.ts` expire after ~7 days; replace with local assets for production.
 
+## Pages
+
+- **Optimize → MPO** (`#/optimize`, default)
+- **Experiment → Geo Tests** (`#/experiment/geo`) — test list with status filters/search, KPI cards,
+  and a Geo-specific Mia assistant whose guided flow designs a new geo test and adds it as a draft.
+
 ## Structure
 
 ```
 src/
-  components/   Top nav, hero, tabs, curve panel, budget table
-  pages/        MpoPage (full screen composition)
+  components/   Top nav, hero, tabs, curve panel, budget table, Mia panel + guided flows
+  geo/          Geo Tests mock data, test-design logic, Mia prompts/replies
+  mpo/          MPO state, data and build-plan logic
+  pages/        MpoPage, GeoPage
   styles/       Design tokens + global styles
 ```
 # J-MPO

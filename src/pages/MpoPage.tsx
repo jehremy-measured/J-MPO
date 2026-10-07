@@ -7,14 +7,18 @@ import { MiaSidePanel } from "../components/MiaSidePanel";
 import { PlanReviewPage } from "../components/PlanReviewPage";
 import { PlanTabs } from "../components/PlanTabs";
 import { PrototypeBar } from "../components/PrototypeBar";
-import { TopNavigation } from "../components/TopNavigation";
+import { TopNavigation, type AppRoute } from "../components/TopNavigation";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import type { CreatePlanInput } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
 
 /** MPO 1 screen — interactive prototype (Figma node 1:33651) */
-export function MpoPage() {
+type Props = {
+  onNavigate: (route: AppRoute) => void;
+};
+
+export function MpoPage({ onNavigate }: Props) {
   const state = useMpoState();
   const [miaOpen, setMiaOpen] = useState(false);
   const [buildPlanOpen, setBuildPlanOpen] = useState(false);
@@ -47,7 +51,12 @@ export function MpoPage() {
 
   return (
     <div className={styles.page} data-node-id="1:33651">
-      <TopNavigation miaOpen={miaOpen} onMiaToggle={() => setMiaOpen((open) => !open)} />
+      <TopNavigation
+        activeRoute="optimize"
+        onNavigate={onNavigate}
+        miaOpen={miaOpen}
+        onMiaToggle={() => setMiaOpen((open) => !open)}
+      />
       <div className={styles.body}>
         <div className={styles.contentCol}>
           <main className={styles.main}>

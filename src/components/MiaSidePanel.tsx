@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import type { BuildPlanState } from "../mpo/buildPlan/types";
 import type { CreatePlanInput } from "../mpo/types";
 import { MiaBuildPlanFlow } from "./mia-build-flow/MiaBuildPlanFlow";
@@ -13,15 +13,38 @@ type Message = {
   text: string;
 };
 
-type Prompt =
-  | { label: string; description: string; action: "create-plan" }
-  | { label: string; description: string; action: "chat" };
+export type MiaPrompt = {
+  label: string;
+  description: string;
+  /** "flow" starts the page's guided flow; "chat" sends the label as a message */
+  action: "flow" | "chat";
+};
 
-const STARTER_PROMPTS: Prompt[] = [
+/** Callbacks handed to a guided flow rendered inside the panel */
+export type MiaFlowControls = {
+  /** Flow finished — optionally post a Mia message and/or close the panel */
+  finish: (opts?: { message?: string; closePanel?: boolean }) => void;
+  /** Leave the flow silently (e.g. handing off to the main page) */
+  exit: () => void;
+};
+
+export type MiaConfig = {
+  welcomeTitle?: string;
+  welcomeSubtext: string;
+  prompts: MiaPrompt[];
+  shouldStartFlow: (text: string) => boolean;
+  flowIntro: string;
+  flowCancelled: string;
+  cancelLabel?: string;
+  reply: (text: string) => string;
+  renderFlow: (controls: MiaFlowControls) => ReactNode;
+};
+
+const STARTER_PROMPTS: MiaPrompt[] = [
   {
     label: "Create a new plan",
     description: "Answer a few quick questions and I'll build a budget plan for you.",
-    action: "create-plan",
+    action: "flow",
   },
   {
     label: "Summarize my budget changes",
@@ -36,8 +59,6 @@ const STARTER_PROMPTS: Prompt[] = [
 ];
 
 const WELCOME_TITLE = "Hi, I'm Mia";
-const WELCOME_SUBTEXT =
-  "Ask about budgets and tactics, or start the guided flow to create a new plan.";
 
 function shouldStartCreatePlanFlow(text: string): boolean {
   const lower = text.toLowerCase();
@@ -58,7 +79,44 @@ type Props = {
   onEditInMainFlow: (state: BuildPlanState) => void;
 };
 
+/** MPO's Mia: budget prompts + guided build-plan flow */
 export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow }: Props) {
+  const config: MiaConfig = {
+    welcomeSubtext: "Ask about budgets and tactics, or start the guided flow to create a new plan.",
+    prompts: STARTER_PROMPTS,
+    shouldStartFlow: shouldStartCreatePlanFlow,
+    flowIntro: "Let's build your plan — I'll walk you through a few quick steps.",
+    flowCancelled: 'Plan setup cancelled. Say "Create a new plan" anytime to start again.',
+    reply: prototypeReply,
+    renderFlow: ({ finish, exit }) => (
+      <MiaBuildPlanFlow
+        onComplete={(input: CreatePlanInput) => {
+          const result = onOpenPlanReview(input);
+          finish({
+            closePanel: true,
+            message: `Your plan "${result.label}" is ready — open the review page to confirm and save.`,
+          });
+        }}
+        onEdit={(state: BuildPlanState) => {
+          exit();
+          onEditInMainFlow(state);
+        }}
+      />
+    ),
+  };
+  return <MiaPanel open={open} onClose={onClose} config={config} />;
+}
+
+type PanelProps = {
+  open: boolean;
+  onClose: () => void;
+  config: MiaConfig;
+  /** Increment to open straight into the guided flow (e.g. from a page CTA) */
+  startFlowSignal?: number;
+};
+
+/** Shared Mia side panel shell — pages supply prompts, replies and a guided flow */
+export function MiaPanel({ open, onClose, config, startFlowSignal = 0 }: PanelProps) {
   const titleId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -88,10 +146,10 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
     appendMessages([
       {
         role: "mia",
-        text: 'Plan setup cancelled. Say "Create a new plan" anytime to start again.',
+        text: config.flowCancelled,
       },
     ]);
-  }, [appendMessages]);
+  }, [appendMessages, config.flowCancelled]);
 
   const startCreateFlow = useCallback(
     (userText?: string) => {
@@ -99,15 +157,21 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
       if (userText) batch.push({ role: "user", text: userText });
       batch.push({
         role: "mia",
-        text: "Let's build your plan — I'll walk you through a few quick steps.",
+        text: config.flowIntro,
       });
       appendMessages(batch);
       setFlowKey((k) => k + 1);
       setFlowActive(true);
       setDraft("");
     },
-    [appendMessages]
+    [appendMessages, config.flowIntro]
   );
+
+  // Page CTAs (e.g. "Get started") open the panel directly into the flow
+  useEffect(() => {
+    if (startFlowSignal > 0 && open) startCreateFlow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [startFlowSignal]);
 
   useEffect(() => {
     if (!open) {
@@ -155,28 +219,20 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
 
   if (!open) return null;
 
-  const handleFlowComplete = (input: CreatePlanInput) => {
-    const result = onOpenPlanReview(input);
-    setFlowActive(false);
-    onClose();
-    appendMessages([
-      {
-        role: "mia",
-        text: `Your plan "${result.label}" is ready — open the review page to confirm and save.`,
-      },
-    ]);
-  };
-
-  const handleFlowEdit = (state: BuildPlanState) => {
-    setFlowActive(false);
-    onEditInMainFlow(state);
+  const flowControls: MiaFlowControls = {
+    finish: ({ message, closePanel } = {}) => {
+      setFlowActive(false);
+      if (closePanel) onClose();
+      if (message) appendMessages([{ role: "mia", text: message }]);
+    },
+    exit: () => setFlowActive(false),
   };
 
   const sendUserText = (text: string) => {
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    if (shouldStartCreatePlanFlow(trimmed)) {
+    if (config.shouldStartFlow(trimmed)) {
       startCreateFlow(trimmed);
       return;
     }
@@ -188,7 +244,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
     setIsTyping(true);
     window.setTimeout(() => {
       setIsTyping(false);
-      appendMessages([{ role: "mia", text: prototypeReply(trimmed) }]);
+      appendMessages([{ role: "mia", text: config.reply(trimmed) }]);
     }, 650);
   };
 
@@ -200,8 +256,8 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
     sendUserText(trimmed);
   };
 
-  const runPrompt = (prompt: Prompt) => {
-    if (prompt.action === "create-plan") {
+  const runPrompt = (prompt: MiaPrompt) => {
+    if (prompt.action === "flow") {
       startCreateFlow(prompt.label);
       return;
     }
@@ -233,7 +289,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
               className={styles.cancelFlowBtn}
               onClick={cancelCreateFlow}
             >
-              Cancel setup
+              {config.cancelLabel ?? "Cancel setup"}
             </button>
           )}
           <button
@@ -253,10 +309,10 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
             <span className={styles.welcomeAvatar} aria-hidden>
               <SparkleIcon size={20} />
             </span>
-            <h3 className={styles.welcomeTitle}>{WELCOME_TITLE}</h3>
-            <p className={styles.welcomeSubtext}>{WELCOME_SUBTEXT}</p>
+            <h3 className={styles.welcomeTitle}>{config.welcomeTitle ?? WELCOME_TITLE}</h3>
+            <p className={styles.welcomeSubtext}>{config.welcomeSubtext}</p>
             <div className={styles.optionList} role="group">
-              {STARTER_PROMPTS.map((prompt) => (
+              {config.prompts.map((prompt) => (
                 <button
                   key={prompt.label}
                   type="button"
@@ -290,9 +346,7 @@ export function MiaSidePanel({ open, onClose, onOpenPlanReview, onEditInMainFlow
           </div>
         ))}
 
-        {flowActive && (
-          <MiaBuildPlanFlow key={flowKey} onComplete={handleFlowComplete} onEdit={handleFlowEdit} />
-        )}
+        {flowActive && <div key={flowKey} className={styles.flowSlot}>{config.renderFlow(flowControls)}</div>}
 
         {isTyping && (
           <div className={styles.bubbleMia}>

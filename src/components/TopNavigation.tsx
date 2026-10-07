@@ -3,19 +3,24 @@ import { assets } from "../assets/figma";
 import { SparkleIcon } from "./icons/SparkleIcon";
 import styles from "./TopNavigation.module.css";
 
-const navItems = [
-  { label: "Home", active: false },
-  { label: "Experiment", active: false },
-  { label: "Optimize", active: true, badge: true },
-  { label: "Benchmarks", active: false },
+export type AppRoute = "optimize" | "geo";
+
+const navItems: { label: string; route?: AppRoute; badge?: boolean }[] = [
+  { label: "Home" },
+  { label: "Experiment", route: "geo" },
+  { label: "Optimize", route: "optimize", badge: true },
+  { label: "Benchmarks" },
 ];
 
 type Props = {
-  miaOpen: boolean;
-  onMiaToggle: () => void;
+  activeRoute: AppRoute;
+  onNavigate: (route: AppRoute) => void;
+  /** Omit to hide the Mia button (Mia flows are MPO-only in this prototype) */
+  miaOpen?: boolean;
+  onMiaToggle?: () => void;
 };
 
-export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
+export function TopNavigation({ activeRoute, onNavigate, miaOpen = false, onMiaToggle }: Props) {
   return (
     <header className={styles.bar} data-node-id="1:33652">
       <div className={styles.inner}>
@@ -33,8 +38,13 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
             <a
               key={item.label}
               href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                if (item.route) onNavigate(item.route);
+              }}
+              aria-current={item.route === activeRoute ? "page" : undefined}
               className={
-                item.active
+                item.route === activeRoute
                   ? `${styles.menuItem} ${styles.menuItemActive}`
                   : styles.menuItem
               }
@@ -43,6 +53,7 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
               {item.badge && <span className={styles.newBadge}>NEW</span>}
             </a>
           ))}
+          {onMiaToggle && (
           <button
             type="button"
             className={miaOpen ? `${styles.miaBtn} ${styles.miaBtnActive}` : styles.miaBtn}
@@ -53,6 +64,7 @@ export function TopNavigation({ miaOpen, onMiaToggle }: Props) {
             <SparkleIcon size={14} />
             Mia
           </button>
+          )}
         </nav>
 
         <div className={styles.utilities}>
