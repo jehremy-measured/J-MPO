@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { formatShortDate } from "../mpo/buildPlan/dateUtils";
-import type { Plan, PlanTarget } from "../mpo/types";
+import { CURRENT_MODEL_DATE, isModelUpToDate } from "../mpo/modelOptions";
+import { planTypeLabel, type Plan, type PlanTarget } from "../mpo/types";
 import { Checkbox } from "./Checkbox";
 import { ConfirmDialog } from "./ConfirmDialog";
 import {
@@ -29,10 +30,12 @@ const DATE_FILTER_LABEL: Record<DateFilter, string> = {
   all: "All time",
 };
 
-const KIND_LABEL: Record<Plan["kind"], string> = {
-  optimization: "Optimization",
-  simulation: "Simulation",
-};
+/** The plans table's "Status" pill: whether a plan is tracking the latest MIM model refresh
+ * ("Live") or pinned to an older one ("Frozen", with the date it's frozen at). */
+function planStatusLabel(plan: Plan): string {
+  const modelDate = plan.modelDate ?? CURRENT_MODEL_DATE;
+  return isModelUpToDate(modelDate) ? "Live" : `Frozen · ${modelDate}`;
+}
 
 const TARGET_LABEL: Record<PlanTarget, string> = {
   "incremental-sales": "Incremental Sales",
@@ -44,10 +47,11 @@ const TARGET_LABEL: Record<PlanTarget, string> = {
 const NINETY_DAYS_MS = 90 * 24 * 60 * 60 * 1000;
 
 export function downloadPlansCsv(plansToExport: Plan[]) {
-  const header = ["Plan name", "Type", "Created by", "Last updated", "Target"];
+  const header = ["Plan name", "Type", "Status", "Created by", "Last updated", "Target"];
   const rows = plansToExport.map((plan) => [
     plan.label,
-    KIND_LABEL[plan.kind],
+    planTypeLabel(plan),
+    planStatusLabel(plan),
     plan.createdBy,
     formatShortDate(plan.lastEdited),
     TARGET_LABEL[plan.target],
@@ -270,6 +274,7 @@ export function PlansTable({
               </th>
               <th>Plan name</th>
               <th>Type</th>
+              <th>Status</th>
               <th>Created by</th>
               <th>Last updated</th>
               <th className={styles.menuCol} />
@@ -314,7 +319,16 @@ export function PlansTable({
                 </td>
                 <td>
                   <span className={`${styles.badge} ${plan.kind === "optimization" ? styles.badgeOptimization : styles.badgeSimulation}`}>
-                    {KIND_LABEL[plan.kind]}
+                    {planTypeLabel(plan)}
+                  </span>
+                </td>
+                <td>
+                  <span
+                    className={`${styles.badge} ${
+                      isModelUpToDate(plan.modelDate ?? CURRENT_MODEL_DATE) ? styles.badgeLive : styles.badgeFrozen
+                    }`}
+                  >
+                    {planStatusLabel(plan)}
                   </span>
                 </td>
                 <td>{plan.createdBy}</td>

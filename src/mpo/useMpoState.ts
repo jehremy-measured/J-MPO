@@ -229,6 +229,7 @@ export function useMpoState() {
           planStart: input.planStart,
           planEnd: input.planEnd,
           modelDate: input.modelDate,
+          parentPlanId: input.parentPlanId,
         },
       ]);
       setPlanData((prev) => ({ ...prev, [id]: snapshot }));

@@ -1,4 +1,5 @@
 import { assets } from "../assets/figma";
+import { LATEST_MODEL_DATE } from "./modelOptions";
 import type { Plan, Tactic } from "./types";
 
 export const PLANS: Plan[] = [
@@ -25,11 +26,13 @@ export const PLANS: Plan[] = [
     planStart: new Date(2026, 6, 1),
     planEnd: new Date(2026, 8, 30),
     shared: false,
+    modelDate: LATEST_MODEL_DATE,
   },
   {
     id: "sim-default-copy",
     label: "Q3 2026 media simulation (copy)",
     kind: "simulation",
+    parentPlanId: "sim-default",
     createdBy: "JH",
     lastEdited: new Date(2026, 7, 10),
     target: "incremental-roas",

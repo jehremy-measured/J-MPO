@@ -39,6 +39,9 @@ export type Plan = {
   targetValue?: number;
   planStart: Date;
   planEnd: Date;
+  /** The source plan this one was created from via the Create Variant flow. Drives the
+   * "<Type> variant" pill in the plans table -- unset for a plan built from scratch. */
+  parentPlanId?: string;
   /** When set to "sidebar", opening this plan for edit shows the vertical-nav editor
    * (plan period / budget / tactics sections swapped on the right) instead of the
    * normal step-by-step build flow. */
@@ -90,7 +93,20 @@ export type CreatePlanInput = {
   /** MIM model date the created plan should carry — used by the Mia duplicate-plan flow's
    * model-choice step; omitted plans fall back to `CURRENT_MODEL_DATE`. */
   modelDate?: string;
+  /** Source plan id — set by the Create Variant flow so the new plan carries a "variant" pill. */
+  parentPlanId?: string;
 };
+
+const PLAN_KIND_LABEL: Record<PlanKind, string> = {
+  simulation: "Baseline",
+  optimization: "Optimized",
+};
+
+/** The plans table / plan header "Type" pill: Baseline or Optimized, with "variant" appended
+ * when the plan was created from another one via the Create Variant flow. */
+export function planTypeLabel(plan: Pick<Plan, "kind" | "parentPlanId">): string {
+  return plan.parentPlanId ? `${PLAN_KIND_LABEL[plan.kind]} variant` : PLAN_KIND_LABEL[plan.kind];
+}
 
 export function goalTypeLabel(type: PlanGoalType): string {
   const labels: Record<PlanGoalType, string> = {

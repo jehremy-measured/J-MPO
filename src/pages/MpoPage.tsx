@@ -29,14 +29,9 @@ import {
 } from "../mpo/buildPlan/logic";
 import { defaultBuildPlanState } from "../mpo/buildPlan/useBuildPlanFlow";
 import { CURRENT_MODEL_DATE } from "../mpo/modelOptions";
-import { formatBudget, type CreatePlanInput, type PlanKind, type PlanTarget } from "../mpo/types";
+import { formatBudget, planTypeLabel, type CreatePlanInput, type PlanTarget } from "../mpo/types";
 import { useMpoState } from "../mpo/useMpoState";
 import styles from "./MpoPage.module.css";
-
-const KIND_LABEL: Record<PlanKind, string> = {
-  optimization: "Optimization",
-  simulation: "Simulation",
-};
 
 function channelsLabelFor(count: number): string {
   const total = channelsPresent().length;
@@ -143,11 +138,16 @@ export function MpoPage() {
     input: CreatePlanInput,
     rawState: BuildPlanState,
     modeOverride?: "create" | "edit",
-    modelDate?: string
+    modelDate?: string,
+    parentPlanId?: string
   ) => {
     const mode = modeOverride ?? buildPlanMode;
     const finish = () => {
-      const result = state.createPlan(modelDate ? { ...input, modelDate } : input);
+      const result = state.createPlan({
+        ...input,
+        ...(modelDate ? { modelDate } : {}),
+        ...(parentPlanId ? { parentPlanId } : {}),
+      });
       setPlanBuildStates((prev) => ({ ...prev, [result.id]: { ...rawState, screen: "review" } }));
       setViewMode("detail");
     };
@@ -254,6 +254,7 @@ export function MpoPage() {
     const plan = state.plans.find((p) => p.id === planId);
     if (!plan) return;
     const seed = defaultBuildPlanState();
+    seed.planType = plan.kind === "optimization" ? "spend" : "outcomes";
     seed.planStart = plan.planStart;
     seed.planEnd = plan.planEnd;
     seed.target = plan.target;
@@ -432,7 +433,7 @@ export function MpoPage() {
                             <span className={styles.detailPlanTitle}>{state.activePlanLabel}</span>
                           )}
                           {activePlan && (
-                            <span className={styles.kindBadge}>{KIND_LABEL[activePlan.kind]}</span>
+                            <span className={styles.kindBadge}>{planTypeLabel(activePlan)}</span>
                           )}
                           {activePlan?.shared && <SharedPlanIcon createdBy={activePlan.createdBy} />}
                         </div>
@@ -562,8 +563,8 @@ export function MpoPage() {
           open={miaOpen}
           onClose={() => setMiaOpen(false)}
           onEditInMainFlow={(seed) => openBuildPlanPage(seed)}
-          onCreatePlan={(seed, modelDate) =>
-            handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create", modelDate)
+          onCreatePlan={(seed, modelDate, parentPlanId) =>
+            handleCreatePlan(buildPlanToCreatePlanInput(seed), seed, "create", modelDate, parentPlanId)
           }
           onUpdatePlan={handleUpdatePlan}
           startSignal={miaStart}

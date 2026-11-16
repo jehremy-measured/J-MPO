@@ -234,6 +234,16 @@
   color: var(--green-800);
 }
 
+.badgeLive {
+  background: var(--green-100);
+  color: var(--green-800);
+}
+
+.badgeFrozen {
+  background: var(--gray-200);
+  color: var(--gray-800);
+}
+
 .menuCol {
   width: 44px;
   text-align: right;

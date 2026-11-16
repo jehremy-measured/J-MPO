@@ -66,6 +66,9 @@ type Message = {
   /** plan-ready-card only: when set (by the duplicate-plan flow), the new plan is created with
    * this MIM model date instead of the default. */
   resultModelDate?: string;
+  /** plan-ready-card only: when set (by the duplicate-plan flow), the created plan carries this
+   * as its parent, so the plans table shows it as a "<Type> variant". */
+  parentPlanId?: string;
 };
 
 type Prompt =
@@ -183,7 +186,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   onEditInMainFlow: (state: BuildPlanState) => void;
-  onCreatePlan: (state: BuildPlanState, modelDate?: string) => void;
+  onCreatePlan: (state: BuildPlanState, modelDate?: string, parentPlanId?: string) => void;
   /** Applies a finished edit back onto an existing plan (by id) instead of creating a new one —
    * used by the edit-plan flow's "Update plan" action. */
   onUpdatePlan?: (state: BuildPlanState, planId: string) => void;
@@ -305,6 +308,7 @@ export function MiaSidePanel({
     delayMs?: number;
     summaryMode?: "channel" | "tactic";
     resultModelDate?: string;
+    parentPlanId?: string;
   } | null>(null);
   const [lastPlanState, setLastPlanState] = useState<BuildPlanState | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -372,6 +376,7 @@ export function MiaSidePanel({
         updateTargetPlanId?: string;
         summaryMode?: "channel" | "tactic";
         resultModelDate?: string;
+        parentPlanId?: string;
       }[]
     ) => {
       setMessages((prev) => [
@@ -388,6 +393,7 @@ export function MiaSidePanel({
           updateTargetPlanId: item.updateTargetPlanId,
           summaryMode: item.summaryMode,
           resultModelDate: item.resultModelDate,
+          parentPlanId: item.parentPlanId,
         })),
       ]);
     },
@@ -548,6 +554,7 @@ export function MiaSidePanel({
       intro: "Your plan variant is ready for review.",
       delayMs: 1200,
       resultModelDate: duplicateSourceModelDate ?? LATEST_MODEL_DATE,
+      parentPlanId: duplicatePlanId ?? undefined,
     });
     resetDuplicateFlow();
   };
@@ -769,7 +776,8 @@ export function MiaSidePanel({
 
   useEffect(() => {
     if (!pendingReview) return;
-    const { state: reviewState, intro, updateTargetPlanId, delayMs, summaryMode, resultModelDate } = pendingReview;
+    const { state: reviewState, intro, updateTargetPlanId, delayMs, summaryMode, resultModelDate, parentPlanId } =
+      pendingReview;
     const timer = window.setTimeout(() => {
       setPendingReview(null);
       setLastPlanState(reviewState);
@@ -784,6 +792,7 @@ export function MiaSidePanel({
           updateTargetPlanId,
           summaryMode,
           resultModelDate,
+          parentPlanId,
         },
       ]);
     }, delayMs ?? 5000);
@@ -1273,7 +1282,7 @@ export function MiaSidePanel({
                   onClick={() => {
                     if (!msg.planState) return;
                     if (msg.updateTargetPlanId) onUpdatePlan?.(msg.planState, msg.updateTargetPlanId);
-                    else onCreatePlan(msg.planState, msg.resultModelDate);
+                    else onCreatePlan(msg.planState, msg.resultModelDate, msg.parentPlanId);
                   }}
                 >
                   {msg.updateTargetPlanId ? "Update plan" : "Create plan"}
