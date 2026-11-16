@@ -10,7 +10,7 @@
   padding: 10px 14px;
   background: var(--gray-1000);
   color: var(--gray-000);
-  border-radius: 8px;
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(13, 45, 66, 0.2);
   font-size: 13px;
 }
